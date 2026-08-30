@@ -13,7 +13,10 @@ will run separately from the public Squarespace website at
 - Cookie-based Supabase sessions for Next.js
 - Role-protected customer, provider, and admin dashboards
 - Private profiles table with Row Level Security
-- Provider accounts begin in a pending state
+- Provider profiles with services, pricing, photos, credentials, and availability
+- Provider application submission and progress tracking
+- Admin provider-review queue with approval, rejection notes, and audit history
+- Private credential files and public provider-profile photos
 
 ## Local setup
 
@@ -39,12 +42,18 @@ Do not use a secret key or service-role key in either public variable.
 
 ### 3. Create the database foundation
 
-Open the Supabase **SQL Editor**, copy the contents of
-`supabase/migrations/20260826000000_create_profiles.sql`, and run it once.
+Open the Supabase **SQL Editor** and run these migrations in order:
 
-The migration creates the profile roles, provider-approval status, automatic
-profile creation, least-privilege grants, and policies that limit users to their
-own profile.
+1. `supabase/migrations/20260826000000_create_profiles.sql`
+2. `supabase/migrations/20260831000000_provider_onboarding.sql`
+
+If the authentication foundation was already installed, run only the second
+migration.
+
+The migrations create profile roles, automatic profile creation, the provider
+onboarding tables, storage buckets, server-side submission/review functions,
+least-privilege grants, and Row Level Security policies. Credential documents are
+private; provider photos are public marketplace assets.
 
 ### 4. Configure authentication URLs
 
@@ -75,6 +84,29 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Testing provider onboarding
+
+1. Sign in with a provider account.
+2. Open **Profile setup** and complete the introduction, one service, one photo,
+   one credential, and at least one available day.
+3. Submit the application for review.
+4. Sign in with a separate admin test account and open `/dashboard/admin`.
+5. Review the private credential document, then approve the provider or return
+   the application with notes.
+
+Admin access is never available through public registration. To promote a
+trusted test customer in the Supabase SQL Editor, replace the email below and
+run:
+
+```sql
+update public.profiles
+set role = 'admin', provider_status = 'not_applicable'
+where lower(email) = lower('your-admin-email@example.com');
+```
+
+Use a separate test account for administration. Do not promote the provider
+account being reviewed.
 
 ## Verification commands
 

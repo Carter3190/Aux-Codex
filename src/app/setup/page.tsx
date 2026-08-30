@@ -22,8 +22,8 @@ export default function SetupPage() {
         </h1>
         <p className="mt-4 leading-7 text-muted">
           Add the project URL and publishable key to <code>.env.local</code>, then
-          run the profiles migration in the Supabase SQL Editor. Full instructions
-          are included in the repository README.
+          run the profiles and provider-onboarding migrations in the Supabase SQL
+          Editor. Full instructions are included in the repository README.
         </p>
         <div className="mt-7 rounded-2xl bg-[#f4f7f4] p-5 font-mono text-sm leading-7 text-brand-dark">
           <p>NEXT_PUBLIC_SUPABASE_URL=</p>
@@ -32,6 +32,10 @@ export default function SetupPage() {
         <p className="mt-5 text-sm leading-6 text-muted">
           Never place a Supabase secret key or service-role key in a variable that
           begins with <code>NEXT_PUBLIC_</code>.
+        </p>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          If authentication is already working, you only need to run the newer
+          <code> 20260831000000_provider_onboarding.sql</code> migration.
         </p>
         <Link
           href="/"
