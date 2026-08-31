@@ -518,7 +518,9 @@ grant delete on table public.provider_services to authenticated;
 grant select on table public.provider_availability to authenticated;
 grant insert (provider_id, weekday, is_available, start_time, end_time)
   on table public.provider_availability to authenticated;
-grant update (is_available, start_time, end_time)
+-- PostgREST upserts include the conflict-key columns in the update statement.
+-- RLS still prevents a provider_id from ever being changed to another user.
+grant update (provider_id, weekday, is_available, start_time, end_time)
   on table public.provider_availability to authenticated;
 grant delete on table public.provider_availability to authenticated;
 
