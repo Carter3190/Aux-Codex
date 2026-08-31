@@ -17,6 +17,9 @@ will run separately from the public Squarespace website at
 - Provider application submission and progress tracking
 - Admin provider-review queue with approval, rejection notes, and audit history
 - Private credential files and public provider-profile photos
+- Public search and approved-provider profile pages
+- Private customer booking requests with customer cancellation
+- Provider accept/decline controls and booking status tracking
 
 ## Local setup
 
@@ -46,14 +49,16 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 
 1. `supabase/migrations/20260826000000_create_profiles.sql`
 2. `supabase/migrations/20260831000000_provider_onboarding.sql`
+3. `supabase/migrations/20260901000000_customer_marketplace.sql`
 
-If the authentication foundation was already installed, run only the second
-migration.
+If authentication and provider onboarding are already installed, run only the
+third migration.
 
 The migrations create profile roles, automatic profile creation, the provider
-onboarding tables, storage buckets, server-side submission/review functions,
-least-privilege grants, and Row Level Security policies. Credential documents are
-private; provider photos are public marketplace assets.
+onboarding tables, storage buckets, public provider-search functions, private
+booking requests, server-side mutation functions, least-privilege grants, and
+Row Level Security policies. Credential documents are private; provider photos
+are public marketplace assets.
 
 ### 4. Configure authentication URLs
 
@@ -107,6 +112,18 @@ where lower(email) = lower('your-admin-email@example.com');
 
 Use a separate test account for administration. Do not promote the provider
 account being reviewed.
+
+## Testing the customer marketplace
+
+1. Keep one approved provider account with at least one service and an available
+   day.
+2. Open `/providers` and confirm that only the approved provider appears.
+3. Sign in with a separate customer account, open the provider profile, and send
+   a request for a time inside the provider's listed availability.
+4. Confirm the request appears in `/dashboard/customer`.
+5. Sign in as the provider, open `/dashboard/provider`, and accept or decline the
+   request.
+6. Return to the customer dashboard and confirm the updated status appears.
 
 ## Verification commands
 

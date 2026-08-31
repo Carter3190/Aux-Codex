@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { BookingCard } from "@/components/marketplace/booking-card";
+import { getProviderBookings } from "@/lib/marketplace/data";
 import { getProviderWorkspace } from "@/lib/providers/data";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 
@@ -21,7 +23,7 @@ function statusCopy(status: string, submittedAt: string | null) {
     return {
       title: "Your provider profile is approved",
       description:
-        "Your account is ready for the marketplace. Search visibility and booking requests arrive in the next milestone.",
+        "Your profile is live in the marketplace. New customer booking requests appear below.",
       tone: "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark",
     };
   }
@@ -57,7 +59,10 @@ function statusCopy(status: string, submittedAt: string | null) {
 }
 
 export default async function ProviderDashboardPage() {
-  const workspace = await getProviderWorkspace();
+  const [workspace, bookings] = await Promise.all([
+    getProviderWorkspace(),
+    getProviderBookings(),
+  ]);
   const { profile, details, completion, reviewEvents } = workspace;
   const status = statusCopy(profile.providerStatus, details.submittedAt);
   const latestReview = reviewEvents[0];
@@ -157,6 +162,42 @@ export default async function ProviderDashboardPage() {
             );
           })}
         </div>
+      </section>
+
+      <section className="mt-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">
+              Customer requests
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold text-brand-dark">
+              {bookings.filter((booking) => booking.status === "pending").length} pending
+            </h2>
+          </div>
+          {profile.providerStatus === "approved" && (
+            <Link
+              href={`/providers/${profile.id}`}
+              className="text-sm font-semibold text-brand hover:text-brand-dark"
+            >
+              View public profile →
+            </Link>
+          )}
+        </div>
+
+        {bookings.length > 0 ? (
+          <div className="mt-6 grid gap-5 xl:grid-cols-2">
+            {bookings.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} perspective="provider" />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 rounded-3xl border border-dashed border-border bg-white p-8 text-center">
+            <h3 className="text-xl font-semibold text-brand-dark">No booking requests yet</h3>
+            <p className="mt-2 text-muted">
+              New customer requests will appear here as soon as they are sent.
+            </p>
+          </div>
+        )}
       </section>
     </DashboardShell>
   );

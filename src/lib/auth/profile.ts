@@ -64,6 +64,43 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
   };
 });
 
+export const getOptionalCurrentProfile = cache(
+  async (): Promise<CurrentProfile | null> => {
+    if (!isSupabaseConfigured()) {
+      return null;
+    }
+
+    const supabase = await createClient();
+    const { data: claimsData, error: claimsError } =
+      await supabase.auth.getClaims();
+    const claims = claimsData?.claims;
+
+    if (claimsError || !claims?.sub) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, role, provider_status, created_at")
+      .eq("id", claims.sub)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const profile = data as ProfileRow;
+    return {
+      id: profile.id,
+      email: typeof claims.email === "string" ? claims.email : "",
+      fullName: profile.full_name,
+      role: profile.role,
+      providerStatus: profile.provider_status,
+      createdAt: profile.created_at,
+    };
+  },
+);
+
 export function getRoleDashboardPath(role: UserRole) {
   return `/dashboard/${role}`;
 }

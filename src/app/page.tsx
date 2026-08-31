@@ -34,6 +34,12 @@ export default function Home() {
           </Link>
           <nav className="flex items-center gap-3" aria-label="Account navigation">
             <Link
+              href="/providers"
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-white sm:block"
+            >
+              Browse providers
+            </Link>
+            <Link
               href="/login"
               className="rounded-full px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-white"
             >
@@ -63,7 +69,7 @@ export default function Home() {
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/signup?role=customer"
+                href="/providers"
                 className="rounded-full bg-brand px-7 py-3.5 text-center font-semibold text-white shadow-[0_12px_30px_rgba(22,91,69,0.18)] transition hover:-translate-y-0.5 hover:bg-brand-dark"
               >
                 Find a professional

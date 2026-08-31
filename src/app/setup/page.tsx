@@ -22,7 +22,7 @@ export default function SetupPage() {
         </h1>
         <p className="mt-4 leading-7 text-muted">
           Add the project URL and publishable key to <code>.env.local</code>, then
-          run the profiles and provider-onboarding migrations in the Supabase SQL
+          run the profiles, provider-onboarding, and customer-marketplace migrations in the Supabase SQL
           Editor. Full instructions are included in the repository README.
         </p>
         <div className="mt-7 rounded-2xl bg-[#f4f7f4] p-5 font-mono text-sm leading-7 text-brand-dark">
@@ -35,7 +35,7 @@ export default function SetupPage() {
         </p>
         <p className="mt-3 text-sm leading-6 text-muted">
           If authentication is already working, you only need to run the newer
-          <code> 20260831000000_provider_onboarding.sql</code> migration.
+          <code> 20260901000000_customer_marketplace.sql</code> migration.
         </p>
         <Link
           href="/"

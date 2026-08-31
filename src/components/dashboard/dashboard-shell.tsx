@@ -20,10 +20,17 @@ export function DashboardShell({
       ? [
           ["Overview", "/dashboard/provider"],
           ["Profile setup", "/dashboard/provider/onboarding"],
+          ["Marketplace", "/providers"],
         ]
       : profile.role === "admin"
-        ? [["Review queue", "/dashboard/admin"]]
-        : [["Dashboard", "/dashboard/customer"]];
+        ? [
+            ["Review queue", "/dashboard/admin"],
+            ["Marketplace", "/providers"],
+          ]
+        : [
+            ["Dashboard", "/dashboard/customer"],
+            ["Browse providers", "/providers"],
+          ];
 
   return (
     <main className="min-h-screen bg-background">
