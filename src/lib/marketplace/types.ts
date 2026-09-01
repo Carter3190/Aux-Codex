@@ -76,6 +76,29 @@ export type BookingRequest = {
   createdAt: string;
 };
 
+export type BookingMessage = {
+  id: string;
+  bookingId: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+};
+
+export type ConversationSummary = {
+  booking: BookingRequest;
+  counterpartName: string;
+  lastMessage: BookingMessage | null;
+};
+
+export type BookingConversation = {
+  profile: CurrentProfile;
+  booking: BookingRequest;
+  messages: BookingMessage[];
+  perspective: "customer" | "provider";
+  counterpartName: string;
+  canSend: boolean;
+};
+
 export type MarketplaceActionState = {
   status?: "success" | "error";
   message?: string;

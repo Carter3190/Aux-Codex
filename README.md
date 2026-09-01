@@ -20,6 +20,7 @@ will run separately from the public Squarespace website at
 - Public search and approved-provider profile pages
 - Private customer booking requests with customer cancellation
 - Provider accept/decline controls and booking status tracking
+- Private booking-linked customer/provider conversations
 
 ## Local setup
 
@@ -50,15 +51,15 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 1. `supabase/migrations/20260826000000_create_profiles.sql`
 2. `supabase/migrations/20260831000000_provider_onboarding.sql`
 3. `supabase/migrations/20260901000000_customer_marketplace.sql`
+4. `supabase/migrations/20260901010000_booking_messages.sql`
 
-If authentication and provider onboarding are already installed, run only the
-third migration.
+If the customer marketplace is already installed, run only the fourth migration.
 
 The migrations create profile roles, automatic profile creation, the provider
 onboarding tables, storage buckets, public provider-search functions, private
-booking requests, server-side mutation functions, least-privilege grants, and
-Row Level Security policies. Credential documents are private; provider photos
-are public marketplace assets.
+booking requests, private booking conversations, server-side mutation functions,
+least-privilege grants, and Row Level Security policies. Credential documents
+are private; provider photos are public marketplace assets.
 
 ### 4. Configure authentication URLs
 
@@ -124,6 +125,19 @@ account being reviewed.
 5. Sign in as the provider, open `/dashboard/provider`, and accept or decline the
    request.
 6. Return to the customer dashboard and confirm the updated status appears.
+
+## Testing booking messages
+
+1. Open an existing booking from the customer dashboard and choose **Message
+   provider**.
+2. Send a short test message and confirm it appears on the right side of the
+   conversation.
+3. Sign in as the provider, open **Messages**, and open the same booking.
+4. Confirm the customer's message appears, then send a response.
+5. Return to the customer conversation and confirm the response appears. Threads
+   automatically check for new messages while the page is open.
+6. Cancel or decline a test booking and confirm its conversation becomes
+   read-only while preserving the history.
 
 ## Verification commands
 

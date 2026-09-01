@@ -1,11 +1,14 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
-import { requireRole } from "@/lib/auth/profile";
+import { getCurrentProfile, requireRole } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 import type {
   BookingRequest,
+  BookingConversation,
+  BookingMessage,
   BookingStatus,
+  ConversationSummary,
   MarketplaceProvider,
   MarketplaceProviderCard,
   MarketplaceService,
@@ -60,6 +63,14 @@ type BookingRow = {
   created_at: string;
 };
 
+type MessageRow = {
+  id: string;
+  booking_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+};
+
 function marketplaceMigrationMissing(code?: string) {
   return code === "42P01" || code === "42703" || code === "PGRST202";
 }
@@ -89,6 +100,16 @@ function mapBooking(row: BookingRow): BookingRequest {
     status: row.status,
     providerResponse: row.provider_response,
     respondedAt: row.responded_at,
+    createdAt: row.created_at,
+  };
+}
+
+function mapMessage(row: MessageRow): BookingMessage {
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    senderId: row.sender_id,
+    body: row.body,
     createdAt: row.created_at,
   };
 }
@@ -205,6 +226,130 @@ export async function getProviderBookings(): Promise<BookingRequest[]> {
   }
 
   return (data as BookingRow[]).map(mapBooking);
+}
+
+export async function getConversationInbox(): Promise<{
+  profile: Awaited<ReturnType<typeof getCurrentProfile>>;
+  conversations: ConversationSummary[];
+}> {
+  const profile = await getCurrentProfile();
+  if (profile.role === "admin") {
+    redirect("/dashboard/admin");
+  }
+
+  const supabase = await createClient();
+  const participantColumn =
+    profile.role === "customer" ? "customer_id" : "provider_id";
+  const bookingsResult = await supabase
+    .from("booking_requests")
+    .select(bookingColumns)
+    .eq(participantColumn, profile.id)
+    .order("created_at", { ascending: false });
+
+  if (bookingsResult.error) {
+    if (marketplaceMigrationMissing(bookingsResult.error.code)) {
+      redirect("/setup?reason=booking-messages");
+    }
+    throw new Error("Unable to load your conversations.");
+  }
+
+  const bookings = (bookingsResult.data as BookingRow[]).map(mapBooking);
+  if (bookings.length === 0) {
+    return { profile, conversations: [] };
+  }
+
+  const messagesResult = await supabase
+    .from("booking_messages")
+    .select("id, booking_id, sender_id, body, created_at")
+    .in(
+      "booking_id",
+      bookings.map((booking) => booking.id),
+    )
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (messagesResult.error) {
+    if (marketplaceMigrationMissing(messagesResult.error.code)) {
+      redirect("/setup?reason=booking-messages");
+    }
+    throw new Error("Unable to load your conversations.");
+  }
+
+  const lastMessageByBooking = new Map<string, BookingMessage>();
+  (messagesResult.data as MessageRow[]).forEach((row) => {
+    if (!lastMessageByBooking.has(row.booking_id)) {
+      lastMessageByBooking.set(row.booking_id, mapMessage(row));
+    }
+  });
+
+  const conversations = bookings.map((booking): ConversationSummary => ({
+    booking,
+    counterpartName:
+      profile.role === "customer"
+        ? booking.providerName
+        : booking.customerName,
+    lastMessage: lastMessageByBooking.get(booking.id) ?? null,
+  }));
+
+  conversations.sort((a, b) => {
+    const aDate = a.lastMessage?.createdAt ?? a.booking.createdAt;
+    const bDate = b.lastMessage?.createdAt ?? b.booking.createdAt;
+    return bDate.localeCompare(aDate);
+  });
+
+  return { profile, conversations };
+}
+
+export async function getBookingConversation(
+  bookingId: string,
+): Promise<BookingConversation | null> {
+  const profile = await getCurrentProfile();
+  if (profile.role === "admin") {
+    redirect("/dashboard/admin");
+  }
+
+  const supabase = await createClient();
+  const bookingResult = await supabase
+    .from("booking_requests")
+    .select(bookingColumns)
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (bookingResult.error) {
+    if (marketplaceMigrationMissing(bookingResult.error.code)) {
+      redirect("/setup?reason=booking-messages");
+    }
+    throw new Error("Unable to load this conversation.");
+  }
+  if (!bookingResult.data) return null;
+
+  const booking = mapBooking(bookingResult.data as BookingRow);
+  const isCustomer = booking.customerId === profile.id;
+  const isProvider = booking.providerId === profile.id;
+  if (!isCustomer && !isProvider) return null;
+
+  const messagesResult = await supabase
+    .from("booking_messages")
+    .select("id, booking_id, sender_id, body, created_at")
+    .eq("booking_id", booking.id)
+    .order("created_at")
+    .limit(500);
+
+  if (messagesResult.error) {
+    if (marketplaceMigrationMissing(messagesResult.error.code)) {
+      redirect("/setup?reason=booking-messages");
+    }
+    throw new Error("Unable to load this conversation.");
+  }
+
+  return {
+    profile,
+    booking,
+    messages: (messagesResult.data as MessageRow[]).map(mapMessage),
+    perspective: isCustomer ? "customer" : "provider",
+    counterpartName: isCustomer ? booking.providerName : booking.customerName,
+    canSend: booking.status === "pending" || booking.status === "accepted",
+  };
 }
 
 export async function requireMarketplaceActionRole(

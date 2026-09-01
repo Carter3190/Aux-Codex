@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
 import { requireMarketplaceActionRole } from "./data";
 import type { MarketplaceActionState } from "./types";
 
@@ -30,6 +31,15 @@ const responseSchema = z.object({
 
 const bookingIdSchema = z.uuid("Invalid booking request.");
 
+const messageSchema = z.object({
+  bookingId: z.uuid("Invalid conversation."),
+  body: z
+    .string()
+    .trim()
+    .min(1, "Write a message before sending.")
+    .max(2000, "Use 2,000 characters or fewer."),
+});
+
 function success(message: string): MarketplaceActionState {
   return { status: "success", message };
 }
@@ -56,6 +66,11 @@ function databaseMessage(message?: string) {
     "only pending requests",
     "already accepted another booking",
     "booking cannot be cancelled",
+    "only customers and providers",
+    "conversation not found",
+    "conversation is closed",
+    "messages must be between",
+    "too many messages",
   ];
   if (expected.some((part) => normalized.includes(part))) {
     return message ?? "Check the request and try again.";
@@ -156,5 +171,39 @@ export async function cancelBooking(
     return success("Booking request cancelled.");
   } catch (error) {
     return failure(error instanceof Error ? error.message : "Unable to cancel request.");
+  }
+}
+
+export async function sendBookingMessage(
+  _previousState: MarketplaceActionState,
+  formData: FormData,
+): Promise<MarketplaceActionState> {
+  const parsed = messageSchema.safeParse({
+    bookingId: formData.get("bookingId"),
+    body: formData.get("body"),
+  });
+  if (!parsed.success) {
+    return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: claimsData, error: claimsError } =
+      await supabase.auth.getClaims();
+    if (claimsError || !claimsData?.claims?.sub) {
+      return failure("You must be signed in to send a message.");
+    }
+
+    const { error } = await supabase.rpc("send_booking_message", {
+      requested_booking_id: parsed.data.bookingId,
+      message_body: parsed.data.body,
+    });
+    if (error) return failure(databaseMessage(error.message));
+
+    revalidatePath(`/dashboard/messages/${parsed.data.bookingId}`);
+    revalidatePath("/dashboard/messages");
+    return success("Message sent.");
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Unable to send message.");
   }
 }

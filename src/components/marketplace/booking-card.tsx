@@ -1,5 +1,6 @@
 import { BookingCancelForm } from "./booking-cancel-form";
 import { BookingResponseForm } from "./booking-response-form";
+import Link from "next/link";
 import type { BookingRequest } from "@/lib/marketplace/types";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
 
@@ -76,6 +77,15 @@ export function BookingCard({
           <p className="mt-2 whitespace-pre-wrap leading-7 text-foreground">{booking.providerResponse}</p>
         </div>
       )}
+
+      <Link
+        href={`/dashboard/messages/${booking.id}`}
+        className="mt-5 inline-flex rounded-full border border-brand/25 bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f1f7f3]"
+      >
+        {booking.status === "pending" || booking.status === "accepted"
+          ? `Message ${perspective === "customer" ? "provider" : "customer"}`
+          : "View conversation"}
+      </Link>
 
       {perspective === "provider" && booking.status === "pending" && (
         <BookingResponseForm bookingId={booking.id} />

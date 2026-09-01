@@ -19,6 +19,7 @@ export function DashboardShell({
     profile.role === "provider"
       ? [
           ["Overview", "/dashboard/provider"],
+          ["Messages", "/dashboard/messages"],
           ["Profile setup", "/dashboard/provider/onboarding"],
           ["Marketplace", "/providers"],
         ]
@@ -29,6 +30,7 @@ export function DashboardShell({
           ]
         : [
             ["Dashboard", "/dashboard/customer"],
+            ["Messages", "/dashboard/messages"],
             ["Browse providers", "/providers"],
           ];
 
