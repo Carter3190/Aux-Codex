@@ -16,6 +16,7 @@ import type {
   PublicCredential,
   PublicPhoto,
 } from "./types";
+import type { BookingPayment, PaymentStatus } from "@/lib/payments/types";
 import type { PricingType } from "@/lib/providers/types";
 
 type ProviderSearchRow = {
@@ -53,6 +54,8 @@ type BookingRow = {
   service_name: string;
   pricing_type: PricingType;
   price_cents: number | null;
+  agreed_price_cents: number | null;
+  price_set_at: string | null;
   requested_date: string;
   requested_start_time: string;
   service_location: string;
@@ -61,6 +64,18 @@ type BookingRow = {
   provider_response: string;
   responded_at: string | null;
   created_at: string;
+};
+
+type BookingPaymentRow = {
+  id: string;
+  booking_id: string;
+  amount_cents: number;
+  platform_fee_cents: number;
+  currency: "usd";
+  status: PaymentStatus;
+  checkout_expires_at: string | null;
+  paid_at: string | null;
+  refunded_at: string | null;
 };
 
 type MessageRow = {
@@ -83,7 +98,23 @@ function publicPhotoUrl(
     .publicUrl;
 }
 
-function mapBooking(row: BookingRow): BookingRequest {
+function mapPayment(row: BookingPaymentRow): BookingPayment {
+  return {
+    id: row.id,
+    amountCents: row.amount_cents,
+    platformFeeCents: row.platform_fee_cents,
+    currency: row.currency,
+    status: row.status,
+    checkoutExpiresAt: row.checkout_expires_at,
+    paidAt: row.paid_at,
+    refundedAt: row.refunded_at,
+  };
+}
+
+function mapBooking(
+  row: BookingRow,
+  payment: BookingPayment | null = null,
+): BookingRequest {
   return {
     id: row.id,
     customerId: row.customer_id,
@@ -93,6 +124,8 @@ function mapBooking(row: BookingRow): BookingRequest {
     serviceName: row.service_name,
     pricingType: row.pricing_type,
     priceCents: row.price_cents,
+    agreedPriceCents: row.agreed_price_cents,
+    priceSetAt: row.price_set_at,
     requestedDate: row.requested_date,
     requestedStartTime: row.requested_start_time.slice(0, 5),
     serviceLocation: row.service_location,
@@ -101,6 +134,7 @@ function mapBooking(row: BookingRow): BookingRequest {
     providerResponse: row.provider_response,
     respondedAt: row.responded_at,
     createdAt: row.created_at,
+    payment,
   };
 }
 
@@ -185,7 +219,40 @@ export async function getApprovedProvider(
 }
 
 const bookingColumns =
-  "id, customer_id, provider_id, customer_name, provider_name, service_name, pricing_type, price_cents, requested_date, requested_start_time, service_location, customer_notes, status, provider_response, responded_at, created_at";
+  "id, customer_id, provider_id, customer_name, provider_name, service_name, pricing_type, price_cents, agreed_price_cents, price_set_at, requested_date, requested_start_time, service_location, customer_notes, status, provider_response, responded_at, created_at";
+
+async function attachPayments(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rows: BookingRow[],
+) {
+  if (rows.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("booking_payments")
+    .select(
+      "id, booking_id, amount_cents, platform_fee_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
+    )
+    .in(
+      "booking_id",
+      rows.map((row) => row.id),
+    );
+
+  if (error) {
+    if (marketplaceMigrationMissing(error.code) || error.code === "PGRST205") {
+      redirect("/setup?reason=stripe-payments");
+    }
+    throw new Error("Unable to load booking payment status.");
+  }
+
+  const paymentByBooking = new Map(
+    ((data ?? []) as BookingPaymentRow[]).map((row) => [
+      row.booking_id,
+      mapPayment(row),
+    ]),
+  );
+
+  return rows.map((row) => mapBooking(row, paymentByBooking.get(row.id) ?? null));
+}
 
 export async function getCustomerBookings(): Promise<{
   customer: Awaited<ReturnType<typeof requireRole>>;
@@ -206,7 +273,7 @@ export async function getCustomerBookings(): Promise<{
     throw new Error("Unable to load your booking requests.");
   }
 
-  return { customer, bookings: (data as BookingRow[]).map(mapBooking) };
+  return { customer, bookings: await attachPayments(supabase, data as BookingRow[]) };
 }
 
 export async function getProviderBookings(): Promise<BookingRequest[]> {
@@ -225,7 +292,7 @@ export async function getProviderBookings(): Promise<BookingRequest[]> {
     throw new Error("Unable to load booking requests.");
   }
 
-  return (data as BookingRow[]).map(mapBooking);
+  return attachPayments(supabase, data as BookingRow[]);
 }
 
 export async function getConversationInbox(): Promise<{
@@ -253,7 +320,9 @@ export async function getConversationInbox(): Promise<{
     throw new Error("Unable to load your conversations.");
   }
 
-  const bookings = (bookingsResult.data as BookingRow[]).map(mapBooking);
+  const bookings = (bookingsResult.data as BookingRow[]).map((row) =>
+    mapBooking(row),
+  );
   if (bookings.length === 0) {
     return { profile, conversations: [] };
   }

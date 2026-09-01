@@ -4,7 +4,9 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { BookingCard } from "@/components/marketplace/booking-card";
 import { getProviderBookings } from "@/lib/marketplace/data";
 import { getProviderWorkspace } from "@/lib/providers/data";
+import { getProviderPaymentSetup } from "@/lib/payments/data";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
+import { ProviderStripeSetupCard } from "@/components/payments/provider-stripe-setup-card";
 
 export const metadata: Metadata = {
   title: "Provider dashboard",
@@ -64,6 +66,7 @@ export default async function ProviderDashboardPage() {
     getProviderBookings(),
   ]);
   const { profile, details, completion, reviewEvents } = workspace;
+  const paymentSetup = await getProviderPaymentSetup(profile.id);
   const status = statusCopy(profile.providerStatus, details.submittedAt);
   const latestReview = reviewEvents[0];
 
@@ -104,6 +107,10 @@ export default async function ProviderDashboardPage() {
           </p>
           <p className="mt-2 leading-7 text-foreground">{latestReview.notes}</p>
         </section>
+      )}
+
+      {profile.providerStatus === "approved" && (
+        <ProviderStripeSetupCard setup={paymentSetup} />
       )}
 
       <section className="mt-8 rounded-3xl border border-border bg-white p-6 sm:p-8">

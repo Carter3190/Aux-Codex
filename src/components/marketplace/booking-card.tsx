@@ -1,7 +1,10 @@
 import { BookingCancelForm } from "./booking-cancel-form";
 import { BookingResponseForm } from "./booking-response-form";
 import Link from "next/link";
+import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
+import { BookingPriceForm } from "@/components/payments/booking-price-form";
 import type { BookingRequest } from "@/lib/marketplace/types";
+import type { PaymentStatus } from "@/lib/payments/types";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
 
 const statusTone = {
@@ -10,6 +13,33 @@ const statusTone = {
   declined: "border-red-200 bg-red-50 text-red-800",
   cancelled: "border-border bg-[#f4f5f3] text-muted",
 } as const;
+
+const paymentTone: Record<PaymentStatus, string> = {
+  checkout_pending: "border-[#ead6ad] bg-[#fff8e9] text-[#76531c]",
+  processing: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
+  paid: "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark",
+  failed: "border-red-200 bg-red-50 text-red-800",
+  expired: "border-border bg-[#f4f5f3] text-muted",
+  partially_refunded: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
+  refunded: "border-border bg-[#f4f5f3] text-muted",
+};
+
+const paymentLabel: Record<PaymentStatus, string> = {
+  checkout_pending: "Checkout started",
+  processing: "Payment processing",
+  paid: "Paid",
+  failed: "Payment failed",
+  expired: "Checkout expired",
+  partially_refunded: "Partially refunded",
+  refunded: "Refunded",
+};
+
+function formatMoney(cents: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(cents / 100);
+}
 
 function formatBookingDate(date: string, time: string) {
   const value = new Date(`${date}T${time}:00`);
@@ -30,6 +60,24 @@ export function BookingCard({
   booking: BookingRequest;
   perspective: "customer" | "provider";
 }) {
+  const canCancel =
+    !booking.payment ||
+    booking.payment.status === "failed" ||
+    booking.payment.status === "expired";
+  const paymentFinal =
+    booking.payment?.status === "paid" ||
+    booking.payment?.status === "processing" ||
+    booking.payment?.status === "partially_refunded" ||
+    booking.payment?.status === "refunded";
+  const canSetPrice =
+    booking.status === "accepted" &&
+    (!booking.payment ||
+      booking.payment.status === "failed" ||
+      booking.payment.status === "expired");
+  const platformFeeCents = booking.agreedPriceCents
+    ? Math.max(1, Math.round(booking.agreedPriceCents * 0.05))
+    : null;
+
   return (
     <article className="rounded-3xl border border-border bg-white p-6 sm:p-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -43,6 +91,11 @@ export function BookingCard({
           <p className="mt-2 text-sm text-muted">
             {formatPrice(booking.pricingType, booking.priceCents)}
           </p>
+          {booking.agreedPriceCents !== null && (
+            <p className="mt-2 text-lg font-semibold text-brand-dark">
+              Final price: {formatMoney(booking.agreedPriceCents)}
+            </p>
+          )}
         </div>
         <span
           className={`w-fit rounded-full border px-3 py-1.5 text-xs font-bold ${statusTone[booking.status]}`}
@@ -78,6 +131,43 @@ export function BookingCard({
         </div>
       )}
 
+      {booking.status === "accepted" && (
+        <section className="mt-5 rounded-2xl border border-border bg-[#fbfcfa] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
+                Payment
+              </p>
+              <p className="mt-1 text-sm leading-6 text-foreground">
+                {booking.agreedPriceCents === null
+                  ? perspective === "provider"
+                    ? "Set the final price to unlock customer checkout."
+                    : "Waiting for the provider to confirm the final price."
+                  : perspective === "provider" && platformFeeCents !== null
+                    ? `You receive ${formatMoney(booking.agreedPriceCents - platformFeeCents)} after Auxilium’s 5% commission.`
+                    : `Secure total: ${formatMoney(booking.agreedPriceCents)}`}
+              </p>
+            </div>
+            {booking.payment && (
+              <span
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold ${paymentTone[booking.payment.status]}`}
+              >
+                {paymentLabel[booking.payment.status]}
+              </span>
+            )}
+          </div>
+
+          {perspective === "customer" &&
+            booking.agreedPriceCents !== null &&
+            !paymentFinal && (
+              <BookingCheckoutForm
+                bookingId={booking.id}
+                paymentStatus={booking.payment?.status ?? null}
+              />
+            )}
+        </section>
+      )}
+
       <Link
         href={`/dashboard/messages/${booking.id}`}
         className="mt-5 inline-flex rounded-full border border-brand/25 bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f1f7f3]"
@@ -90,8 +180,15 @@ export function BookingCard({
       {perspective === "provider" && booking.status === "pending" && (
         <BookingResponseForm bookingId={booking.id} />
       )}
+      {perspective === "provider" && canSetPrice && (
+        <BookingPriceForm
+          bookingId={booking.id}
+          defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents}
+        />
+      )}
       {perspective === "customer" &&
-        (booking.status === "pending" || booking.status === "accepted") && (
+        (booking.status === "pending" || booking.status === "accepted") &&
+        canCancel && (
           <BookingCancelForm bookingId={booking.id} />
         )}
     </article>

@@ -21,6 +21,10 @@ will run separately from the public Squarespace website at
 - Private customer booking requests with customer cancellation
 - Provider accept/decline controls and booking status tracking
 - Private booking-linked customer/provider conversations
+- Provider Stripe Connect onboarding with hosted identity and bank verification
+- Provider-confirmed final booking prices
+- Stripe-hosted customer Checkout with a 5% Auxilium application fee
+- Signed, idempotent webhook reconciliation for payment status
 
 ## Local setup
 
@@ -52,8 +56,9 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 2. `supabase/migrations/20260831000000_provider_onboarding.sql`
 3. `supabase/migrations/20260901000000_customer_marketplace.sql`
 4. `supabase/migrations/20260901010000_booking_messages.sql`
+5. `supabase/migrations/20260901020000_stripe_connect_payments.sql`
 
-If the customer marketplace is already installed, run only the fourth migration.
+If booking messages are already installed, run only the fifth migration.
 
 The migrations create profile roles, automatic profile creation, the provider
 onboarding tables, storage buckets, public provider-search functions, private
@@ -61,7 +66,54 @@ booking requests, private booking conversations, server-side mutation functions,
 least-privilege grants, and Row Level Security policies. Credential documents
 are private; provider photos are public marketplace assets.
 
-### 4. Configure authentication URLs
+### 4. Connect Stripe test mode
+
+The payment integration uses Stripe Connect destination charges. Stripe collects
+provider identity and bank information; Auxilium stores only the connected
+account ID and non-sensitive status flags.
+
+1. In **Supabase → Project Settings → API Keys**, create or copy a server-only
+   secret key beginning with `sb_secret_`.
+2. In the Stripe Dashboard, activate **Connect** for the platform and use **test
+   mode** while developing.
+3. In **Stripe → Developers → API keys**, copy the test secret key beginning with
+   `sk_test_`.
+4. Add these server-only values to `.env.local`:
+
+```bash
+SUPABASE_SECRET_KEY=sb_secret_your_server_key
+STRIPE_SECRET_KEY=sk_test_your_stripe_key
+APP_URL=http://localhost:3000
+```
+
+Never prefix either secret with `NEXT_PUBLIC_`, commit it, paste it into an issue,
+or expose it in browser code.
+
+For local webhook testing, install the Stripe CLI, sign in, and run:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Copy the `whsec_...` value printed by the listener into `.env.local`:
+
+```bash
+STRIPE_WEBHOOK_SECRET=whsec_your_local_listener_secret
+```
+
+Restart `npm run dev` after changing environment variables. For production,
+create a Stripe webhook endpoint at
+`https://app.theauxillium.com/api/stripe/webhook` and subscribe it to:
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed`
+- `checkout.session.expired`
+
+Use that endpoint's own signing secret in Vercel. Local and production webhook
+secrets are different.
+
+### 5. Configure authentication URLs
 
 In **Authentication → URL Configuration** set:
 
@@ -71,7 +123,7 @@ In **Authentication → URL Configuration** set:
 Before production, add `https://app.theauxillium.com/**` and change the Site URL
 to `https://app.theauxillium.com`.
 
-### 5. Configure the confirmation email
+### 6. Configure the confirmation email
 
 In **Authentication → Email Templates → Confirm signup**, make the confirmation
 button link to:
@@ -83,7 +135,7 @@ button link to:
 This allows the server to verify the email token and establish the user's secure
 cookie session.
 
-### 6. Run the application
+### 7. Run the application
 
 ```bash
 npm run dev
@@ -138,6 +190,24 @@ account being reviewed.
    automatically check for new messages while the page is open.
 6. Cancel or decline a test booking and confirm its conversation becomes
    read-only while preserving the history.
+
+## Testing Stripe payments
+
+1. Sign in as an approved provider and select **Connect with Stripe** on the
+   provider dashboard.
+2. Complete Stripe's test onboarding and return to Auxilium. The provider
+   dashboard must show **Stripe payouts are connected**.
+3. Open an accepted booking, enter the full final price, and save it.
+4. Sign in as that booking's customer and select **Pay securely with Stripe**.
+5. Complete Checkout with Stripe's test card `4242 4242 4242 4242`, any future
+   expiry, any three-digit CVC, and any postal code.
+6. Confirm the customer and provider dashboards both show **Paid**. In Stripe,
+   verify the destination charge transferred 95% to the connected account and
+   created a 5% application fee for Auxilium.
+
+Auxilium's 5% is the gross platform commission. With destination charges, Stripe
+deducts its payment-processing fee from the platform balance, so net platform
+revenue is lower than 5%.
 
 ## Verification commands
 

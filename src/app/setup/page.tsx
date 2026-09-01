@@ -6,8 +6,14 @@ export const metadata: Metadata = {
   title: "Project setup",
 };
 
-export default function SetupPage() {
+export default async function SetupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const query = await searchParams;
   const configured = isSupabaseConfigured();
+  const paymentsReason = query.reason === "stripe-payments";
 
   return (
     <main className="min-h-screen bg-background px-6 py-16">
@@ -16,23 +22,40 @@ export default function SetupPage() {
           Developer setup
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-brand-dark">
-          {configured
-            ? "Supabase credentials are connected."
-            : "Connect the Supabase project to continue."}
+          {paymentsReason
+            ? "Connect the secure payment services."
+            : configured
+              ? "Supabase credentials are connected."
+              : "Connect the Supabase project to continue."}
         </h1>
         <p className="mt-4 leading-7 text-muted">
-          Add the project URL and publishable key to <code>.env.local</code>, then
-          run the profiles, provider-onboarding, customer-marketplace, and booking-messages migrations in the Supabase SQL
-          Editor. Full instructions are included in the repository README.
+          {paymentsReason
+            ? "Add the server-only keys below to .env.local, then run the Stripe payments migration in the Supabase SQL Editor. Full instructions are included in the repository README."
+            : "Add the project URL and publishable key to .env.local, then run the profiles, provider-onboarding, customer-marketplace, and booking-messages migrations in the Supabase SQL Editor. Full instructions are included in the repository README."}
         </p>
         <div className="mt-7 rounded-2xl bg-[#f4f7f4] p-5 font-mono text-sm leading-7 text-brand-dark">
           <p>NEXT_PUBLIC_SUPABASE_URL=</p>
           <p>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=</p>
+          {paymentsReason && (
+            <>
+              <p>SUPABASE_SECRET_KEY=</p>
+              <p>STRIPE_SECRET_KEY=</p>
+              <p>STRIPE_WEBHOOK_SECRET=</p>
+              <p>APP_URL=http://localhost:3000</p>
+            </>
+          )}
         </div>
         <p className="mt-5 text-sm leading-6 text-muted">
           Never place a Supabase secret key or service-role key in a variable that
           begins with <code>NEXT_PUBLIC_</code>.
         </p>
+        {paymentsReason && (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Install <code>20260901020000_stripe_connect_payments.sql</code>. Keep
+            every value above private except the two existing <code>NEXT_PUBLIC_</code>
+            Supabase values.
+          </p>
+        )}
         <p className="mt-3 text-sm leading-6 text-muted">
           If authentication is already working, you only need to run the newer
           <code> 20260901010000_booking_messages.sql</code> migration.

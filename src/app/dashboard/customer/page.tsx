@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   title: "Customer dashboard",
 };
 
-export default async function CustomerDashboardPage() {
+export default async function CustomerDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payment?: string }>;
+}) {
+  const query = await searchParams;
   const { customer: profile, bookings } = await getCustomerBookings();
   const activeCount = bookings.filter(
     (booking) => booking.status === "pending" || booking.status === "accepted",
@@ -20,6 +25,24 @@ export default async function CustomerDashboardPage() {
       eyebrow="Customer dashboard"
       title={`Welcome, ${profile.fullName.split(" ")[0]}.`}
     >
+      {query.payment === "success" && (
+        <section className="mb-8 rounded-2xl border border-[#b9d8c9] bg-[#eef8f2] p-5 text-brand-dark">
+          <p className="font-semibold">Stripe checkout completed.</p>
+          <p className="mt-1 text-sm leading-6 opacity-80">
+            The signed Stripe confirmation is being reconciled. Your booking’s
+            payment badge below will show Paid as soon as that finishes.
+          </p>
+        </section>
+      )}
+      {query.payment === "cancelled" && (
+        <section className="mb-8 rounded-2xl border border-[#ead6ad] bg-[#fff8e9] p-5 text-[#76531c]">
+          <p className="font-semibold">Checkout was not completed.</p>
+          <p className="mt-1 text-sm leading-6">
+            No new payment was confirmed. You can continue secure checkout from
+            the booking below.
+          </p>
+        </section>
+      )}
       <section className="rounded-3xl border border-border bg-white p-6 sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
