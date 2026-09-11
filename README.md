@@ -21,7 +21,7 @@ will run separately from the public Squarespace website at
 - Private customer booking requests with customer cancellation
 - Provider accept/decline controls and booking status tracking
 - Private booking-linked customer/provider conversations
-- Provider Stripe Connect onboarding with hosted identity and bank verification
+- Provider Stripe Connect Accounts v2 onboarding with hosted identity and bank verification
 - Provider-confirmed final booking prices
 - Stripe-hosted customer Checkout with a 5% Auxilium application fee
 - Signed, idempotent webhook reconciliation for payment status
@@ -68,14 +68,14 @@ are private; provider photos are public marketplace assets.
 
 ### 4. Connect Stripe test mode
 
-The payment integration uses Stripe Connect destination charges. Stripe collects
-provider identity and bank information; Auxilium stores only the connected
-account ID and non-sensitive status flags.
+The payment integration uses Stripe Connect Accounts v2 recipient accounts and
+destination charges. Stripe collects provider identity and bank information;
+Auxilium stores only the connected account ID and non-sensitive status flags.
 
 1. In **Supabase → Project Settings → API Keys**, create or copy a server-only
    secret key beginning with `sb_secret_`.
-2. In the Stripe Dashboard, activate **Connect** for the platform and use **test
-   mode** while developing.
+2. In the Stripe Dashboard, activate **Connect** for the platform, choose **You
+   collect payments and pay recipients**, and use **test mode** while developing.
 3. In **Stripe → Developers → API keys**, copy the test secret key beginning with
    `sk_test_`.
 4. Add these server-only values to `.env.local`:

@@ -16,12 +16,14 @@ type PaymentAccountRow = {
   requirements_due_count: number;
 };
 
-function transfersAreActive(account: Stripe.Account) {
-  return account.capabilities?.transfers === "active";
+function recipientBalanceCapabilities(account: Stripe.V2.Core.Account) {
+  return account.configuration?.recipient?.capabilities?.stripe_balance;
 }
 
-function requirementsDueCount(account: Stripe.Account) {
-  return account.requirements?.currently_due?.length ?? 0;
+function requirementsDueCount(account: Stripe.V2.Core.Account) {
+  return (account.requirements?.entries ?? []).filter(
+    (entry) => entry.awaiting_action_from === "user",
+  ).length;
 }
 
 export async function syncProviderPaymentAccount(
@@ -29,16 +31,20 @@ export async function syncProviderPaymentAccount(
   stripeAccountId: string,
 ) {
   const stripe = getStripe();
-  const account = await stripe.accounts.retrieve(stripeAccountId);
-  if (account.deleted) {
+  const account = await stripe.v2.core.accounts.retrieve(stripeAccountId, {
+    include: ["configuration.recipient", "requirements"],
+  });
+  if (account.closed) {
     throw new Error("The provider's Stripe account is no longer available.");
   }
 
   const admin = createAdminClient();
-  const detailsSubmitted = account.details_submitted;
-  const payoutsEnabled = account.payouts_enabled;
-  const transfersActive = transfersAreActive(account);
   const dueCount = requirementsDueCount(account);
+  const balanceCapabilities = recipientBalanceCapabilities(account);
+  const detailsSubmitted = dueCount === 0;
+  const payoutsEnabled = balanceCapabilities?.payouts?.status === "active";
+  const transfersActive =
+    balanceCapabilities?.stripe_transfers?.status === "active";
   const { error } = await admin
     .from("provider_payment_accounts")
     .update({

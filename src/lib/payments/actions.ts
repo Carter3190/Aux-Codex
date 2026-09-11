@@ -171,34 +171,48 @@ export async function startStripeOnboarding(
       ?.stripe_account_id;
 
     if (!stripeAccountId) {
-      const account = await stripe.accounts.create(
+      const account = await stripe.v2.core.accounts.create(
         {
-          country: "US",
-          email:
+          contact_email:
             typeof claimsResult.data?.claims?.email === "string"
               ? claimsResult.data.claims.email
               : undefined,
-          business_profile: {
-            name:
-              detailsResult.data?.business_name ||
-              profileResult.data.full_name,
-            product_description:
-              "Local services booked through the Auxilium marketplace.",
+          display_name:
+            detailsResult.data?.business_name || profileResult.data.full_name,
+          dashboard: "express",
+          identity: {
+            country: "us",
           },
-          capabilities: {
-            transfers: { requested: true },
+          defaults: {
+            currency: "usd",
+            locales: ["en-US"],
+            profile: {
+              doing_business_as:
+                detailsResult.data?.business_name ||
+                profileResult.data.full_name,
+              product_description:
+                "Local services booked through the Auxilium marketplace.",
+            },
+            responsibilities: {
+              fees_collector: "application",
+              losses_collector: "application",
+            },
           },
-          controller: {
-            fees: { payer: "application" },
-            losses: { payments: "application" },
-            requirement_collection: "stripe",
-            stripe_dashboard: { type: "express" },
+          configuration: {
+            recipient: {
+              capabilities: {
+                stripe_balance: {
+                  stripe_transfers: { requested: true },
+                },
+              },
+            },
           },
+          include: ["configuration.recipient", "identity", "requirements"],
           metadata: {
             auxilium_provider_id: userId,
           },
         },
-        { idempotencyKey: `auxilium_provider_${userId}` },
+        { idempotencyKey: `auxilium_provider_v2_${userId}` },
       );
       stripeAccountId = account.id;
 
@@ -212,15 +226,35 @@ export async function startStripeOnboarding(
 
     await syncProviderPaymentAccount(userId, stripeAccountId);
     const appUrl = getAppUrl();
-    const link = await stripe.accountLinks.create({
+    const link = await stripe.v2.core.accountLinks.create({
       account: stripeAccountId,
-      refresh_url: `${appUrl}/dashboard/provider?stripe=refresh`,
-      return_url: `${appUrl}/dashboard/provider?stripe=return`,
-      type: "account_onboarding",
-      collection_options: { fields: "currently_due" },
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: `${appUrl}/dashboard/provider?stripe=refresh`,
+          return_url: `${appUrl}/dashboard/provider?stripe=return`,
+          collection_options: { fields: "eventually_due" },
+        },
+      },
     });
     onboardingUrl = link.url;
-  } catch {
+  } catch (error) {
+    const stripeError = error as {
+      code?: unknown;
+      requestId?: unknown;
+      type?: unknown;
+    };
+    console.error("Stripe provider onboarding failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "Unknown Stripe error",
+      code: typeof stripeError?.code === "string" ? stripeError.code : undefined,
+      requestId:
+        typeof stripeError?.requestId === "string"
+          ? stripeError.requestId
+          : undefined,
+      type: typeof stripeError?.type === "string" ? stripeError.type : undefined,
+    });
     return failure(
       "Stripe could not start payout setup. Confirm the server keys and Connect settings, then try again.",
     );
