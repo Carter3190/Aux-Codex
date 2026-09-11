@@ -20,6 +20,8 @@ export type MarketplaceProviderCard = {
   travelRadiusMiles: number | null;
   primaryPhotoUrl: string | null;
   services: MarketplaceService[];
+  averageRating: number | null;
+  reviewCount: number;
 };
 
 export type PublicAvailability = {
@@ -42,6 +44,15 @@ export type PublicCredential = {
   expiresOn: string | null;
 };
 
+export type VerifiedReview = {
+  id: string;
+  rating: number;
+  body: string;
+  reviewerName: string;
+  serviceName: string;
+  createdAt: string;
+};
+
 export type MarketplaceProvider = {
   providerId: string;
   displayName: string;
@@ -54,9 +65,17 @@ export type MarketplaceProvider = {
   availability: PublicAvailability[];
   photos: PublicPhoto[];
   credentials: PublicCredential[];
+  averageRating: number | null;
+  reviewCount: number;
+  reviews: VerifiedReview[];
 };
 
-export type BookingStatus = "pending" | "accepted" | "declined" | "cancelled";
+export type BookingStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "cancelled"
+  | "completed";
 
 export type BookingRequest = {
   id: string;
@@ -76,8 +95,10 @@ export type BookingRequest = {
   status: BookingStatus;
   providerResponse: string;
   respondedAt: string | null;
+  completedAt: string | null;
   createdAt: string;
   payment: BookingPayment | null;
+  review: VerifiedReview | null;
 };
 
 export type BookingMessage = {

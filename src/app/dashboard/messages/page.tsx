@@ -13,6 +13,7 @@ const statusTone = {
   accepted: "bg-[#eef8f2] text-brand-dark",
   declined: "bg-red-50 text-red-800",
   cancelled: "bg-[#f1f2f0] text-muted",
+  completed: "bg-[#f1f6fb] text-[#244f78]",
 } as const;
 
 function formatActivityDate(value: string) {

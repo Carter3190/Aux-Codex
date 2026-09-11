@@ -25,6 +25,9 @@ will run separately from the public Squarespace website at
 - Provider-confirmed final booking prices
 - Stripe-hosted customer Checkout with a 5% Auxilium application fee
 - Signed, idempotent webhook reconciliation for payment status
+- Provider-confirmed service completion for successfully paid bookings
+- One immutable verified customer review per completed booking
+- Public provider rating summaries and review history
 
 ## Local setup
 
@@ -57,14 +60,16 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 3. `supabase/migrations/20260901000000_customer_marketplace.sql`
 4. `supabase/migrations/20260901010000_booking_messages.sql`
 5. `supabase/migrations/20260901020000_stripe_connect_payments.sql`
+6. `supabase/migrations/20260910000000_booking_completion_reviews.sql`
 
-If booking messages are already installed, run only the fifth migration.
+If Stripe payments are already installed, run only the sixth migration.
 
 The migrations create profile roles, automatic profile creation, the provider
 onboarding tables, storage buckets, public provider-search functions, private
 booking requests, private booking conversations, server-side mutation functions,
-least-privilege grants, and Row Level Security policies. Credential documents
-are private; provider photos are public marketplace assets.
+paid-booking completion, verified customer reviews, least-privilege grants, and
+Row Level Security policies. Credential documents are private; provider photos
+and privacy-limited verified reviews are public marketplace content.
 
 ### 4. Connect Stripe test mode
 
@@ -208,6 +213,19 @@ account being reviewed.
 Auxilium's 5% is the gross platform commission. With destination charges, Stripe
 deducts its payment-processing fee from the platform balance, so net platform
 revenue is lower than 5%.
+
+## Testing completed bookings and reviews
+
+1. Complete the Stripe payment test above with a service date that is today or
+   earlier.
+2. Sign in as the provider and select **Mark service complete** on the paid
+   booking.
+3. Sign in as that booking's customer and publish a 1–5 star review with at
+   least 10 characters.
+4. Confirm the review is labeled **Verified booking** on the provider's public
+   profile and the aggregate rating appears in provider search.
+5. Confirm a second review cannot be submitted for the same booking. Completed
+   booking conversations remain open for 30 days for follow-up.
 
 ## Verification commands
 

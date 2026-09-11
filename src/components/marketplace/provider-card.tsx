@@ -37,6 +37,13 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
           </div>
           <p className="mt-2 font-medium text-foreground">{provider.headline}</p>
           <p className="mt-3 text-sm text-muted">Serving {provider.serviceArea}</p>
+          {provider.reviewCount > 0 && provider.averageRating !== null && (
+            <p className="mt-3 text-sm font-semibold text-brand-dark">
+              <span className="text-[#d98f1f]" aria-hidden="true">★</span>{" "}
+              {provider.averageRating.toFixed(1)} · {provider.reviewCount}{" "}
+              {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
+            </p>
+          )}
           <p className="mt-4 line-clamp-3 leading-7 text-muted">
             {provider.bioPreview}
           </p>

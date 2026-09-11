@@ -18,6 +18,14 @@ function tomorrowDate() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function formatReviewDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
 export default async function ProviderProfilePage({
   params,
 }: {
@@ -67,6 +75,13 @@ export default async function ProviderProfilePage({
                 {provider.displayName}
               </h1>
               <p className="mt-3 text-xl font-medium text-foreground">{provider.headline}</p>
+              {provider.reviewCount > 0 && provider.averageRating !== null && (
+                <p className="mt-3 font-semibold text-brand-dark">
+                  <span className="text-[#d98f1f]" aria-hidden="true">★</span>{" "}
+                  {provider.averageRating.toFixed(1)} from {provider.reviewCount}{" "}
+                  {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
+                </p>
+              )}
               <p className="mt-4 text-muted">
                 Serving {provider.serviceArea}
                 {provider.travelRadiusMiles !== null && ` · Travels up to ${provider.travelRadiusMiles} miles`}
@@ -82,6 +97,57 @@ export default async function ProviderProfilePage({
           <section className="rounded-3xl border border-border bg-white p-7 sm:p-8">
             <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">About</p>
             <p className="mt-4 whitespace-pre-wrap text-lg leading-8 text-muted">{provider.bio}</p>
+          </section>
+
+          <section className="rounded-3xl border border-border bg-white p-7 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">
+                  Customer reviews
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
+                  Verified Auxilium bookings
+                </h2>
+              </div>
+              {provider.reviewCount > 0 && provider.averageRating !== null && (
+                <p className="font-semibold text-brand-dark">
+                  <span className="text-[#d98f1f]" aria-hidden="true">★</span>{" "}
+                  {provider.averageRating.toFixed(1)} · {provider.reviewCount}
+                </p>
+              )}
+            </div>
+            {provider.reviews.length > 0 ? (
+              <div className="mt-6 divide-y divide-border">
+                {provider.reviews.map((review) => (
+                  <article key={review.id} className="py-6 first:pt-0 last:pb-0">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="tracking-[0.08em] text-[#d98f1f]" aria-label={`${review.rating} out of 5 stars`}>
+                          {"★".repeat(review.rating)}
+                          <span className="text-[#d9ddd9]">{"★".repeat(5 - review.rating)}</span>
+                        </p>
+                        <p className="mt-2 font-semibold text-brand-dark">
+                          {review.reviewerName}
+                        </p>
+                      </div>
+                      <span className="text-sm text-muted">
+                        {formatReviewDate(review.createdAt)}
+                      </span>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap leading-7 text-foreground">
+                      {review.body}
+                    </p>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-brand">
+                      ✓ Verified booking · {review.serviceName}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 leading-7 text-muted">
+                This provider has not received a verified customer review yet.
+              </p>
+            )}
           </section>
 
           <section className="rounded-3xl border border-border bg-white p-7 sm:p-8">

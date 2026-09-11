@@ -1,4 +1,6 @@
 import { BookingCancelForm } from "./booking-cancel-form";
+import { BookingCompletionForm } from "./booking-completion-form";
+import { BookingReviewForm } from "./booking-review-form";
 import { BookingResponseForm } from "./booking-response-form";
 import Link from "next/link";
 import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
@@ -12,6 +14,7 @@ const statusTone = {
   accepted: "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark",
   declined: "border-red-200 bg-red-50 text-red-800",
   cancelled: "border-border bg-[#f4f5f3] text-muted",
+  completed: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
 } as const;
 
 const paymentTone: Record<PaymentStatus, string> = {
@@ -53,6 +56,14 @@ function formatBookingDate(date: string, time: string) {
   }).format(value);
 }
 
+function formatReviewDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
 export function BookingCard({
   booking,
   perspective,
@@ -74,6 +85,13 @@ export function BookingCard({
     (!booking.payment ||
       booking.payment.status === "failed" ||
       booking.payment.status === "expired");
+  const paymentSupportsCompletion =
+    booking.payment?.status === "paid" ||
+    booking.payment?.status === "partially_refunded";
+  const canMessage =
+    booking.status === "pending" ||
+    booking.status === "accepted" ||
+    booking.status === "completed";
   const platformFeeCents = booking.agreedPriceCents
     ? Math.max(1, Math.round(booking.agreedPriceCents * 0.05))
     : null;
@@ -131,7 +149,7 @@ export function BookingCard({
         </div>
       )}
 
-      {booking.status === "accepted" && (
+      {(booking.status === "accepted" || booking.status === "completed") && (
         <section className="mt-5 rounded-2xl border border-border bg-[#fbfcfa] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -172,7 +190,7 @@ export function BookingCard({
         href={`/dashboard/messages/${booking.id}`}
         className="mt-5 inline-flex rounded-full border border-brand/25 bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f1f7f3]"
       >
-        {booking.status === "pending" || booking.status === "accepted"
+        {canMessage
           ? `Message ${perspective === "customer" ? "provider" : "customer"}`
           : "View conversation"}
       </Link>
@@ -186,6 +204,36 @@ export function BookingCard({
           defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents}
         />
       )}
+      {perspective === "provider" &&
+        booking.status === "accepted" &&
+        paymentSupportsCompletion && (
+          <BookingCompletionForm bookingId={booking.id} />
+        )}
+      {booking.review && (
+        <section className="mt-5 rounded-2xl border border-[#d7dfd9] bg-white p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand">
+                {perspective === "customer" ? "Your verified review" : "Verified customer review"}
+              </p>
+              <p className="mt-2 text-lg tracking-[0.08em] text-[#d98f1f]" aria-label={`${booking.review.rating} out of 5 stars`}>
+                {"★".repeat(booking.review.rating)}
+                <span className="text-[#d9ddd9]">{"★".repeat(5 - booking.review.rating)}</span>
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-muted">
+              {formatReviewDate(booking.review.createdAt)}
+            </span>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap leading-7 text-foreground">
+            {booking.review.body}
+          </p>
+        </section>
+      )}
+      {perspective === "customer" &&
+        booking.status === "completed" &&
+        paymentSupportsCompletion &&
+        !booking.review && <BookingReviewForm bookingId={booking.id} />}
       {perspective === "customer" &&
         (booking.status === "pending" || booking.status === "accepted") &&
         canCancel && (

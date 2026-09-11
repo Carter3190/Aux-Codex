@@ -14,6 +14,7 @@ export default async function SetupPage({
   const query = await searchParams;
   const configured = isSupabaseConfigured();
   const paymentsReason = query.reason === "stripe-payments";
+  const reviewsReason = query.reason === "booking-reviews";
 
   return (
     <main className="min-h-screen bg-background px-6 py-16">
@@ -22,14 +23,18 @@ export default async function SetupPage({
           Developer setup
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-brand-dark">
-          {paymentsReason
+          {reviewsReason
+            ? "Install completed bookings and verified reviews."
+            : paymentsReason
             ? "Connect the secure payment services."
             : configured
               ? "Supabase credentials are connected."
               : "Connect the Supabase project to continue."}
         </h1>
         <p className="mt-4 leading-7 text-muted">
-          {paymentsReason
+          {reviewsReason
+            ? "Run the verified-reviews migration in the Supabase SQL Editor, then return to the dashboard. The migration adds the completed booking state, secure review rules, and public provider ratings."
+            : paymentsReason
             ? "Add the server-only keys below to .env.local, then run the Stripe payments migration in the Supabase SQL Editor. Full instructions are included in the repository README."
             : "Add the project URL and publishable key to .env.local, then run the profiles, provider-onboarding, customer-marketplace, and booking-messages migrations in the Supabase SQL Editor. Full instructions are included in the repository README."}
         </p>
@@ -56,10 +61,17 @@ export default async function SetupPage({
             Supabase values.
           </p>
         )}
-        <p className="mt-3 text-sm leading-6 text-muted">
-          If authentication is already working, you only need to run the newer
-          <code> 20260901010000_booking_messages.sql</code> migration.
-        </p>
+        {reviewsReason ? (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Install <code>20260910000000_booking_completion_reviews.sql</code>.
+            This migration does not alter or remove existing bookings or payments.
+          </p>
+        ) : (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Install every migration in the <code>supabase/migrations</code> folder
+            in filename order.
+          </p>
+        )}
         <Link
           href="/"
           className="mt-7 inline-flex rounded-full bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark"

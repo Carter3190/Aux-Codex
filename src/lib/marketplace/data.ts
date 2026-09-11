@@ -15,6 +15,7 @@ import type {
   PublicAvailability,
   PublicCredential,
   PublicPhoto,
+  VerifiedReview,
 } from "./types";
 import type { BookingPayment, PaymentStatus } from "@/lib/payments/types";
 import type { PricingType } from "@/lib/providers/types";
@@ -63,6 +64,7 @@ type BookingRow = {
   status: BookingStatus;
   provider_response: string;
   responded_at: string | null;
+  completed_at: string | null;
   created_at: string;
 };
 
@@ -86,6 +88,34 @@ type MessageRow = {
   created_at: string;
 };
 
+type BookingReviewRow = {
+  id: string;
+  booking_id: string;
+  rating: number;
+  body: string;
+  created_at: string;
+};
+
+type PublicReviewRow = {
+  review_id: string;
+  rating: number;
+  review_body: string;
+  reviewer_name: string;
+  service_name: string;
+  created_at: string;
+};
+
+type ReviewSummaryRow = {
+  provider_id: string;
+  average_rating: number | null;
+  review_count: number | string;
+};
+
+type ReviewSummary = {
+  averageRating: number | null;
+  reviewCount: number;
+};
+
 function marketplaceMigrationMissing(code?: string) {
   return code === "42P01" || code === "42703" || code === "PGRST202";
 }
@@ -96,6 +126,50 @@ function publicPhotoUrl(
 ) {
   return supabase.storage.from("provider-photos").getPublicUrl(path).data
     .publicUrl;
+}
+
+async function getProviderReviewSummaries(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  providerIds: string[],
+) {
+  if (providerIds.length === 0) return new Map<string, ReviewSummary>();
+
+  const { data, error } = await supabase.rpc("get_provider_review_summary", {
+    requested_provider_ids: providerIds,
+  });
+  if (error) {
+    if (marketplaceMigrationMissing(error.code) || error.code === "PGRST202") {
+      redirect("/setup?reason=booking-reviews");
+    }
+    throw new Error("Unable to load provider ratings.");
+  }
+
+  return new Map(
+    ((data ?? []) as ReviewSummaryRow[]).map((row) => [
+      row.provider_id,
+      {
+        averageRating: row.average_rating,
+        reviewCount: Number(row.review_count),
+      },
+    ]),
+  );
+}
+
+async function getPublicProviderReviews(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  providerId: string,
+) {
+  const { data, error } = await supabase.rpc("get_provider_reviews", {
+    requested_provider_id: providerId,
+  });
+  if (error) {
+    if (marketplaceMigrationMissing(error.code) || error.code === "PGRST202") {
+      redirect("/setup?reason=booking-reviews");
+    }
+    throw new Error("Unable to load provider reviews.");
+  }
+
+  return ((data ?? []) as PublicReviewRow[]).map(mapPublicReview);
 }
 
 function mapPayment(row: BookingPaymentRow): BookingPayment {
@@ -114,6 +188,7 @@ function mapPayment(row: BookingPaymentRow): BookingPayment {
 function mapBooking(
   row: BookingRow,
   payment: BookingPayment | null = null,
+  review: VerifiedReview | null = null,
 ): BookingRequest {
   return {
     id: row.id,
@@ -133,8 +208,35 @@ function mapBooking(
     status: row.status,
     providerResponse: row.provider_response,
     respondedAt: row.responded_at,
+    completedAt: row.completed_at,
     createdAt: row.created_at,
     payment,
+    review,
+  };
+}
+
+function mapPublicReview(row: PublicReviewRow): VerifiedReview {
+  return {
+    id: row.review_id,
+    rating: row.rating,
+    body: row.review_body,
+    reviewerName: row.reviewer_name,
+    serviceName: row.service_name,
+    createdAt: row.created_at,
+  };
+}
+
+function mapBookingReview(
+  row: BookingReviewRow,
+  booking: BookingRow,
+): VerifiedReview {
+  return {
+    id: row.id,
+    rating: row.rating,
+    body: row.body,
+    reviewerName: booking.customer_name,
+    serviceName: booking.service_name,
+    createdAt: row.created_at,
   };
 }
 
@@ -165,19 +267,30 @@ export async function searchApprovedProviders(input: {
     throw new Error("Unable to load approved providers.");
   }
 
-  return ((data ?? []) as ProviderSearchRow[]).map((row) => ({
-    providerId: row.provider_id,
-    displayName: row.display_name,
-    headline: row.headline,
-    bioPreview: row.bio_preview,
-    serviceArea: row.service_area,
-    yearsExperience: row.years_experience,
-    travelRadiusMiles: row.travel_radius_miles,
-    primaryPhotoUrl: row.primary_photo_path
-      ? publicPhotoUrl(supabase, row.primary_photo_path)
-      : null,
-    services: row.services ?? [],
-  }));
+  const rows = (data ?? []) as ProviderSearchRow[];
+  const summaries = await getProviderReviewSummaries(
+    supabase,
+    rows.map((row) => row.provider_id),
+  );
+
+  return rows.map((row) => {
+    const summary = summaries.get(row.provider_id);
+    return {
+      providerId: row.provider_id,
+      displayName: row.display_name,
+      headline: row.headline,
+      bioPreview: row.bio_preview,
+      serviceArea: row.service_area,
+      yearsExperience: row.years_experience,
+      travelRadiusMiles: row.travel_radius_miles,
+      primaryPhotoUrl: row.primary_photo_path
+        ? publicPhotoUrl(supabase, row.primary_photo_path)
+        : null,
+      services: row.services ?? [],
+      averageRating: summary?.averageRating ?? null,
+      reviewCount: summary?.reviewCount ?? 0,
+    };
+  });
 }
 
 export async function getApprovedProvider(
@@ -197,6 +310,11 @@ export async function getApprovedProvider(
 
   if (!data) return null;
   const provider = data as ProviderDetailPayload;
+  const [summaries, reviews] = await Promise.all([
+    getProviderReviewSummaries(supabase, [providerId]),
+    getPublicProviderReviews(supabase, providerId),
+  ]);
+  const summary = summaries.get(providerId);
   return {
     providerId: provider.providerId,
     displayName: provider.displayName,
@@ -215,43 +333,79 @@ export async function getApprovedProvider(
       }),
     ),
     credentials: provider.credentials ?? [],
+    averageRating: summary?.averageRating ?? null,
+    reviewCount: summary?.reviewCount ?? 0,
+    reviews,
   };
 }
 
 const bookingColumns =
-  "id, customer_id, provider_id, customer_name, provider_name, service_name, pricing_type, price_cents, agreed_price_cents, price_set_at, requested_date, requested_start_time, service_location, customer_notes, status, provider_response, responded_at, created_at";
+  "id, customer_id, provider_id, customer_name, provider_name, service_name, pricing_type, price_cents, agreed_price_cents, price_set_at, requested_date, requested_start_time, service_location, customer_notes, status, provider_response, responded_at, completed_at, created_at";
 
-async function attachPayments(
+async function attachBookingDetails(
   supabase: Awaited<ReturnType<typeof createClient>>,
   rows: BookingRow[],
 ) {
   if (rows.length === 0) return [];
 
-  const { data, error } = await supabase
-    .from("booking_payments")
-    .select(
-      "id, booking_id, amount_cents, platform_fee_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
-    )
-    .in(
-      "booking_id",
-      rows.map((row) => row.id),
-    );
+  const bookingIds = rows.map((row) => row.id);
+  const [paymentsResult, reviewsResult] = await Promise.all([
+    supabase
+      .from("booking_payments")
+      .select(
+        "id, booking_id, amount_cents, platform_fee_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
+      )
+      .in("booking_id", bookingIds),
+    supabase
+      .from("booking_reviews")
+      .select("id, booking_id, rating, body, created_at")
+      .in("booking_id", bookingIds),
+  ]);
 
-  if (error) {
-    if (marketplaceMigrationMissing(error.code) || error.code === "PGRST205") {
+  if (paymentsResult.error) {
+    if (
+      marketplaceMigrationMissing(paymentsResult.error.code) ||
+      paymentsResult.error.code === "PGRST205"
+    ) {
       redirect("/setup?reason=stripe-payments");
     }
     throw new Error("Unable to load booking payment status.");
   }
 
+  if (reviewsResult.error) {
+    if (
+      marketplaceMigrationMissing(reviewsResult.error.code) ||
+      reviewsResult.error.code === "PGRST205"
+    ) {
+      redirect("/setup?reason=booking-reviews");
+    }
+    throw new Error("Unable to load booking reviews.");
+  }
+
   const paymentByBooking = new Map(
-    ((data ?? []) as BookingPaymentRow[]).map((row) => [
+    ((paymentsResult.data ?? []) as BookingPaymentRow[]).map((row) => [
       row.booking_id,
       mapPayment(row),
     ]),
   );
+  const bookingById = new Map(rows.map((row) => [row.id, row]));
+  const reviewByBooking = new Map(
+    ((reviewsResult.data ?? []) as BookingReviewRow[]).map((row) => {
+      const booking = bookingById.get(row.booking_id);
+      return [
+        row.booking_id,
+        booking ? mapBookingReview(row, booking) : null,
+      ];
+    }),
+  );
 
-  return rows.map((row) => mapBooking(row, paymentByBooking.get(row.id) ?? null));
+  return rows.map((row) =>
+    mapBooking(
+      row,
+      paymentByBooking.get(row.id) ?? null,
+      reviewByBooking.get(row.id) ?? null,
+    ),
+  );
 }
 
 export async function getCustomerBookings(): Promise<{
@@ -273,7 +427,10 @@ export async function getCustomerBookings(): Promise<{
     throw new Error("Unable to load your booking requests.");
   }
 
-  return { customer, bookings: await attachPayments(supabase, data as BookingRow[]) };
+  return {
+    customer,
+    bookings: await attachBookingDetails(supabase, data as BookingRow[]),
+  };
 }
 
 export async function getProviderBookings(): Promise<BookingRequest[]> {
@@ -292,7 +449,7 @@ export async function getProviderBookings(): Promise<BookingRequest[]> {
     throw new Error("Unable to load booking requests.");
   }
 
-  return attachPayments(supabase, data as BookingRow[]);
+  return attachBookingDetails(supabase, data as BookingRow[]);
 }
 
 export async function getConversationInbox(): Promise<{
@@ -417,7 +574,15 @@ export async function getBookingConversation(
     messages: (messagesResult.data as MessageRow[]).map(mapMessage),
     perspective: isCustomer ? "customer" : "provider",
     counterpartName: isCustomer ? booking.providerName : booking.customerName,
-    canSend: booking.status === "pending" || booking.status === "accepted",
+    canSend:
+      booking.status === "pending" ||
+      booking.status === "accepted" ||
+      (booking.status === "completed" &&
+        Boolean(
+          booking.completedAt &&
+            new Date(booking.completedAt).getTime() >
+              Date.now() - 30 * 24 * 60 * 60 * 1000,
+        )),
   };
 }
 
