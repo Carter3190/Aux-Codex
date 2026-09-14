@@ -11,6 +11,7 @@ export type BookingPayment = {
   id: string;
   amountCents: number;
   platformFeeCents: number;
+  refundedAmountCents: number;
   currency: "usd";
   status: PaymentStatus;
   checkoutExpiresAt: string | null;

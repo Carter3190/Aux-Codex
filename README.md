@@ -28,6 +28,10 @@ will run separately from the public Squarespace website at
 - Provider-confirmed service completion for successfully paid bookings
 - One immutable verified customer review per completed booking
 - Public provider rating summaries and review history
+- Customer cancellation, refund, and service-issue requests for paid bookings
+- Provider responses and an audited admin resolution queue
+- Full or partial Stripe refunds that reverse the provider transfer and 5% fee proportionally
+- Signed Stripe refund reconciliation and card-dispute alerts
 
 ## Local setup
 
@@ -61,8 +65,10 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 4. `supabase/migrations/20260901010000_booking_messages.sql`
 5. `supabase/migrations/20260901020000_stripe_connect_payments.sql`
 6. `supabase/migrations/20260910000000_booking_completion_reviews.sql`
+7. `supabase/migrations/20260914000000_booking_resolution_center.sql`
 
-If Stripe payments are already installed, run only the sixth migration.
+If completed bookings and reviews are already installed, run only the seventh
+migration.
 
 The migrations create profile roles, automatic profile creation, the provider
 onboarding tables, storage buckets, public provider-search functions, private
@@ -114,6 +120,14 @@ create a Stripe webhook endpoint at
 - `checkout.session.async_payment_succeeded`
 - `checkout.session.async_payment_failed`
 - `checkout.session.expired`
+- `refund.created`
+- `refund.updated`
+- `refund.failed`
+- `charge.dispute.created`
+- `charge.dispute.updated`
+- `charge.dispute.closed`
+- `charge.dispute.funds_withdrawn`
+- `charge.dispute.funds_reinstated`
 
 Use that endpoint's own signing secret in Vercel. Local and production webhook
 secrets are different.
@@ -226,6 +240,23 @@ revenue is lower than 5%.
    profile and the aggregate rating appears in provider search.
 5. Confirm a second review cannot be submitted for the same booking. Completed
    booking conversations remain open for 30 days for follow-up.
+
+## Testing the resolution center
+
+1. Use a successfully paid booking. As the customer, open a cancellation,
+   refund, or service-issue request and choose the requested amount.
+2. Sign in as the provider and add a factual response to the request.
+3. Sign in as the admin and open `/dashboard/admin/cases`.
+4. Review both statements. To test a refund, choose a full or partial amount,
+   enter decision notes, check the final confirmation box, and issue the refund.
+5. Confirm both participant dashboards show the refund amount and resolution.
+6. In Stripe test mode, confirm the refund reverses the destination transfer and
+   Auxilium’s application fee proportionally.
+
+The final admin confirmation creates a real Stripe refund for the environment
+whose secret key is configured. Keep test keys installed during development.
+Stripe remains the source of truth for card-network disputes and evidence; signed
+dispute webhooks identify the affected booking in the Auxilium admin queue.
 
 ## Verification commands
 

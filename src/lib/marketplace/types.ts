@@ -1,6 +1,7 @@
 import type { CurrentProfile } from "@/lib/auth/profile";
 import type { PricingType } from "@/lib/providers/types";
 import type { BookingPayment } from "@/lib/payments/types";
+import type { BookingCase } from "@/lib/cases/types";
 
 export type MarketplaceService = {
   id: string;
@@ -99,6 +100,7 @@ export type BookingRequest = {
   createdAt: string;
   payment: BookingPayment | null;
   review: VerifiedReview | null;
+  supportCase: BookingCase | null;
 };
 
 export type BookingMessage = {

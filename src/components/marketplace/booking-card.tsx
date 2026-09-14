@@ -5,6 +5,8 @@ import { BookingResponseForm } from "./booking-response-form";
 import Link from "next/link";
 import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
 import { BookingPriceForm } from "@/components/payments/booking-price-form";
+import { BookingCaseRequestForm } from "@/components/cases/booking-case-request-form";
+import { ProviderCaseResponseForm } from "@/components/cases/provider-case-response-form";
 import type { BookingRequest } from "@/lib/marketplace/types";
 import type { PaymentStatus } from "@/lib/payments/types";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
@@ -64,6 +66,12 @@ function formatReviewDate(date: string) {
   }).format(new Date(date));
 }
 
+const activeCaseStatuses = new Set([
+  "open",
+  "provider_responded",
+  "under_review",
+]);
+
 export function BookingCard({
   booking,
   perspective,
@@ -95,6 +103,12 @@ export function BookingCard({
   const platformFeeCents = booking.agreedPriceCents
     ? Math.max(1, Math.round(booking.agreedPriceCents * 0.05))
     : null;
+  const remainingRefundCents = booking.payment
+    ? booking.payment.amountCents - booking.payment.refundedAmountCents
+    : 0;
+  const activeCase = booking.supportCase
+    ? activeCaseStatuses.has(booking.supportCase.status)
+    : false;
 
   return (
     <article className="rounded-3xl border border-border bg-white p-6 sm:p-7">
@@ -175,6 +189,12 @@ export function BookingCard({
             )}
           </div>
 
+          {booking.payment && booking.payment.refundedAmountCents > 0 && (
+            <p className="mt-3 text-sm font-semibold text-brand-dark">
+              Refunded: {formatMoney(booking.payment.refundedAmountCents)} of {formatMoney(booking.payment.amountCents)}
+            </p>
+          )}
+
           {perspective === "customer" &&
             booking.agreedPriceCents !== null &&
             !paymentFinal && (
@@ -230,6 +250,62 @@ export function BookingCard({
           </p>
         </section>
       )}
+      {booking.supportCase && (
+        <section className="mt-5 rounded-2xl border border-[#ead6ad] bg-[#fffaf0] p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#76531c]">
+                Resolution request
+              </p>
+              <p className="mt-2 font-semibold text-brand-dark">
+                {labelFromSnakeCase(booking.supportCase.category)} · {formatMoney(booking.supportCase.requestedRefundCents)} requested
+              </p>
+            </div>
+            <span className="rounded-full border border-[#ead6ad] bg-white px-3 py-1.5 text-xs font-bold text-[#76531c]">
+              {labelFromSnakeCase(booking.supportCase.status)}
+            </span>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground">
+            {booking.supportCase.customerDetails}
+          </p>
+          {booking.supportCase.providerResponse && (
+            <div className="mt-4 rounded-xl border border-border bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
+                Provider response
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
+                {booking.supportCase.providerResponse}
+              </p>
+            </div>
+          )}
+          {booking.supportCase.adminNotes && (
+            <div className="mt-4 rounded-xl border border-border bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
+                Auxilium decision notes
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
+                {booking.supportCase.adminNotes}
+              </p>
+            </div>
+          )}
+          {perspective === "provider" &&
+            activeCase &&
+            booking.supportCase.status !== "under_review" && (
+              <ProviderCaseResponseForm caseId={booking.supportCase.id} />
+            )}
+        </section>
+      )}
+      {perspective === "customer" &&
+        booking.payment &&
+        (booking.payment.status === "paid" ||
+          booking.payment.status === "partially_refunded") &&
+        !activeCase &&
+        remainingRefundCents >= 100 && (
+          <BookingCaseRequestForm
+            bookingId={booking.id}
+            remainingRefundCents={remainingRefundCents}
+          />
+        )}
       {perspective === "customer" &&
         booking.status === "completed" &&
         paymentSupportsCompletion &&

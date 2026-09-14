@@ -26,6 +26,7 @@ export function DashboardShell({
       : profile.role === "admin"
         ? [
             ["Review queue", "/dashboard/admin"],
+            ["Resolution center", "/dashboard/admin/cases"],
             ["Marketplace", "/providers"],
           ]
         : [

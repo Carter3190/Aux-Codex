@@ -15,6 +15,7 @@ export default async function SetupPage({
   const configured = isSupabaseConfigured();
   const paymentsReason = query.reason === "stripe-payments";
   const reviewsReason = query.reason === "booking-reviews";
+  const resolutionReason = query.reason === "resolution-center";
 
   return (
     <main className="min-h-screen bg-background px-6 py-16">
@@ -23,7 +24,9 @@ export default async function SetupPage({
           Developer setup
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-brand-dark">
-          {reviewsReason
+          {resolutionReason
+            ? "Install the booking resolution center."
+            : reviewsReason
             ? "Install completed bookings and verified reviews."
             : paymentsReason
             ? "Connect the secure payment services."
@@ -32,7 +35,9 @@ export default async function SetupPage({
               : "Connect the Supabase project to continue."}
         </h1>
         <p className="mt-4 leading-7 text-muted">
-          {reviewsReason
+          {resolutionReason
+            ? "Run the resolution-center migration in the Supabase SQL Editor, then return to the dashboard. It adds private customer cases, provider responses, audited admin decisions, refund reconciliation, and Stripe dispute visibility."
+            : reviewsReason
             ? "Run the verified-reviews migration in the Supabase SQL Editor, then return to the dashboard. The migration adds the completed booking state, secure review rules, and public provider ratings."
             : paymentsReason
             ? "Add the server-only keys below to .env.local, then run the Stripe payments migration in the Supabase SQL Editor. Full instructions are included in the repository README."
@@ -61,7 +66,12 @@ export default async function SetupPage({
             Supabase values.
           </p>
         )}
-        {reviewsReason ? (
+        {resolutionReason ? (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Install <code>20260914000000_booking_resolution_center.sql</code>.
+            This migration preserves existing bookings, payments, and reviews.
+          </p>
+        ) : reviewsReason ? (
           <p className="mt-3 text-sm leading-6 text-muted">
             Install <code>20260910000000_booking_completion_reviews.sql</code>.
             This migration does not alter or remove existing bookings or payments.

@@ -18,6 +18,13 @@ import type {
   VerifiedReview,
 } from "./types";
 import type { BookingPayment, PaymentStatus } from "@/lib/payments/types";
+import {
+  bookingCaseColumns,
+  mapBookingCase,
+  resolutionMigrationMissing,
+  type BookingCaseRow,
+} from "@/lib/cases/data";
+import type { BookingCase } from "@/lib/cases/types";
 import type { PricingType } from "@/lib/providers/types";
 
 type ProviderSearchRow = {
@@ -73,6 +80,7 @@ type BookingPaymentRow = {
   booking_id: string;
   amount_cents: number;
   platform_fee_cents: number;
+  refunded_amount_cents: number;
   currency: "usd";
   status: PaymentStatus;
   checkout_expires_at: string | null;
@@ -177,6 +185,7 @@ function mapPayment(row: BookingPaymentRow): BookingPayment {
     id: row.id,
     amountCents: row.amount_cents,
     platformFeeCents: row.platform_fee_cents,
+    refundedAmountCents: row.refunded_amount_cents,
     currency: row.currency,
     status: row.status,
     checkoutExpiresAt: row.checkout_expires_at,
@@ -189,6 +198,7 @@ function mapBooking(
   row: BookingRow,
   payment: BookingPayment | null = null,
   review: VerifiedReview | null = null,
+  supportCase: BookingCase | null = null,
 ): BookingRequest {
   return {
     id: row.id,
@@ -212,6 +222,7 @@ function mapBooking(
     createdAt: row.created_at,
     payment,
     review,
+    supportCase,
   };
 }
 
@@ -349,17 +360,22 @@ async function attachBookingDetails(
   if (rows.length === 0) return [];
 
   const bookingIds = rows.map((row) => row.id);
-  const [paymentsResult, reviewsResult] = await Promise.all([
+  const [paymentsResult, reviewsResult, casesResult] = await Promise.all([
     supabase
       .from("booking_payments")
       .select(
-        "id, booking_id, amount_cents, platform_fee_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
+        "id, booking_id, amount_cents, platform_fee_cents, refunded_amount_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
       )
       .in("booking_id", bookingIds),
     supabase
       .from("booking_reviews")
       .select("id, booking_id, rating, body, created_at")
       .in("booking_id", bookingIds),
+    supabase
+      .from("booking_cases")
+      .select(bookingCaseColumns)
+      .in("booking_id", bookingIds)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (paymentsResult.error) {
@@ -382,6 +398,13 @@ async function attachBookingDetails(
     throw new Error("Unable to load booking reviews.");
   }
 
+  if (casesResult.error) {
+    if (resolutionMigrationMissing(casesResult.error.code)) {
+      redirect("/setup?reason=resolution-center");
+    }
+    throw new Error("Unable to load booking resolution requests.");
+  }
+
   const paymentByBooking = new Map(
     ((paymentsResult.data ?? []) as BookingPaymentRow[]).map((row) => [
       row.booking_id,
@@ -398,12 +421,19 @@ async function attachBookingDetails(
       ];
     }),
   );
+  const caseByBooking = new Map<string, BookingCase>();
+  ((casesResult.data ?? []) as BookingCaseRow[]).forEach((row) => {
+    if (!caseByBooking.has(row.booking_id)) {
+      caseByBooking.set(row.booking_id, mapBookingCase(row));
+    }
+  });
 
   return rows.map((row) =>
     mapBooking(
       row,
       paymentByBooking.get(row.id) ?? null,
       reviewByBooking.get(row.id) ?? null,
+      caseByBooking.get(row.id) ?? null,
     ),
   );
 }
