@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ProviderReviewForm } from "@/components/admin/provider-review-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getAdminProviderApplications } from "@/lib/providers/data";
@@ -57,6 +58,14 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
       </div>
+
+      <Link
+        href="/dashboard/admin/cases"
+        className="mt-5 flex items-center justify-between rounded-2xl border border-brand/25 bg-[#eef6f1] px-5 py-4 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#e4f1e9]"
+      >
+        <span>Open resolution center</span>
+        <span aria-hidden="true">→</span>
+      </Link>
 
       {applications.length === 0 ? (
         <section className="mt-7 rounded-3xl border border-border bg-white p-8">

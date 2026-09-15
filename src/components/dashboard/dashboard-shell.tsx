@@ -75,6 +75,20 @@ export function DashboardShell({
             </form>
           </div>
         </div>
+        <nav
+          className="mx-auto flex max-w-7xl gap-2 overflow-x-auto border-t border-border px-6 py-3 md:hidden"
+          aria-label="Dashboard"
+        >
+          {navigation.map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className="shrink-0 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-brand-dark transition hover:border-brand hover:bg-[#eef6f1]"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
