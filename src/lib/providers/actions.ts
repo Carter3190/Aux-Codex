@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { notifyProviderApplication } from "@/lib/email/notifications";
 import { requireActionRole } from "./data";
 import type { ProviderActionState } from "./types";
 
@@ -421,9 +422,18 @@ export async function submitProviderApplication(
   void _previousState;
   void _formData;
   try {
-    const { supabase } = await requireActionRole("provider");
+    const { supabase, userId } = await requireActionRole("provider");
     const { error } = await supabase.rpc("submit_provider_application");
     if (error) return failure(databaseMessage(error.message));
+    await notifyProviderApplication({
+      providerId: userId,
+      recipients: ["admin"],
+      eventKey: `provider_application_submitted_${userId}`,
+      subject: "A provider application is ready for review",
+      heading: "New provider application submitted",
+      message:
+        "Review the provider profile, credentials, services, and availability in the admin dashboard.",
+    });
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/admin", "layout");
     return success("Your application was submitted for admin review.");
@@ -459,6 +469,20 @@ export async function reviewProviderApplication(
       review_notes: parsed.data.notes,
     });
     if (error) return failure(databaseMessage(error.message));
+    await notifyProviderApplication({
+      providerId: parsed.data.providerId,
+      recipients: ["provider"],
+      eventKey: `provider_application_${parsed.data.decision}_${parsed.data.providerId}`,
+      subject: `Your Auxilium provider application was ${parsed.data.decision}`,
+      heading:
+        parsed.data.decision === "approved"
+          ? "Your provider profile is approved"
+          : "Your application needs changes",
+      message:
+        parsed.data.decision === "approved"
+          ? "You can now appear in the marketplace and connect Stripe payouts."
+          : "Open your provider dashboard to review the admin notes and update your application.",
+    });
     revalidatePath("/dashboard/admin", "layout");
     revalidatePath("/dashboard/provider", "layout");
     return success(

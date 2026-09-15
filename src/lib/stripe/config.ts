@@ -60,6 +60,11 @@ export function getAppUrl() {
     );
   }
 
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (process.env.VERCEL_ENV !== "production" && vercelUrl) {
+    return `https://${vercelUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}`;
+  }
+
   if (process.env.NODE_ENV !== "production") {
     return "http://localhost:3000";
   }

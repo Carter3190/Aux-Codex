@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/profile";
+import {
+  notifyBookingParticipants,
+  notifyCaseParticipants,
+} from "@/lib/email/notifications";
 import { requireMarketplaceActionRole } from "@/lib/marketplace/data";
 import { isStripeServerConfigured } from "@/lib/stripe/config";
 import { getStripe } from "@/lib/stripe/server";
@@ -146,13 +150,25 @@ export async function openBookingCase(
 
   try {
     const { supabase } = await requireMarketplaceActionRole("customer");
-    const { error } = await supabase.rpc("open_booking_case", {
+    const { data: createdCaseId, error } = await supabase.rpc("open_booking_case", {
       requested_booking_id: parsed.data.bookingId,
       requested_category: parsed.data.category,
       requested_refund_cents: amountToCents(parsed.data.amount),
       requested_details: parsed.data.details,
     });
     if (error) return failure(caseDatabaseMessage(error.message));
+
+    if (typeof createdCaseId === "string") {
+      await notifyBookingParticipants({
+        bookingId: parsed.data.bookingId,
+        recipients: ["provider", "admin"],
+        eventKey: `booking_case_opened_${createdCaseId}`,
+        subject: "A new Auxilium resolution request was opened",
+        heading: "A booking needs review",
+        message:
+          "Open the resolution center to review the request and provide the appropriate response.",
+      });
+    }
 
     revalidateResolutionPages();
     return success(
@@ -185,6 +201,16 @@ export async function respondToBookingCase(
     });
     if (error) return failure(caseDatabaseMessage(error.message));
 
+    await notifyCaseParticipants({
+      caseId: parsed.data.caseId,
+      recipients: ["customer", "admin"],
+      eventKey: `booking_case_provider_response_${parsed.data.caseId}`,
+      subject: "A provider responded to an Auxilium resolution request",
+      heading: "The provider response is ready",
+      message:
+        "Open the resolution center to review the response and the current case status.",
+    });
+
     revalidateResolutionPages();
     return success("Your response was added for Auxilium’s review.");
   } catch (error) {
@@ -214,6 +240,16 @@ export async function denyBookingCase(
       review_notes: parsed.data.notes,
     });
     if (error) return failure(caseDatabaseMessage(error.message));
+
+    await notifyCaseParticipants({
+      caseId: parsed.data.caseId,
+      recipients: ["customer", "provider"],
+      eventKey: `booking_case_denied_${parsed.data.caseId}`,
+      subject: "Auxilium reviewed your resolution request",
+      heading: "The resolution request was closed",
+      message:
+        "Open your dashboard to review Auxilium’s final decision and case notes.",
+    });
 
     revalidateResolutionPages();
     return success("Resolution request denied with an audited admin note.");
@@ -313,6 +349,15 @@ export async function refundBookingCase(
         "Stripe accepted the refund, but Auxilium could not confirm its status yet. Retry this same case to reconcile it safely; do not change the amount.",
       );
     }
+
+    await notifyBookingParticipants({
+      bookingId: prepared.booking_id,
+      recipients: ["customer", "provider"],
+      eventKey: `booking_refund_${prepared.refund_id}`,
+      subject: "An Auxilium booking refund was processed",
+      heading: "The booking refund was processed",
+      message: `$${(refund.amount / 100).toFixed(2)} was sent back through Stripe. Open your dashboard for the updated payment balance and resolution notes.`,
+    });
 
     revalidateResolutionPages();
     return success(

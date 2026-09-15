@@ -32,6 +32,11 @@ will run separately from the public Squarespace website at
 - Provider responses and an audited admin resolution queue
 - Full or partial Stripe refunds that reverse the provider transfer and 5% fee proportionally
 - Signed Stripe refund reconciliation and card-dispute alerts
+- Transactional email alerts for provider reviews, bookings, completion, and resolutions
+- Production security headers, private error handling, robots rules, and a health endpoint
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the production launch checklist for
+Vercel, Squarespace DNS, Supabase, Stripe, and Resend.
 
 ## Local setup
 
@@ -111,6 +116,17 @@ Copy the `whsec_...` value printed by the listener into `.env.local`:
 ```bash
 STRIPE_WEBHOOK_SECRET=whsec_your_local_listener_secret
 ```
+
+To test Auxilium's transactional notifications, create a Resend API key and add:
+
+```bash
+RESEND_API_KEY=re_your_api_key
+EMAIL_FROM="Auxilium <notifications@auth.theauxillium.com>"
+EMAIL_REPLY_TO=your-support-address@example.com
+```
+
+`EMAIL_REPLY_TO` is optional. When the two required email values are absent,
+marketplace actions continue normally and notification delivery is skipped.
 
 Restart `npm run dev` after changing environment variables. For production,
 create a Stripe webhook endpoint at
@@ -268,3 +284,7 @@ npx next build --webpack
 
 The webpack flag is only used for verification in restricted development
 environments. Vercel can use the standard `npm run build` command.
+
+The deployment health check is available at `/api/health`. It reports overall
+core readiness and whether transactional email is enabled without identifying
+internal credentials or returning secret values.

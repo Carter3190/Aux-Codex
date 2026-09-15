@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { notifyBookingParticipants } from "@/lib/email/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { requireMarketplaceActionRole } from "./data";
 import type { MarketplaceActionState } from "./types";
@@ -129,7 +130,7 @@ export async function requestBooking(
 
   try {
     const { supabase } = await requireMarketplaceActionRole("customer");
-    const { error } = await supabase.rpc("request_booking", {
+    const { data: createdBookingId, error } = await supabase.rpc("request_booking", {
       requested_provider_id: parsed.data.providerId,
       requested_service_id: parsed.data.serviceId,
       requested_date: parsed.data.requestedDate,
@@ -138,6 +139,18 @@ export async function requestBooking(
       requested_notes: parsed.data.notes,
     });
     if (error) return failure(databaseMessage(error.message));
+
+    if (typeof createdBookingId === "string") {
+      await notifyBookingParticipants({
+        bookingId: createdBookingId,
+        recipients: ["provider"],
+        eventKey: `booking_requested_${createdBookingId}`,
+        subject: "You have a new Auxilium booking request",
+        heading: "A customer requested your service",
+        message:
+          "Review the requested date, location, and customer note before responding.",
+      });
+    }
 
     revalidatePath("/dashboard/customer", "layout");
     revalidatePath("/dashboard/provider", "layout");
@@ -169,6 +182,21 @@ export async function respondToBooking(
     });
     if (error) return failure(databaseMessage(error.message));
 
+    await notifyBookingParticipants({
+      bookingId: parsed.data.bookingId,
+      recipients: ["customer"],
+      eventKey: `booking_${parsed.data.decision}_${parsed.data.bookingId}`,
+      subject: `Your booking request was ${parsed.data.decision}`,
+      heading:
+        parsed.data.decision === "accepted"
+          ? "Your provider accepted the request"
+          : "Your provider declined the request",
+      message:
+        parsed.data.decision === "accepted"
+          ? "Open your dashboard to review the booking and continue the conversation."
+          : "Open your dashboard to review the response and browse other providers.",
+    });
+
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/customer", "layout");
     return success(
@@ -195,6 +223,16 @@ export async function cancelBooking(
     });
     if (error) return failure(databaseMessage(error.message));
 
+    await notifyBookingParticipants({
+      bookingId: bookingId.data,
+      recipients: ["provider"],
+      eventKey: `booking_cancelled_${bookingId.data}`,
+      subject: "An Auxilium booking request was cancelled",
+      heading: "The customer cancelled the request",
+      message:
+        "Open your provider dashboard to review the updated booking status.",
+    });
+
     revalidatePath("/dashboard/customer", "layout");
     revalidatePath("/dashboard/provider", "layout");
     return success("Booking request cancelled.");
@@ -216,6 +254,16 @@ export async function completeBooking(
       requested_booking_id: bookingId.data,
     });
     if (error) return failure(databaseMessage(error.message));
+
+    await notifyBookingParticipants({
+      bookingId: bookingId.data,
+      recipients: ["customer"],
+      eventKey: `booking_completed_${bookingId.data}`,
+      subject: "Your Auxilium service was marked complete",
+      heading: "Your service is complete",
+      message:
+        "You can now share a verified rating and review from your customer dashboard.",
+    });
 
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/customer", "layout");

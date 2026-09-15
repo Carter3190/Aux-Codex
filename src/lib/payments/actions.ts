@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { notifyBookingParticipants } from "@/lib/email/notifications";
 import { requireMarketplaceActionRole } from "@/lib/marketplace/data";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -103,6 +104,15 @@ export async function setBookingPrice(
       requested_amount_cents: amountCents,
     });
     if (error) return failure(paymentDatabaseMessage(error.message));
+
+    await notifyBookingParticipants({
+      bookingId: parsed.data.bookingId,
+      recipients: ["customer"],
+      eventKey: `booking_price_set_${parsed.data.bookingId}_${amountCents}`,
+      subject: "Your Auxilium booking price is ready",
+      heading: "Your provider set the final price",
+      message: `The final price is $${(amountCents / 100).toFixed(2)}. Review it before opening secure Stripe Checkout.`,
+    });
 
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/customer", "layout");
