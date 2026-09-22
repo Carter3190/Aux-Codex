@@ -38,8 +38,26 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
+}
+
+.policy-content ul {
+  list-style: disc;
+  padding-left: 1.35rem;
+}
+
+.policy-content li + li {
+  margin-top: 0.5rem;
+}
+
+.policy-content a {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 ::selection {

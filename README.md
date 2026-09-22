@@ -33,10 +33,13 @@ will run separately from the public Squarespace website at
 - Full or partial Stripe refunds that reverse the provider transfer and 5% fee proportionally
 - Signed Stripe refund reconciliation and card-dispute alerts
 - Transactional email alerts for provider reviews, bookings, completion, and resolutions
+- Public Terms, Privacy, Provider Agreement, Provider Standards, refund policy, and Support Center
+- Versioned agreement acceptance for every new account
+- Explicit live-payment safety gate and test/live health reporting
 - Production security headers, private error handling, robots rules, and a health endpoint
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for the production launch checklist for
-Vercel, Squarespace DNS, Supabase, Stripe, and Resend.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for platform configuration and
+[LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) for the owner-approved release gate.
 
 ## Local setup
 
@@ -99,6 +102,7 @@ Auxilium stores only the connected account ID and non-sensitive status flags.
 ```bash
 SUPABASE_SECRET_KEY=sb_secret_your_server_key
 STRIPE_SECRET_KEY=sk_test_your_stripe_key
+STRIPE_LIVE_MODE_ENABLED=false
 APP_URL=http://localhost:3000
 ```
 
@@ -123,10 +127,13 @@ To test Auxilium's transactional notifications, create a Resend API key and add:
 RESEND_API_KEY=re_your_api_key
 EMAIL_FROM="Auxilium <notifications@auth.theauxillium.com>"
 EMAIL_REPLY_TO=your-support-address@example.com
+SUPPORT_EMAIL=your-support-address@example.com
 ```
 
-`EMAIL_REPLY_TO` is optional. When the two required email values are absent,
+`EMAIL_REPLY_TO` and `SUPPORT_EMAIL` are optional during development. When the two required email values are absent,
 marketplace actions continue normally and notification delivery is skipped.
+`SUPPORT_EMAIL` must be a monitored inbox before public launch. A live Stripe
+key is rejected unless `STRIPE_LIVE_MODE_ENABLED=true`; keep it false in test mode.
 
 Restart `npm run dev` after changing environment variables. For production,
 create a Stripe webhook endpoint at
@@ -286,5 +293,6 @@ The webpack flag is only used for verification in restricted development
 environments. Vercel can use the standard `npm run build` command.
 
 The deployment health check is available at `/api/health`. It reports overall
-core readiness and whether transactional email is enabled without identifying
-internal credentials or returning secret values.
+core readiness, notification and support status, the safe payment mode, and
+whether the release is still prelaunch without identifying credentials or
+returning secret values.

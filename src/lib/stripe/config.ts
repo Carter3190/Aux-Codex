@@ -4,11 +4,26 @@ import { isSupabaseAdminConfigured } from "@/lib/supabase/admin-config";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+const stripeLiveModeEnabled =
+  process.env.STRIPE_LIVE_MODE_ENABLED?.trim().toLowerCase() === "true";
+
+export type StripeMode = "test" | "live" | "unconfigured";
+
+export function getStripeMode(): StripeMode {
+  if (stripeSecretKey?.startsWith("sk_test_")) return "test";
+  if (stripeSecretKey?.startsWith("sk_live_")) return "live";
+  return "unconfigured";
+}
+
+export function isStripeLiveModeEnabled() {
+  return getStripeMode() === "live" && stripeLiveModeEnabled;
+}
 
 export function isStripeServerConfigured() {
+  const mode = getStripeMode();
   return Boolean(
-    (stripeSecretKey?.startsWith("sk_test_") ||
-      stripeSecretKey?.startsWith("sk_live_")) &&
+    mode !== "unconfigured" &&
+      (mode !== "live" || stripeLiveModeEnabled) &&
       isSupabaseAdminConfigured(),
   );
 }
@@ -27,6 +42,12 @@ export function getStripeSecretKey() {
   ) {
     throw new Error(
       "Stripe is not configured. Add STRIPE_SECRET_KEY to .env.local.",
+    );
+  }
+
+  if (stripeSecretKey.startsWith("sk_live_") && !stripeLiveModeEnabled) {
+    throw new Error(
+      "Live Stripe payments are locked. Set STRIPE_LIVE_MODE_ENABLED=true only after completing the launch checklist.",
     );
   }
 

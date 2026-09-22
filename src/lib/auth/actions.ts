@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { legalVersion } from "@/lib/site";
 import type { AuthFormState } from "./types";
 
 const passwordSchema = z
@@ -24,6 +25,9 @@ const signUpSchema = z.object({
   password: passwordSchema,
   role: z.enum(["customer", "provider"], {
     error: "Choose how you plan to use Auxilium.",
+  }),
+  terms: z.literal("accepted", {
+    error: "Review and accept the marketplace agreements.",
   }),
 });
 
@@ -79,6 +83,7 @@ export async function signUp(
     email: formData.get("email"),
     password: formData.get("password"),
     role: formData.get("role"),
+    terms: formData.get("terms"),
   });
 
   if (!parsed.success) {
@@ -93,6 +98,8 @@ export async function signUp(
       data: {
         full_name: parsed.data.fullName,
         requested_role: parsed.data.role,
+        legal_version: legalVersion,
+        terms_accepted_at: new Date().toISOString(),
       },
     },
   });

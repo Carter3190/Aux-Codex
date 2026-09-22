@@ -1,11 +1,14 @@
 import { isTransactionalEmailConfigured } from "@/lib/email/config";
 import {
   getAppUrl,
+  getStripeMode,
+  isStripeLiveModeEnabled,
   isStripeServerConfigured,
   isStripeWebhookConfigured,
 } from "@/lib/stripe/config";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/admin-config";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupportContactConfigured } from "@/lib/support/config";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +29,9 @@ function status() {
     stripeWebhook: isStripeWebhookConfigured(),
     appUrl: isAppUrlConfigured(),
     transactionalEmail: isTransactionalEmailConfigured(),
+    supportContact: isSupportContactConfigured(),
+    stripeMode: getStripeMode(),
+    livePaymentsEnabled: isStripeLiveModeEnabled(),
   };
   const coreReady =
     checks.supabase &&
@@ -39,12 +45,23 @@ function status() {
 
 export function GET() {
   const readiness = status();
+  const productionReady = Boolean(
+    readiness.coreReady &&
+      readiness.checks.transactionalEmail &&
+      readiness.checks.supportContact &&
+      readiness.checks.livePaymentsEnabled,
+  );
   return Response.json(
     {
       status: readiness.coreReady ? "ready" : "configuration_required",
       notifications: readiness.checks.transactionalEmail
         ? "enabled"
         : "not_configured",
+      payments: readiness.checks.stripeMode,
+      launch: productionReady ? "live_ready" : "prelaunch",
+      support: readiness.checks.supportContact
+        ? "configured"
+        : "in_app_only",
       timestamp: new Date().toISOString(),
     },
     {

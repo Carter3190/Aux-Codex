@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { signUp } from "@/lib/auth/actions";
 import { initialAuthState } from "@/lib/auth/types";
@@ -114,6 +115,48 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
               <li key={error}>{error}</li>
             ))}
           </ul>
+        )}
+      </div>
+
+      <div>
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-[#fbfcfa] p-4">
+          <input
+            type="checkbox"
+            name="terms"
+            value="accepted"
+            required
+            className="mt-1 h-4 w-4 shrink-0 accent-[#165b45]"
+          />
+          <span className="text-sm leading-6 text-muted">
+            I agree to the{" "}
+            <Link href="/terms" className="font-semibold text-brand underline">
+              Terms of Service
+            </Link>{" "}
+            and acknowledge the{" "}
+            <Link href="/privacy" className="font-semibold text-brand underline">
+              Privacy Policy
+            </Link>
+            . If I offer services, I also agree to the{" "}
+            <Link
+              href="/provider-agreement"
+              className="font-semibold text-brand underline"
+            >
+              Provider Agreement
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/provider-standards"
+              className="font-semibold text-brand underline"
+            >
+              Provider Standards
+            </Link>
+            .
+          </span>
+        </label>
+        {state.fieldErrors?.terms && (
+          <p className="mt-2 text-sm text-red-700">
+            {state.fieldErrors.terms[0]}
+          </p>
         )}
       </div>
 

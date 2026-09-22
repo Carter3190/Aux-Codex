@@ -41,10 +41,12 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SECRET_KEY
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
+STRIPE_LIVE_MODE_ENABLED=false
 APP_URL=https://app.theauxillium.com
 RESEND_API_KEY
 EMAIL_FROM=Auxilium <notifications@auth.theauxillium.com>
 EMAIL_REPLY_TO
+SUPPORT_EMAIL
 ```
 
 `EMAIL_REPLY_TO` is optional. `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
@@ -53,6 +55,10 @@ EMAIL_REPLY_TO
 
 Environment-variable changes apply only to new deployments. Redeploy after any
 change.
+
+Keep `STRIPE_LIVE_MODE_ENABLED=false` while using test keys. A live Stripe key
+is deliberately rejected unless this value is explicitly changed to `true`.
+Set `SUPPORT_EMAIL` to the monitored inbox shown in the public Support Center.
 
 ## 3. Connect the marketplace subdomain
 
@@ -135,7 +141,9 @@ Open:
 https://app.theauxillium.com/api/health
 ```
 
-The response status should be `ready` and notifications should be `enabled`.
+The response status should be `ready`, notifications should be `enabled`, and
+payments should be `test`. A test deployment correctly reports launch as
+`prelaunch`.
 Then repeat the proven test-mode flow on the deployed application:
 
 1. Create and confirm customer and provider accounts.
@@ -156,10 +164,13 @@ When Auxilium is legally and operationally ready for real transactions:
 2. Replace Vercel's test `STRIPE_SECRET_KEY` with the live `sk_live_...` key.
 3. Create the same webhook endpoint in live mode and replace
    `STRIPE_WEBHOOK_SECRET` with its live signing secret.
-4. Redeploy.
-5. Providers must complete real live-mode onboarding. Stripe test connected
+4. Set `STRIPE_LIVE_MODE_ENABLED=true` only after the live key and webhook are
+   both ready.
+5. Redeploy and confirm `/api/health` reports `payments: "live"` and
+   `launch: "live_ready"`.
+6. Providers must complete real live-mode onboarding. Stripe test connected
    accounts do not become live payout accounts.
-6. Make one controlled real payment and refund before public launch.
+7. Make one controlled real payment and refund before public launch.
 
 ## 9. Connect Squarespace buttons
 

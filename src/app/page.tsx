@@ -1,4 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Auxilium",
+    title: "Auxilium | Local help, made human",
+    description:
+      "Find trusted local professionals or grow your independent service business with Auxilium.",
+    url: "/",
+  },
+};
 
 const benefits = [
   {
@@ -150,17 +163,6 @@ export default function Home() {
           </div>
         </section>
 
-        <footer className="flex flex-col gap-3 border-t border-border py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 Auxilium. Built for stronger local communities.</p>
-          <div className="flex gap-5">
-            <Link href="/login" className="hover:text-brand-dark">
-              Sign in
-            </Link>
-            <Link href="/signup" className="hover:text-brand-dark">
-              Create account
-            </Link>
-          </div>
-        </footer>
       </div>
     </main>
   );

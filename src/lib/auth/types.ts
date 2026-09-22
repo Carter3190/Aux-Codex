@@ -3,6 +3,7 @@ export type AuthFieldErrors = {
   email?: string[];
   password?: string[];
   role?: string[];
+  terms?: string[];
 };
 
 export type AuthFormState = {
