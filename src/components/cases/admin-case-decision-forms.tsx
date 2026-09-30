@@ -31,7 +31,7 @@ export function AdminCaseDecisionForms({
     <div className="grid gap-4 xl:grid-cols-2">
       <form
         action={refundAction}
-        className="space-y-4 rounded-2xl border border-[#b9d8c9] bg-[#f4faf6] p-5"
+        className="space-y-4 rounded-2xl border border-[#d0d0d0] bg-[#f7f7f7] p-5"
       >
         <input type="hidden" name="caseId" value={caseId} />
         <div>
@@ -71,13 +71,13 @@ export function AdminCaseDecisionForms({
             placeholder="Explain why this amount is being refunded."
           />
         </label>
-        <label className="flex items-start gap-3 rounded-xl border border-[#b9d8c9] bg-white p-3 text-sm leading-6 text-foreground">
+        <label className="flex items-start gap-3 rounded-xl border border-[#d0d0d0] bg-white p-3 text-sm leading-6 text-foreground">
           <input
             type="checkbox"
             name="confirmation"
             value="confirmed"
             required
-            className="mt-1 h-4 w-4 accent-[#17664c]"
+            className="mt-1 h-4 w-4 accent-[#080808]"
           />
           <span>
             I confirm this immediately creates a Stripe refund for the amount shown.
@@ -100,7 +100,7 @@ export function AdminCaseDecisionForms({
 
       <form
         action={denyAction}
-        className="space-y-4 rounded-2xl border border-border bg-[#f7f8f6] p-5"
+        className="space-y-4 rounded-2xl border border-border bg-[#f7f7f7] p-5"
       >
         <input type="hidden" name="caseId" value={caseId} />
         <div>

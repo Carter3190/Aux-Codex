@@ -97,7 +97,7 @@ export default async function AdminCasesPage() {
                   key={item.id}
                   className="overflow-hidden rounded-3xl border border-border bg-white"
                 >
-                  <header className="border-b border-border bg-[#f7f9f6] p-6 sm:p-7">
+                  <header className="border-b border-border bg-[#f7f7f7] p-6 sm:p-7">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
@@ -163,7 +163,7 @@ export default async function AdminCasesPage() {
                     </div>
 
                     {item.adminNotes && !isActive && (
-                      <div className="rounded-2xl border border-border bg-[#f7f8f6] p-5">
+                      <div className="rounded-2xl border border-border bg-[#f7f7f7] p-5">
                         <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
                           Final admin notes
                         </p>

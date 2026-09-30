@@ -4,9 +4,9 @@ import type { MarketplaceProviderCard } from "@/lib/marketplace/types";
 
 export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }) {
   return (
-    <article className="overflow-hidden rounded-3xl border border-border bg-white shadow-[0_14px_40px_rgba(22,60,45,0.06)]">
+    <article className="overflow-hidden rounded-[1.25rem] border border-border bg-white transition-shadow hover:shadow-[0_18px_45px_rgba(0,0,0,0.08)]">
       <div className="grid h-full sm:grid-cols-[210px_1fr]">
-        <div className="min-h-52 bg-[#e7eee8]">
+        <div className="min-h-52 bg-[#ededed]">
           {provider.primaryPhotoUrl ? (
             // Provider photos are served from Auxilium's public Supabase bucket.
             // eslint-disable-next-line @next/next/no-img-element
@@ -24,14 +24,14 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
         <div className="flex flex-col p-6 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+              <p className="text-sm font-medium uppercase tracking-[0.14em] text-foreground">
                 Approved provider
               </p>
-              <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
+              <h2 className="mt-2 text-2xl font-semibold text-foreground">
                 {provider.displayName}
               </h2>
             </div>
-            <span className="rounded-full bg-[#eef8f2] px-3 py-1.5 text-xs font-bold text-brand">
+            <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1.5 text-xs font-bold text-foreground">
               ✓ Verified
             </span>
           </div>
@@ -39,7 +39,7 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
           <p className="mt-3 text-sm text-muted">Serving {provider.serviceArea}</p>
           {provider.reviewCount > 0 && provider.averageRating !== null && (
             <p className="mt-3 text-sm font-semibold text-brand-dark">
-              <span className="text-[#d98f1f]" aria-hidden="true">★</span>{" "}
+              <span className="text-[#080808]" aria-hidden="true">★</span>{" "}
               {provider.averageRating.toFixed(1)} · {provider.reviewCount}{" "}
               {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
             </p>

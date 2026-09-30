@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -36,78 +37,55 @@ const benefits = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-background">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <header className="flex items-center justify-between border-b border-border py-6">
-          <Link
-            href="/"
-            className="text-xl font-bold tracking-[0.16em] text-brand-dark"
-          >
-            AUXILIUM
-          </Link>
-          <nav className="flex items-center gap-3" aria-label="Account navigation">
-            <Link
-              href="/providers"
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-white sm:block"
-            >
-              Browse providers
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-full px-4 py-2 text-sm font-semibold text-brand-dark transition hover:bg-white"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
-            >
-              Join Auxilium
-            </Link>
-          </nav>
-        </header>
+    <main className="min-h-screen overflow-hidden bg-white">
+      <SiteHeader
+        secondaryAccountHref="/signup?role=customer"
+        secondaryAccountLabel="Join Auxilium"
+      />
 
-        <section className="grid min-h-[640px] items-center gap-14 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-28">
-          <div>
-            <p className="mb-6 text-sm font-bold uppercase tracking-[0.22em] text-brand">
+      <div className="mx-auto max-w-[1600px] px-6 sm:px-8 lg:px-12 xl:px-16">
+        <section className="grid min-h-[680px] items-center gap-14 py-16 lg:grid-cols-[0.92fr_1.08fr] lg:py-20 xl:min-h-[760px]">
+          <div className="max-w-3xl">
+            <p className="mb-7 text-sm font-medium uppercase tracking-[0.18em] text-foreground">
               Local help, made human
             </p>
-            <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-[-0.045em] text-brand-dark sm:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-normal leading-[1.02] tracking-[-0.05em] text-foreground sm:text-6xl xl:text-[5.75rem]">
               Good work should be easier to find.
             </h1>
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+            <p className="mt-9 max-w-2xl text-xl leading-[1.45] text-foreground sm:text-2xl">
               Auxilium connects people who need a hand with skilled local
               professionals ready to help—without losing the trust that makes
               local service personal.
             </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-11 grid max-w-2xl gap-4 sm:grid-cols-2">
               <Link
                 href="/providers"
-                className="rounded-full bg-brand px-7 py-3.5 text-center font-semibold text-white shadow-[0_12px_30px_rgba(22,91,69,0.18)] transition hover:-translate-y-0.5 hover:bg-brand-dark"
+                className="rounded-[1.05rem] border-2 border-foreground bg-foreground px-7 py-4 text-center text-lg text-white transition-colors hover:bg-white hover:text-foreground"
               >
                 Find a professional
               </Link>
               <Link
                 href="/signup?role=provider"
-                className="rounded-full border border-brand/25 bg-white px-7 py-3.5 text-center font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f1f7f3]"
+                className="rounded-[1.05rem] border-2 border-foreground bg-white px-7 py-4 text-center text-lg text-foreground transition-colors hover:bg-foreground hover:text-white"
               >
                 Offer your services
               </Link>
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-lg">
-            <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-[#d9ebdf] blur-2xl" />
-            <div className="absolute -bottom-20 -right-16 h-56 w-56 rounded-full bg-[#f5dfb9] blur-3xl" />
-            <div className="relative rounded-[2rem] border border-white/80 bg-white/90 p-7 shadow-[0_30px_80px_rgba(27,62,48,0.14)] backdrop-blur sm:p-9">
+          <div className="relative hidden min-h-[560px] overflow-hidden bg-[#e8dfd2] lg:block">
+            <div className="absolute inset-y-0 left-[12%] w-px bg-white/60" />
+            <div className="absolute inset-y-0 left-[42%] w-[18%] bg-white/25" />
+            <div className="absolute -right-[8%] top-[14%] h-[72%] w-[38%] bg-[#d5c3aa]/70" />
+            <div className="absolute bottom-10 left-10 right-10 border border-black/10 bg-white/95 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.14)]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-muted">Near Grand Rapids</p>
-                  <h2 className="mt-1 text-2xl font-semibold text-brand-dark">
+                  <h2 className="mt-1 text-2xl font-medium text-foreground">
                     Help for the life you live
                   </h2>
                 </div>
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#edf5f0] text-xl text-brand">
+                <span className="flex h-12 w-12 items-center justify-center border border-foreground bg-white text-xl text-foreground">
                   A
                 </span>
               </div>
@@ -116,16 +94,16 @@ export default function Home() {
                   (service, index) => (
                     <div
                       key={service}
-                      className="flex items-center gap-4 rounded-2xl border border-border bg-[#fbfcfa] p-4"
+                      className="flex items-center gap-4 border-t border-border py-4 first:border-t-0"
                     >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white">
+                      <span className="flex h-10 w-10 items-center justify-center bg-foreground text-sm font-bold text-white">
                         {index + 1}
                       </span>
                       <div className="flex-1">
                         <p className="font-semibold text-foreground">{service}</p>
                         <p className="mt-0.5 text-sm text-muted">Verified local providers</p>
                       </div>
-                      <span aria-hidden="true" className="text-xl text-brand">
+                      <span aria-hidden="true" className="text-xl text-foreground">
                         →
                       </span>
                     </div>
@@ -136,33 +114,34 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-t border-border py-20">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
+        <section id="about" className="scroll-mt-28 border-t border-border py-20 sm:py-28">
+          <div className="mb-14 max-w-5xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-foreground">
               Built for both sides of the work
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-brand-dark sm:text-4xl">
+            <h2 className="mt-5 text-4xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-5xl lg:text-6xl">
               A clearer way to ask for help—and a better way to offer it.
             </h2>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-12 md:grid-cols-3 md:gap-8 xl:gap-16">
             {benefits.map((benefit) => (
               <article
                 key={benefit.number}
-                className="rounded-3xl border border-border bg-white p-7"
+                className="border-t border-foreground pt-6"
               >
-                <span className="text-sm font-bold tracking-widest text-accent">
+                <span className="text-sm font-medium tracking-widest text-foreground">
                   {benefit.number}
                 </span>
-                <h3 className="mt-8 text-xl font-semibold text-brand-dark">
+                <h3 className="mt-8 text-2xl font-semibold text-foreground">
                   {benefit.title}
                 </h3>
-                <p className="mt-3 leading-7 text-muted">{benefit.description}</p>
+                <p className="mt-5 text-lg leading-8 text-foreground">
+                  {benefit.description}
+                </p>
               </article>
             ))}
           </div>
         </section>
-
       </div>
     </main>
   );

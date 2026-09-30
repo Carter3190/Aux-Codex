@@ -26,7 +26,7 @@ export default async function CustomerDashboardPage({
       title={`Welcome, ${profile.fullName.split(" ")[0]}.`}
     >
       {query.payment === "success" && (
-        <section className="mb-8 rounded-2xl border border-[#b9d8c9] bg-[#eef8f2] p-5 text-brand-dark">
+        <section className="mb-8 rounded-2xl border border-[#d0d0d0] bg-[#f2f2f2] p-5 text-brand-dark">
           <p className="font-semibold">Stripe checkout completed.</p>
           <p className="mt-1 text-sm leading-6 opacity-80">
             The signed Stripe confirmation is being reconciled. Your booking’s

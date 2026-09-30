@@ -26,7 +26,7 @@ function statusCopy(status: string, submittedAt: string | null) {
       title: "Your provider profile is approved",
       description:
         "Your profile is live in the marketplace. New customer booking requests appear below.",
-      tone: "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark",
+      tone: "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark",
     };
   }
   if (status === "rejected") {
@@ -128,7 +128,7 @@ export default async function ProviderDashboardPage() {
           </p>
         </div>
         <div
-          className="mt-5 h-3 overflow-hidden rounded-full bg-[#e5ebe6]"
+          className="mt-5 h-3 overflow-hidden rounded-full bg-[#e5e5e5]"
           role="progressbar"
           aria-valuenow={completion.percentage}
           aria-valuemin={0}
@@ -149,15 +149,15 @@ export default async function ProviderDashboardPage() {
                 key={key}
                 className={`rounded-2xl border p-5 ${
                   complete
-                    ? "border-[#b9d8c9] bg-[#f4faf6]"
-                    : "border-border bg-[#fafbf9]"
+                    ? "border-[#d0d0d0] bg-[#f7f7f7]"
+                    : "border-border bg-[#fafafa]"
                 }`}
               >
                 <span
                   className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
                     complete
                       ? "bg-brand text-white"
-                      : "bg-[#ecefe9] text-muted"
+                      : "bg-[#ededed] text-muted"
                   }`}
                   aria-hidden="true"
                 >

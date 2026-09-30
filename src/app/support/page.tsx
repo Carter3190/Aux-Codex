@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import { getSupportEmail } from "@/lib/support/config";
 
 export const metadata: Metadata = {
@@ -34,28 +35,13 @@ export default function SupportPage() {
 
   return (
     <main className="bg-background">
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-6 py-5 lg:px-10">
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-[0.18em] text-brand-dark"
-          >
-            AUXILIUM
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-brand-dark transition hover:border-brand"
-          >
-            Sign in
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
-      <section className="mx-auto max-w-6xl px-6 py-14 lg:px-10 lg:py-20">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
+      <section className="mx-auto max-w-[1400px] px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
+        <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">
           Auxilium support
         </p>
-        <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-brand-dark sm:text-5xl">
+        <h1 className="mt-4 max-w-4xl text-5xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">
           Let’s get you to the right place.
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">
@@ -67,7 +53,7 @@ export default function SupportPage() {
           {supportPaths.map((path) => (
             <article
               key={path.href}
-              className="flex flex-col rounded-3xl border border-border bg-white p-7"
+              className="flex flex-col rounded-[1.25rem] border border-border bg-white p-7"
             >
               <h2 className="text-xl font-semibold text-brand-dark">
                 {path.title}
@@ -75,7 +61,7 @@ export default function SupportPage() {
               <p className="mt-3 flex-1 leading-7 text-muted">{path.body}</p>
               <Link
                 href={path.href}
-                className="mt-7 font-semibold text-brand hover:text-brand-dark"
+                className="mt-7 font-semibold text-foreground underline underline-offset-4"
               >
                 {path.label} →
               </Link>
@@ -83,7 +69,7 @@ export default function SupportPage() {
           ))}
         </div>
 
-        <section className="mt-8 rounded-3xl border border-border bg-[#eef5f0] p-7 sm:p-9">
+        <section className="mt-8 rounded-[1.25rem] border border-border bg-[#f3f3f3] p-7 sm:p-9">
           <h2 className="text-2xl font-semibold text-brand-dark">
             Contact Auxilium
           </h2>
@@ -92,7 +78,7 @@ export default function SupportPage() {
               For a question that cannot be submitted through a dashboard,
               email{" "}
               <a
-                className="font-semibold text-brand underline underline-offset-4"
+                className="font-semibold text-foreground underline underline-offset-4"
                 href={`mailto:${supportEmail}`}
               >
                 {supportEmail}
@@ -110,7 +96,7 @@ export default function SupportPage() {
           )}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-[#ead09c] bg-[#fff8e9] p-7 sm:p-9">
+        <section className="mt-8 rounded-[1.25rem] border border-[#ead09c] bg-[#fff8e9] p-7 sm:p-9">
           <h2 className="text-xl font-semibold text-[#704d16]">
             Emergency or immediate danger?
           </h2>

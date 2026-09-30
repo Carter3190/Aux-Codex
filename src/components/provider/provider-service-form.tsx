@@ -28,12 +28,12 @@ export function ProviderServiceForm({ services }: { services: ProviderService[] 
           {services.map((service) => (
             <div
               key={service.id}
-              className="flex flex-col gap-3 rounded-2xl border border-border bg-[#fafbf9] p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-[#fafafa] p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold text-brand-dark">{service.name}</p>
-                  <span className="rounded-full bg-[#eef6f1] px-2.5 py-1 text-xs font-semibold text-brand-dark">
+                  <span className="rounded-full bg-[#f2f2f2] px-2.5 py-1 text-xs font-semibold text-brand-dark">
                     {labelFromSnakeCase(service.pricingType)}
                   </span>
                 </div>
@@ -56,7 +56,7 @@ export function ProviderServiceForm({ services }: { services: ProviderService[] 
         </div>
       )}
 
-      <form action={action} className="space-y-4 rounded-2xl bg-[#f4f7f4] p-5">
+      <form action={action} className="space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="text-sm font-semibold text-foreground">
             Service name

@@ -60,7 +60,7 @@ export default async function ConversationPage({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
         <section className="overflow-hidden rounded-3xl border border-border bg-white">
-          <div className="border-b border-border bg-[#f7faf7] px-6 py-5">
+          <div className="border-b border-border bg-[#f7f7f7] px-6 py-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.13em] text-brand">
@@ -76,7 +76,7 @@ export default async function ConversationPage({
             </div>
           </div>
 
-          <div className="max-h-[600px] min-h-[360px] space-y-5 overflow-y-auto bg-[#fbfcfa] p-5 sm:p-7">
+          <div className="max-h-[600px] min-h-[360px] space-y-5 overflow-y-auto bg-[#fafafa] p-5 sm:p-7">
             {messages.length === 0 ? (
               <div className="flex min-h-72 items-center justify-center text-center">
                 <div>
@@ -123,7 +123,7 @@ export default async function ConversationPage({
           {canSend ? (
             <MessageComposer bookingId={booking.id} />
           ) : (
-            <div className="border-t border-border bg-[#f4f5f3] p-5 text-sm leading-6 text-muted">
+            <div className="border-t border-border bg-[#f4f4f4] p-5 text-sm leading-6 text-muted">
               This conversation is read-only because the booking is {booking.status}.
             </div>
           )}

@@ -3,7 +3,7 @@
 const buttonStyle = {
   border: 0,
   borderRadius: "999px",
-  background: "#17684f",
+  background: "#080808",
   color: "white",
   cursor: "pointer",
   fontSize: "16px",
@@ -31,7 +31,7 @@ export default function GlobalError({ retry }: { retry: () => void }) {
           <title>Something went wrong | Auxilium</title>
           <p
             style={{
-              color: "#17684f",
+              color: "#080808",
               fontSize: "14px",
               fontWeight: 700,
               letterSpacing: "3px",
@@ -40,7 +40,7 @@ export default function GlobalError({ retry }: { retry: () => void }) {
           >
             Auxilium
           </p>
-          <h1 style={{ color: "#0f4f3d", fontSize: "42px", margin: "20px 0" }}>
+          <h1 style={{ color: "#080808", fontSize: "42px", margin: "20px 0" }}>
             We hit an unexpected problem.
           </h1>
           <p style={{ color: "#64746d", fontSize: "18px", lineHeight: 1.7 }}>

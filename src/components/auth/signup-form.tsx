@@ -27,7 +27,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
               value="customer"
               defaultChecked={defaultRole === "customer"}
             />
-            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-brand peer-checked:bg-[#eef6f1] peer-checked:text-brand-dark peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
+            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-foreground peer-checked:bg-[#f1f1f1] peer-checked:text-foreground peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
               Find help
             </span>
           </label>
@@ -39,7 +39,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
               value="provider"
               defaultChecked={defaultRole === "provider"}
             />
-            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-brand peer-checked:bg-[#eef6f1] peer-checked:text-brand-dark peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
+            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-foreground peer-checked:bg-[#f1f1f1] peer-checked:text-foreground peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
               Offer services
             </span>
           </label>
@@ -62,7 +62,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
           type="text"
           autoComplete="name"
           required
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#95a099] focus:border-brand focus:ring-4 focus:ring-brand/10"
+          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
           placeholder="Your full name"
         />
         {state.fieldErrors?.fullName && (
@@ -82,7 +82,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
           type="email"
           autoComplete="email"
           required
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#95a099] focus:border-brand focus:ring-4 focus:ring-brand/10"
+          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
           placeholder="you@example.com"
         />
         {state.fieldErrors?.email && (
@@ -119,13 +119,13 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
       </div>
 
       <div>
-        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-[#fbfcfa] p-4">
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-[#fafafa] p-4">
           <input
             type="checkbox"
             name="terms"
             value="accepted"
             required
-            className="mt-1 h-4 w-4 shrink-0 accent-[#165b45]"
+            className="mt-1 h-4 w-4 shrink-0 accent-black"
           />
           <span className="text-sm leading-6 text-muted">
             I agree to the{" "}

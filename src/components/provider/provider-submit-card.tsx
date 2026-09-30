@@ -21,7 +21,7 @@ export function ProviderSubmitCard({
   );
 
   return (
-    <form action={action} className="rounded-3xl border border-brand/20 bg-[#eaf5ef] p-6 sm:p-8">
+    <form action={action} className="rounded-3xl border border-brand/20 bg-[#f2f2f2] p-6 sm:p-8">
       <p className="text-sm font-bold uppercase tracking-[0.16em] text-brand">
         Final step
       </p>

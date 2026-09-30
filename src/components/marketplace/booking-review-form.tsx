@@ -11,7 +11,7 @@ export function BookingReviewForm({ bookingId }: { bookingId: string }) {
   );
 
   return (
-    <form action={action} className="mt-5 space-y-4 rounded-2xl border border-[#d7dfd9] bg-[#fbfcfa] p-5">
+    <form action={action} className="mt-5 space-y-4 rounded-2xl border border-[#d9d9d9] bg-[#fafafa] p-5">
       <input type="hidden" name="bookingId" value={bookingId} />
       <div>
         <p className="font-semibold text-brand-dark">Review your completed service</p>
@@ -57,7 +57,7 @@ export function BookingReviewForm({ bookingId }: { bookingId: string }) {
           className={`rounded-xl border px-4 py-3 text-sm ${
             state.status === "error"
               ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark"
+              : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
           }`}
         >
           {state.message}

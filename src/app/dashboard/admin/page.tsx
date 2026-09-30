@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
 
       <Link
         href="/dashboard/admin/cases"
-        className="mt-5 flex items-center justify-between rounded-2xl border border-brand/25 bg-[#eef6f1] px-5 py-4 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#e4f1e9]"
+        className="mt-5 flex items-center justify-between rounded-2xl border border-brand/25 bg-[#f2f2f2] px-5 py-4 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#e4f1e9]"
       >
         <span>Open resolution center</span>
         <span aria-hidden="true">→</span>
@@ -91,7 +91,7 @@ export default async function AdminDashboardPage() {
                 key={application.profile.id}
                 className="overflow-hidden rounded-3xl border border-border bg-white"
               >
-                <header className="border-b border-border bg-[#f7f9f6] p-6 sm:p-8">
+                <header className="border-b border-border bg-[#f7f7f7] p-6 sm:p-8">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
@@ -144,7 +144,7 @@ export default async function AdminDashboardPage() {
                         {application.details.bio || "No introduction yet."}
                       </p>
                       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                        <div className="rounded-xl bg-[#f7f9f6] p-4">
+                        <div className="rounded-xl bg-[#f7f7f7] p-4">
                           <dt className="font-semibold text-muted">Service area</dt>
                           <dd className="mt-1 text-foreground">
                             {application.details.serviceArea || "Not provided"}
@@ -153,7 +153,7 @@ export default async function AdminDashboardPage() {
                               : ""}
                           </dd>
                         </div>
-                        <div className="rounded-xl bg-[#f7f9f6] p-4">
+                        <div className="rounded-xl bg-[#f7f7f7] p-4">
                           <dt className="font-semibold text-muted">Experience</dt>
                           <dd className="mt-1 text-foreground">
                             {application.details.yearsExperience === null
@@ -188,7 +188,7 @@ export default async function AdminDashboardPage() {
                                     </p>
                                   )}
                                 </div>
-                                <span className="rounded-full bg-[#eef6f1] px-3 py-1 text-xs font-bold text-brand-dark">
+                                <span className="rounded-full bg-[#f2f2f2] px-3 py-1 text-xs font-bold text-brand-dark">
                                   {formatPrice(
                                     service.pricingType,
                                     service.priceCents,
@@ -215,7 +215,7 @@ export default async function AdminDashboardPage() {
                               className="overflow-hidden rounded-2xl border border-border"
                             >
                               <div
-                                className="aspect-[4/3] bg-[#eef1ed] bg-cover bg-center"
+                                className="aspect-[4/3] bg-[#efefef] bg-cover bg-center"
                                 style={{
                                   backgroundImage: `url(${photo.publicUrl})`,
                                 }}

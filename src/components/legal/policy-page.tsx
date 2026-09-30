@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 export function PolicyPage({
   eyebrow,
@@ -15,28 +15,13 @@ export function PolicyPage({
 }) {
   return (
     <main className="bg-background">
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-6 py-5 lg:px-10">
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-[0.18em] text-brand-dark"
-          >
-            AUXILIUM
-          </Link>
-          <Link
-            href="/providers"
-            className="text-sm font-semibold text-brand transition hover:text-brand-dark"
-          >
-            Browse providers
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       <article className="mx-auto max-w-4xl px-6 py-14 lg:px-10 lg:py-20">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">
+        <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">
           {eyebrow}
         </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-brand-dark sm:text-5xl">
+        <h1 className="mt-4 text-5xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">
           {title}
         </h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-muted">{summary}</p>
@@ -44,7 +29,7 @@ export function PolicyPage({
           Last updated {updated}
         </p>
 
-        <div className="policy-content mt-12 space-y-10 rounded-[2rem] border border-border bg-white p-7 sm:p-10">
+        <div className="policy-content mt-12 space-y-10 rounded-[1.25rem] border border-border bg-white p-7 sm:p-10">
           {children}
         </div>
       </article>

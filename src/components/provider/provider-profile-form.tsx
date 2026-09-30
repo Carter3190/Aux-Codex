@@ -9,7 +9,7 @@ import {
 import { FormFeedback } from "./form-feedback";
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#95a099] focus:border-brand focus:ring-4 focus:ring-brand/10";
+  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10";
 
 export function ProviderProfileForm({ details }: { details: ProviderDetails }) {
   const [state, action, pending] = useActionState(

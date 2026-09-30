@@ -20,7 +20,7 @@ export default function CheckEmailPage() {
       </p>
       <Link
         href="/login"
-        className="mt-7 inline-flex rounded-full border border-brand/25 px-6 py-3 font-semibold text-brand transition hover:bg-[#eef6f1]"
+        className="mt-7 inline-flex rounded-full border border-brand/25 px-6 py-3 font-semibold text-brand transition hover:bg-[#f2f2f2]"
       >
         Return to sign in
       </Link>

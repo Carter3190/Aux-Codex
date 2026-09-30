@@ -11,7 +11,7 @@ export function BookingResponseForm({ bookingId }: { bookingId: string }) {
   );
 
   return (
-    <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f4f7f4] p-4">
+    <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f4f4f4] p-4">
       <input type="hidden" name="bookingId" value={bookingId} />
       <label className="block text-sm font-semibold text-foreground">
         Response note <span className="font-normal text-muted">(optional)</span>
@@ -32,7 +32,7 @@ export function BookingResponseForm({ bookingId }: { bookingId: string }) {
           className={`rounded-xl border px-4 py-3 text-sm ${
             state.status === "error"
               ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark"
+              : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
           }`}
         >
           {state.message}

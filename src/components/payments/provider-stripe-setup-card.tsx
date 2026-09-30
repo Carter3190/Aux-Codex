@@ -45,7 +45,7 @@ export function ProviderStripeSetupCard({
 
   if (setup.ready) {
     return (
-      <section className="mt-8 rounded-3xl border border-[#b9d8c9] bg-[#eef8f2] p-6 sm:p-7">
+      <section className="mt-8 rounded-3xl border border-[#d0d0d0] bg-[#f2f2f2] p-6 sm:p-7">
         <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">
           Payments: ready
         </p>

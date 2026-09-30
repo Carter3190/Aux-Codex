@@ -44,7 +44,7 @@ function UploadMessage({ state }: { state: ProviderActionState }) {
       className={`mt-3 rounded-xl border px-4 py-3 text-sm ${
         state.status === "error"
           ? "border-red-200 bg-red-50 text-red-800"
-          : "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark"
+          : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
       }`}
     >
       {state.message}
@@ -203,7 +203,7 @@ export function ProviderUploadManager({
             ))}
           </div>
         )}
-        <form onSubmit={handlePhoto} className="mt-4 space-y-4 rounded-2xl bg-[#f4f7f4] p-5">
+        <form onSubmit={handlePhoto} className="mt-4 space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
           <label className="block text-sm font-semibold text-foreground">
             Photo
             <input
@@ -272,7 +272,7 @@ export function ProviderUploadManager({
             ))}
           </div>
         )}
-        <form onSubmit={handleCredential} className="mt-4 space-y-4 rounded-2xl bg-[#f4f7f4] p-5">
+        <form onSubmit={handleCredential} className="mt-4 space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-semibold text-foreground">
               Credential type

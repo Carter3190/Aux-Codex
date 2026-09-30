@@ -43,7 +43,7 @@ export default async function SetupPage({
             ? "Add the server-only keys below to .env.local, then run the Stripe payments migration in the Supabase SQL Editor. Full instructions are included in the repository README."
             : "Add the project URL and publishable key to .env.local, then run the profiles, provider-onboarding, customer-marketplace, and booking-messages migrations in the Supabase SQL Editor. Full instructions are included in the repository README."}
         </p>
-        <div className="mt-7 rounded-2xl bg-[#f4f7f4] p-5 font-mono text-sm leading-7 text-brand-dark">
+        <div className="mt-7 rounded-2xl bg-[#f4f4f4] p-5 font-mono text-sm leading-7 text-brand-dark">
           <p>NEXT_PUBLIC_SUPABASE_URL=</p>
           <p>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=</p>
           {paymentsReason && (

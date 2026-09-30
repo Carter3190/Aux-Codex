@@ -33,7 +33,7 @@ export function ProviderCaseResponseForm({ caseId }: { caseId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full border border-brand bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:bg-[#eef6f1] disabled:opacity-50"
+        className="rounded-full border border-brand bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:bg-[#f2f2f2] disabled:opacity-50"
       >
         {pending ? "Sending response…" : "Submit provider response"}
       </button>

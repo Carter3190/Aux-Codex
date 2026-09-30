@@ -38,7 +38,7 @@ export function MessageComposer({ bookingId }: { bookingId: string }) {
             event.currentTarget.form?.requestSubmit();
           }
         }}
-        className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-foreground outline-none transition placeholder:text-[#95a099] focus:border-brand focus:ring-4 focus:ring-brand/10"
+        className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
         placeholder="Write a message…"
       />
       {state.fieldErrors?.body?.[0] && (
@@ -50,7 +50,7 @@ export function MessageComposer({ bookingId }: { bookingId: string }) {
           className={`mt-3 rounded-xl border px-4 py-3 text-sm ${
             state.status === "error"
               ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#b9d8c9] bg-[#eef8f2] text-brand-dark"
+              : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
           }`}
         >
           {state.message}

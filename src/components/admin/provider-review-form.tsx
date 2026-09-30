@@ -23,7 +23,7 @@ export function ProviderReviewForm({
   );
 
   return (
-    <form action={action} className="space-y-4 rounded-2xl bg-[#f4f7f4] p-5">
+    <form action={action} className="space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
       <input type="hidden" name="providerId" value={providerId} />
       <label className="block text-sm font-semibold text-foreground">
         Review notes

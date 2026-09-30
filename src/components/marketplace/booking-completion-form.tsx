@@ -11,7 +11,7 @@ export function BookingCompletionForm({ bookingId }: { bookingId: string }) {
   );
 
   return (
-    <form action={action} className="mt-5 space-y-3 rounded-2xl border border-[#b9d8c9] bg-[#f4faf6] p-4">
+    <form action={action} className="mt-5 space-y-3 rounded-2xl border border-[#d0d0d0] bg-[#f7f7f7] p-4">
       <input type="hidden" name="bookingId" value={bookingId} />
       <div>
         <p className="font-semibold text-brand-dark">Has the service been completed?</p>
@@ -25,7 +25,7 @@ export function BookingCompletionForm({ bookingId }: { bookingId: string }) {
           className={`rounded-xl border px-4 py-3 text-sm ${
             state.status === "error"
               ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#b9d8c9] bg-white text-brand-dark"
+              : "border-[#d0d0d0] bg-white text-brand-dark"
           }`}
         >
           {state.message}

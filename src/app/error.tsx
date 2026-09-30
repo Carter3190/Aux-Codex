@@ -26,7 +26,7 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
           </button>
           <Link
             href="/"
-            className="rounded-full border border-border px-6 py-3 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#eef6f1]"
+            className="rounded-full border border-border px-6 py-3 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f2f2f2]"
           >
             Return home
           </Link>

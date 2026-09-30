@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 const statusTone = {
   pending: "bg-[#fff8e9] text-[#76531c]",
-  accepted: "bg-[#eef8f2] text-brand-dark",
+  accepted: "bg-[#f2f2f2] text-brand-dark",
   declined: "bg-red-50 text-red-800",
-  cancelled: "bg-[#f1f2f0] text-muted",
+  cancelled: "bg-[#f4f4f4] text-muted",
   completed: "bg-[#f1f6fb] text-[#244f78]",
 } as const;
 
@@ -44,7 +44,7 @@ export default async function MessagesPage() {
             <Link
               key={conversation.booking.id}
               href={`/dashboard/messages/${conversation.booking.id}`}
-              className={`grid gap-4 p-6 transition hover:bg-[#f7faf7] sm:grid-cols-[1fr_auto] sm:items-center ${
+              className={`grid gap-4 p-6 transition hover:bg-[#f7f7f7] sm:grid-cols-[1fr_auto] sm:items-center ${
                 index > 0 ? "border-t border-border" : ""
               }`}
             >

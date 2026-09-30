@@ -24,7 +24,7 @@ export default function AuthErrorPage() {
         </Link>
         <Link
           href="/signup"
-          className="rounded-full border border-brand/25 px-6 py-3 font-semibold text-brand hover:bg-[#eef6f1]"
+          className="rounded-full border border-brand/25 px-6 py-3 font-semibold text-brand hover:bg-[#f2f2f2]"
         >
           Sign up
         </Link>
