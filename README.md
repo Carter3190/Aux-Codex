@@ -30,7 +30,7 @@ will run separately from the public Squarespace website at
 - Public provider rating summaries and review history
 - Customer cancellation, refund, and service-issue requests for paid bookings
 - Provider responses and an audited admin resolution queue
-- Full or partial Stripe refunds that reverse the provider transfer and 5% fee proportionally
+- Full or partial Stripe refunds that refund the provider charge and 5% fee proportionally
 - Signed Stripe refund reconciliation and card-dispute alerts
 - Transactional email alerts for provider reviews, bookings, completion, and resolutions
 - Public Terms, Privacy, Provider Agreement, Provider Standards, refund policy, and Support Center
@@ -74,9 +74,10 @@ Open the Supabase **SQL Editor** and run these migrations in order:
 5. `supabase/migrations/20260901020000_stripe_connect_payments.sql`
 6. `supabase/migrations/20260910000000_booking_completion_reviews.sql`
 7. `supabase/migrations/20260914000000_booking_resolution_center.sql`
+8. `supabase/migrations/20261002000000_direct_charge_payments.sql`
 
-If completed bookings and reviews are already installed, run only the seventh
-migration.
+If migrations 1–7 are already installed, apply only the eighth migration for
+the direct-charge upgrade.
 
 The migrations create profile roles, automatic profile creation, the provider
 onboarding tables, storage buckets, public provider-search functions, private
@@ -87,14 +88,16 @@ and privacy-limited verified reviews are public marketplace content.
 
 ### 4. Connect Stripe test mode
 
-The payment integration uses Stripe Connect Accounts v2 recipient accounts and
-destination charges. Stripe collects provider identity and bank information;
-Auxilium stores only the connected account ID and non-sensitive status flags.
+The payment integration uses Stripe Connect Accounts v2 merchant accounts and
+direct charges. Each provider is the merchant for their customer charges and
+pays Stripe's processing costs; Auxilium collects a 5% application fee. Stripe
+collects provider identity and bank information. Auxilium stores only the
+connected account ID and non-sensitive status flags.
 
 1. In **Supabase → Project Settings → API Keys**, create or copy a server-only
    secret key beginning with `sb_secret_`.
-2. In the Stripe Dashboard, activate **Connect** for the platform, choose **You
-   collect payments and pay recipients**, and use **test mode** while developing.
+2. In the Stripe Dashboard, activate **Connect**, configure providers as the
+   merchants for their customer payments, and use **test mode** while developing.
 3. In **Stripe → Developers → API keys**, copy the test secret key beginning with
    `sk_test_`.
 4. Add these server-only values to `.env.local`:
@@ -109,16 +112,19 @@ APP_URL=http://localhost:3000
 Never prefix either secret with `NEXT_PUBLIC_`, commit it, paste it into an issue,
 or expose it in browser code.
 
-For local webhook testing, install the Stripe CLI, sign in, and run:
+For local webhook testing, install the Stripe CLI, sign in, and run these in
+separate terminals:
 
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
+stripe listen --forward-connect-to localhost:3000/api/stripe/webhook
 ```
 
-Copy the `whsec_...` value printed by the listener into `.env.local`:
+Copy each listener's `whsec_...` value into `.env.local`:
 
 ```bash
 STRIPE_WEBHOOK_SECRET=whsec_your_local_listener_secret
+STRIPE_CONNECT_WEBHOOK_SECRET=whsec_your_connected_accounts_listener_secret
 ```
 
 To test Auxilium's transactional notifications, create a Resend API key and add:
@@ -136,8 +142,10 @@ marketplace actions continue normally and notification delivery is skipped.
 key is rejected unless `STRIPE_LIVE_MODE_ENABLED=true`; keep it false in test mode.
 
 Restart `npm run dev` after changing environment variables. For production,
-create a Stripe webhook endpoint at
-`https://app.theauxillium.com/api/stripe/webhook` and subscribe it to:
+keep the existing **Your account** webhook destination for legacy payments, then
+create a second destination at `https://app.theauxillium.com/api/stripe/webhook`
+with **Events from** set to **Connected accounts**. Subscribe the connected-
+account destination to:
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
@@ -152,8 +160,9 @@ create a Stripe webhook endpoint at
 - `charge.dispute.funds_withdrawn`
 - `charge.dispute.funds_reinstated`
 
-Use that endpoint's own signing secret in Vercel. Local and production webhook
-secrets are different.
+Save the **Your account** signing secret as `STRIPE_WEBHOOK_SECRET` and the
+**Connected accounts** signing secret as `STRIPE_CONNECT_WEBHOOK_SECRET` in
+Vercel. Every destination and environment has its own signing secret.
 
 ### 5. Configure authentication URLs
 
@@ -244,12 +253,13 @@ account being reviewed.
 5. Complete Checkout with Stripe's test card `4242 4242 4242 4242`, any future
    expiry, any three-digit CVC, and any postal code.
 6. Confirm the customer and provider dashboards both show **Paid**. In Stripe,
-   verify the destination charge transferred 95% to the connected account and
+   verify the direct charge belongs to the provider's connected account and
    created a 5% application fee for Auxilium.
 
-Auxilium's 5% is the gross platform commission. With destination charges, Stripe
-deducts its payment-processing fee from the platform balance, so net platform
-revenue is lower than 5%.
+Auxilium's 5% is the gross platform commission. With direct charges, Stripe
+deducts its payment-processing fee from the provider's connected-account
+balance, so the provider receives the booking price minus Auxilium's fee and
+Stripe's applicable fees.
 
 ## Testing completed bookings and reviews
 
@@ -273,8 +283,8 @@ revenue is lower than 5%.
 4. Review both statements. To test a refund, choose a full or partial amount,
    enter decision notes, check the final confirmation box, and issue the refund.
 5. Confirm both participant dashboards show the refund amount and resolution.
-6. In Stripe test mode, confirm the refund reverses the destination transfer and
-   Auxilium’s application fee proportionally.
+6. In Stripe test mode, confirm the provider charge and Auxilium application fee
+   are refunded proportionally.
 
 The final admin confirmation creates a real Stripe refund for the environment
 whose secret key is configured. Keep test keys installed during development.

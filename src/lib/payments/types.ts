@@ -25,7 +25,7 @@ export type ProviderPaymentSetup = {
   hasAccount: boolean;
   detailsSubmitted: boolean;
   payoutsEnabled: boolean;
-  transfersActive: boolean;
+  paymentsEnabled: boolean;
   requirementsDueCount: number;
   ready: boolean;
   message?: string;

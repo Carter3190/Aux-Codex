@@ -8,8 +8,8 @@ import { requireMarketplaceActionRole } from "@/lib/marketplace/data";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getAppUrl,
+  isStripeConnectWebhookConfigured,
   isStripeServerConfigured,
-  isStripeWebhookConfigured,
 } from "@/lib/stripe/config";
 import { getStripe } from "@/lib/stripe/server";
 import { syncProviderPaymentAccount } from "./data";
@@ -34,7 +34,7 @@ type PaymentAccountRow = {
 type PreparedPaymentRow = {
   payment_id: string;
   provider_id: string;
-  stripe_account_id: string;
+  stripe_account_id: string | null;
   amount_cents: number;
   platform_fee_cents: number;
   checkout_attempt: number;
@@ -177,19 +177,21 @@ export async function startStripeOnboarding(
     }
 
     const stripe = getStripe();
-    let stripeAccountId = (existing.data as PaymentAccountRow | null)
-      ?.stripe_account_id;
-
-    if (!stripeAccountId) {
-      const account = await stripe.v2.core.accounts.create(
+    const existingStripeAccountId = (
+      existing.data as PaymentAccountRow | null
+    )?.stripe_account_id;
+    const contactEmail =
+      typeof claimsResult.data?.claims?.email === "string"
+        ? claimsResult.data.claims.email
+        : undefined;
+    const displayName =
+      detailsResult.data?.business_name || profileResult.data.full_name;
+    const createMerchantAccount = () =>
+      stripe.v2.core.accounts.create(
         {
-          contact_email:
-            typeof claimsResult.data?.claims?.email === "string"
-              ? claimsResult.data.claims.email
-              : undefined,
-          display_name:
-            detailsResult.data?.business_name || profileResult.data.full_name,
-          dashboard: "express",
+          contact_email: contactEmail,
+          display_name: displayName,
+          dashboard: "none",
           identity: {
             country: "us",
           },
@@ -197,33 +199,70 @@ export async function startStripeOnboarding(
             currency: "usd",
             locales: ["en-US"],
             profile: {
-              doing_business_as:
-                detailsResult.data?.business_name ||
-                profileResult.data.full_name,
+              doing_business_as: displayName,
               product_description:
                 "Local services booked through the Auxilium marketplace.",
             },
             responsibilities: {
-              fees_collector: "application",
-              losses_collector: "application",
+              fees_collector: "stripe",
+              losses_collector: "stripe",
             },
           },
           configuration: {
-            recipient: {
+            merchant: {
               capabilities: {
-                stripe_balance: {
-                  stripe_transfers: { requested: true },
-                },
+                card_payments: { requested: true },
               },
             },
           },
-          include: ["configuration.recipient", "identity", "requirements"],
+          include: ["configuration.merchant", "identity", "requirements"],
           metadata: {
             auxilium_provider_id: userId,
           },
         },
-        { idempotencyKey: `auxilium_provider_v2_${userId}` },
+        { idempotencyKey: `auxilium_provider_v2_merchant_${userId}` },
       );
+
+    let stripeAccountId = existingStripeAccountId;
+    if (stripeAccountId) {
+      const account = await stripe.v2.core.accounts.retrieve(stripeAccountId, {
+        include: ["configuration.merchant", "defaults"],
+      });
+      const responsibilities = account.defaults?.responsibilities;
+      const usesMerchantModel =
+        !account.closed &&
+        account.dashboard === "none" &&
+        account.configuration?.merchant?.applied === true &&
+        responsibilities?.fees_collector === "stripe" &&
+        responsibilities.losses_collector === "stripe";
+
+      if (usesMerchantModel) {
+        await stripe.v2.core.accounts.update(stripeAccountId, {
+          configuration: {
+            merchant: {
+              applied: true,
+              capabilities: {
+                card_payments: { requested: true },
+              },
+            },
+          },
+          include: ["configuration.merchant", "requirements"],
+        });
+      } else {
+        const replacementAccount = await createMerchantAccount();
+        stripeAccountId = replacementAccount.id;
+
+        const { error: replaceError } = await admin
+          .from("provider_payment_accounts")
+          .update({ stripe_account_id: replacementAccount.id })
+          .eq("provider_id", userId)
+          .eq("stripe_account_id", existingStripeAccountId);
+        if (replaceError) {
+          return failure(paymentDatabaseMessage(replaceError.message));
+        }
+      }
+    } else {
+      const account = await createMerchantAccount();
       stripeAccountId = account.id;
 
       const { error: saveError } = await admin
@@ -241,7 +280,7 @@ export async function startStripeOnboarding(
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
-          configurations: ["recipient"],
+          configurations: ["merchant"],
           refresh_url: `${appUrl}/dashboard/provider?stripe=refresh`,
           return_url: `${appUrl}/dashboard/provider?stripe=return`,
           collection_options: { fields: "eventually_due" },
@@ -280,9 +319,9 @@ export async function startBookingCheckout(
   const bookingId = bookingIdSchema.safeParse(formData.get("bookingId"));
   if (!bookingId.success) return failure("Invalid booking request.");
 
-  if (!isStripeWebhookConfigured()) {
+  if (!isStripeConnectWebhookConfigured()) {
     return failure(
-      "Secure checkout will open after the signed Stripe webhook is configured.",
+      "Secure checkout will open after the signed Stripe connected-account webhook is configured.",
     );
   }
 
@@ -343,9 +382,42 @@ export async function startBookingCheckout(
     if (!prepared) return failure("Unable to prepare secure checkout.");
 
     const stripe = getStripe();
+    if (!prepared.stripe_account_id) {
+      if (prepared.stripe_checkout_session_id) {
+        const legacySession = await stripe.checkout.sessions.retrieve(
+          prepared.stripe_checkout_session_id,
+        );
+        if (legacySession.status === "open") {
+          await stripe.checkout.sessions.expire(legacySession.id);
+        }
+      }
+
+      const { error: expireError } = await admin
+        .from("booking_payments")
+        .update({
+          status: "expired",
+          checkout_expires_at: new Date().toISOString(),
+        })
+        .eq("id", prepared.payment_id)
+        .eq("status", "checkout_pending")
+        .is("stripe_account_id", null);
+      if (expireError) {
+        return failure(
+          "Unable to upgrade this checkout safely. Please try again.",
+        );
+      }
+
+      return failure(
+        "Your previous checkout was safely closed while payments were upgraded. Select Pay securely again to continue.",
+      );
+    }
+
+    const stripeContext = prepared.stripe_account_id;
     if (prepared.stripe_checkout_session_id) {
       const existingSession = await stripe.checkout.sessions.retrieve(
         prepared.stripe_checkout_session_id,
+        {},
+        { stripeContext },
       );
       if (existingSession.status === "open" && existingSession.url) {
         checkoutUrl = existingSession.url;
@@ -383,9 +455,6 @@ export async function startBookingCheckout(
           ],
           payment_intent_data: {
             application_fee_amount: prepared.platform_fee_cents,
-            transfer_data: {
-              destination: prepared.stripe_account_id,
-            },
             receipt_email:
               typeof claimsResult.data?.claims?.email === "string"
                 ? claimsResult.data.claims.email
@@ -407,6 +476,7 @@ export async function startBookingCheckout(
         },
         {
           idempotencyKey: `auxilium_booking_${bookingId.data}_attempt_${prepared.checkout_attempt}`,
+          stripeContext,
         },
       );
 
@@ -417,6 +487,7 @@ export async function startBookingCheckout(
       const { error: saveError } = await admin
         .from("booking_payments")
         .update({
+          stripe_account_id: stripeContext,
           stripe_checkout_session_id: session.id,
           checkout_expires_at: new Date(session.expires_at * 1000).toISOString(),
         })
@@ -424,6 +495,11 @@ export async function startBookingCheckout(
         .eq("checkout_attempt", prepared.checkout_attempt)
         .eq("status", "checkout_pending");
       if (saveError) {
+        await stripe.checkout.sessions.expire(
+          session.id,
+          {},
+          { stripeContext },
+        );
         return failure("Unable to save the secure checkout session.");
       }
 

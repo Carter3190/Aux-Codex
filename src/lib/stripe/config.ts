@@ -4,6 +4,8 @@ import { isSupabaseAdminConfigured } from "@/lib/supabase/admin-config";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+const stripeConnectWebhookSecret =
+  process.env.STRIPE_CONNECT_WEBHOOK_SECRET?.trim();
 const stripeLiveModeEnabled =
   process.env.STRIPE_LIVE_MODE_ENABLED?.trim().toLowerCase() === "true";
 
@@ -31,6 +33,13 @@ export function isStripeServerConfigured() {
 export function isStripeWebhookConfigured() {
   return Boolean(
     isStripeServerConfigured() && stripeWebhookSecret?.startsWith("whsec_"),
+  );
+}
+
+export function isStripeConnectWebhookConfigured() {
+  return Boolean(
+    isStripeServerConfigured() &&
+      stripeConnectWebhookSecret?.startsWith("whsec_"),
   );
 }
 
@@ -62,6 +71,20 @@ export function getStripeWebhookSecret() {
   }
 
   return stripeWebhookSecret;
+}
+
+export function getStripeWebhookSecrets() {
+  const secrets = [stripeWebhookSecret, stripeConnectWebhookSecret].filter(
+    (secret): secret is string => Boolean(secret?.startsWith("whsec_")),
+  );
+
+  if (secrets.length === 0) {
+    throw new Error(
+      "Stripe webhooks are not configured. Add STRIPE_WEBHOOK_SECRET and STRIPE_CONNECT_WEBHOOK_SECRET to .env.local.",
+    );
+  }
+
+  return [...new Set(secrets)];
 }
 
 export function getAppUrl() {

@@ -297,36 +297,63 @@ export async function refundBookingCase(
       return failure("The paid Stripe transaction could not be identified.");
     }
 
+    const admin = createAdminClient();
+    const paymentAccountResult = await admin
+      .from("booking_payments")
+      .select("stripe_account_id")
+      .eq("id", prepared.payment_id)
+      .single();
+    if (paymentAccountResult.error) {
+      return failure(
+        "Unable to identify the Stripe account that owns this payment.",
+      );
+    }
+
+    const stripeAccountId = paymentAccountResult.data.stripe_account_id as
+      | string
+      | null;
     const stripe = getStripe();
     let chargeId = prepared.stripe_charge_id;
     if (!chargeId) {
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        prepared.stripe_payment_intent_id,
-      );
+      const paymentIntent = stripeAccountId
+        ? await stripe.paymentIntents.retrieve(
+            prepared.stripe_payment_intent_id,
+            {},
+            { stripeContext: stripeAccountId },
+          )
+        : await stripe.paymentIntents.retrieve(
+            prepared.stripe_payment_intent_id,
+          );
       chargeId = stripeObjectId(paymentIntent.latest_charge);
     }
     if (!chargeId) {
-      return failure("Stripe has not attached a refundable charge to this payment.");
+      return failure(
+        "Stripe has not attached a refundable charge to this payment.",
+      );
     }
 
-    const refund = await stripe.refunds.create(
-      {
-        charge: chargeId,
-        amount: prepared.amount_cents,
-        reason: "requested_by_customer",
-        reverse_transfer: true,
-        refund_application_fee: true,
-        metadata: {
-          auxilium_refund_id: prepared.refund_id,
-          auxilium_case_id: parsed.data.caseId,
-          auxilium_booking_id: prepared.booking_id,
-          auxilium_payment_id: prepared.payment_id,
-        },
+    const refundParams = {
+      charge: chargeId,
+      amount: prepared.amount_cents,
+      reason: "requested_by_customer",
+      refund_application_fee: true,
+      metadata: {
+        auxilium_refund_id: prepared.refund_id,
+        auxilium_case_id: parsed.data.caseId,
+        auxilium_booking_id: prepared.booking_id,
+        auxilium_payment_id: prepared.payment_id,
       },
-      { idempotencyKey: `auxilium_refund_${prepared.refund_id}` },
-    );
+    } as const;
+    const refund = stripeAccountId
+      ? await stripe.refunds.create(refundParams, {
+          idempotencyKey: `auxilium_refund_${prepared.refund_id}`,
+          stripeContext: stripeAccountId,
+        })
+      : await stripe.refunds.create(
+          { ...refundParams, reverse_transfer: true },
+          { idempotencyKey: `auxilium_refund_${prepared.refund_id}` },
+        );
 
-    const admin = createAdminClient();
     const { error: syncError } = await admin.rpc("record_booking_refund_state", {
       internal_refund_id: prepared.refund_id,
       stripe_refund_id: refund.id,
@@ -362,7 +389,7 @@ export async function refundBookingCase(
     revalidateResolutionPages();
     return success(
       refund.status === "succeeded"
-        ? "Stripe refund completed. The provider transfer and Auxilium fee were reversed proportionally."
+        ? "Stripe refund completed. The provider charge and Auxilium fee were refunded proportionally."
         : "Stripe refund started. Its signed webhook will update the final status.",
     );
   } catch (error) {

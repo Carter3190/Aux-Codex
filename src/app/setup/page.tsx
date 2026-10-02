@@ -51,6 +51,7 @@ export default async function SetupPage({
               <p>SUPABASE_SECRET_KEY=</p>
               <p>STRIPE_SECRET_KEY=</p>
               <p>STRIPE_WEBHOOK_SECRET=</p>
+              <p>STRIPE_CONNECT_WEBHOOK_SECRET=</p>
               <p>APP_URL=http://localhost:3000</p>
             </>
           )}
@@ -61,8 +62,9 @@ export default async function SetupPage({
         </p>
         {paymentsReason && (
           <p className="mt-3 text-sm leading-6 text-muted">
-            Install <code>20260901020000_stripe_connect_payments.sql</code>. Keep
-            every value above private except the two existing <code>NEXT_PUBLIC_</code>
+            Install <code>20260901020000_stripe_connect_payments.sql</code> and
+            then <code>20261002000000_direct_charge_payments.sql</code>. Keep every
+            value above private except the two existing <code>NEXT_PUBLIC_</code>
             Supabase values.
           </p>
         )}

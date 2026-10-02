@@ -53,8 +53,9 @@ export function ProviderStripeSetupCard({
           Stripe payouts are connected
         </h2>
         <p className="mt-2 leading-7 text-muted">
-          Customers can pay accepted bookings after you set the final price. You
-          receive 95%; Auxilium retains its 5% platform commission.
+          Customers can pay accepted bookings after you set the final price.
+          Auxilium retains its 5% platform commission, and Stripe deposits your
+          earnings after any processing fees under your Stripe agreement.
         </p>
         {setup.message && <p className="mt-3 text-sm text-muted">{setup.message}</p>}
       </section>
@@ -70,8 +71,8 @@ export function ProviderStripeSetupCard({
         {setup.hasAccount ? "Finish Stripe payout setup" : "Connect Stripe payouts"}
       </h2>
       <p className="mt-2 max-w-3xl leading-7 text-[#76531c]">
-        Stripe securely collects the required business, identity, and bank details.
-        Auxilium never receives those sensitive details.
+        Stripe securely collects the required business, identity, and bank details
+        for your merchant account. Auxilium never receives those sensitive details.
       </p>
       {setup.requirementsDueCount > 0 && (
         <p className="mt-3 text-sm font-semibold text-[#76531c]">

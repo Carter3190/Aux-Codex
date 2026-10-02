@@ -41,6 +41,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SECRET_KEY
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
+STRIPE_CONNECT_WEBHOOK_SECRET
 STRIPE_LIVE_MODE_ENABLED=false
 APP_URL=https://app.theauxillium.com
 RESEND_API_KEY
@@ -49,9 +50,8 @@ EMAIL_REPLY_TO
 SUPPORT_EMAIL
 ```
 
-`EMAIL_REPLY_TO` is optional. `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-`SUPABASE_SECRET_KEY`, and `RESEND_API_KEY` must never start with
-`NEXT_PUBLIC_`.
+`EMAIL_REPLY_TO` is optional. `STRIPE_SECRET_KEY`, both Stripe webhook secrets,
+`SUPABASE_SECRET_KEY`, and `RESEND_API_KEY` must never start with `NEXT_PUBLIC_`.
 
 Environment-variable changes apply only to new deployments. Redeploy after any
 change.
@@ -105,10 +105,12 @@ Notifications are best effort: a mail-provider outage does not undo a booking,
 payment, provider decision, or refund. Resend idempotency keys protect each
 notification from ordinary duplicate submissions.
 
-## 6. Configure the Stripe webhook
+## 6. Configure the Stripe webhooks
 
-After `app.theauxillium.com` is live, open **Stripe Workbench → Webhooks** and
-create an endpoint at:
+After `app.theauxillium.com` is live, open **Stripe Workbench → Webhooks**. Keep
+the existing **Your account** destination for legacy payments and create a
+second destination at the same URL with **Events from** set to **Connected
+accounts**:
 
 ```text
 https://app.theauxillium.com/api/stripe/webhook
@@ -129,9 +131,10 @@ Subscribe it to:
 - `charge.dispute.funds_withdrawn`
 - `charge.dispute.funds_reinstated`
 
-Copy that endpoint's signing secret into Vercel as `STRIPE_WEBHOOK_SECRET`, then
-redeploy. The local Stripe CLI `whsec_...` value is not the production endpoint
-secret.
+Copy the **Your account** destination secret into Vercel as
+`STRIPE_WEBHOOK_SECRET`. Copy the **Connected accounts** destination secret as
+`STRIPE_CONNECT_WEBHOOK_SECRET`, then redeploy. Local Stripe CLI secrets are not
+production destination secrets.
 
 ## 7. Verify the protected deployment
 
@@ -162,10 +165,11 @@ When Auxilium is legally and operationally ready for real transactions:
 
 1. Complete the platform's Stripe live-account activation.
 2. Replace Vercel's test `STRIPE_SECRET_KEY` with the live `sk_live_...` key.
-3. Create the same webhook endpoint in live mode and replace
-   `STRIPE_WEBHOOK_SECRET` with its live signing secret.
-4. Set `STRIPE_LIVE_MODE_ENABLED=true` only after the live key and webhook are
-   both ready.
+3. Create both webhook destinations in live mode and replace
+   `STRIPE_WEBHOOK_SECRET` and `STRIPE_CONNECT_WEBHOOK_SECRET` with their live
+   signing secrets.
+4. Set `STRIPE_LIVE_MODE_ENABLED=true` only after the live key and both webhooks
+   are ready.
 5. Redeploy and confirm `/api/health` reports `payments: "live"` and
    `launch: "live_ready"`.
 6. Providers must complete real live-mode onboarding. Stripe test connected

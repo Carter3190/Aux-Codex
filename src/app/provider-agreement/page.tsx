@@ -78,17 +78,18 @@ export default function ProviderAgreementPage() {
       <PolicySection title="5. Payments, fees, taxes, and reversals">
         <p>
           The provider authorizes Stripe and Auxilium to create and manage a
-          connected payout account, route customer payments, and deduct the
-          disclosed Auxilium platform fee, currently 5% of the final booking
-          price. Stripe may separately apply processing, payout, reserve, risk,
-          or currency fees under the provider’s Stripe agreement.
+          connected merchant account, process customer payments directly on that
+          account, and collect the disclosed Auxilium platform fee, currently 5%
+          of the final booking price. Stripe may separately apply processing,
+          payout, reserve, risk, or currency fees under the provider’s Stripe
+          agreement.
         </p>
         <p>
-          Providers authorize proportional reversal of their transfer and the
-          Auxilium fee when an approved refund is issued. Providers remain
-          responsible for negative balances, chargebacks, dispute fees, taxes,
-          reporting, and other obligations associated with their services and
-          connected account.
+          Providers authorize refunds of their customer charges and proportional
+          refunds of the Auxilium fee when an approved refund is issued.
+          Providers remain responsible for negative balances, chargebacks,
+          dispute fees, taxes, reporting, and other obligations associated with
+          their services and connected account.
         </p>
       </PolicySection>
 

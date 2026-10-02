@@ -2,6 +2,7 @@ import { isTransactionalEmailConfigured } from "@/lib/email/config";
 import {
   getAppUrl,
   getStripeMode,
+  isStripeConnectWebhookConfigured,
   isStripeLiveModeEnabled,
   isStripeServerConfigured,
   isStripeWebhookConfigured,
@@ -27,6 +28,7 @@ function status() {
     serverDatabase: isSupabaseAdminConfigured(),
     stripe: isStripeServerConfigured(),
     stripeWebhook: isStripeWebhookConfigured(),
+    stripeConnectWebhook: isStripeConnectWebhookConfigured(),
     appUrl: isAppUrlConfigured(),
     transactionalEmail: isTransactionalEmailConfigured(),
     supportContact: isSupportContactConfigured(),
@@ -38,6 +40,7 @@ function status() {
     checks.serverDatabase &&
     checks.stripe &&
     checks.stripeWebhook &&
+    checks.stripeConnectWebhook &&
     checks.appUrl;
 
   return { checks, coreReady };

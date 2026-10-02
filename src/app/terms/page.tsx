@@ -78,10 +78,11 @@ export default function TermsPage() {
           Auxilium does not store full payment-card details.
         </p>
         <p>
-          Providers authorize Stripe and Auxilium to route the customer payment
-          to the provider’s connected account and deduct the disclosed Auxilium
-          platform fee, currently 5% of the booking price. Stripe processing,
-          payout, refund, reserve, and dispute rules may also apply.
+          Providers authorize Stripe to process customer payments directly on
+          the provider’s connected merchant account and authorize Auxilium to
+          collect the disclosed platform fee, currently 5% of the booking price.
+          Stripe processing, payout, refund, reserve, and dispute rules may also
+          apply.
         </p>
       </PolicySection>
 

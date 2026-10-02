@@ -16,8 +16,8 @@ type PaymentAccountRow = {
   requirements_due_count: number;
 };
 
-function recipientBalanceCapabilities(account: Stripe.V2.Core.Account) {
-  return account.configuration?.recipient?.capabilities?.stripe_balance;
+function merchantCapabilities(account: Stripe.V2.Core.Account) {
+  return account.configuration?.merchant?.capabilities;
 }
 
 function requirementsDueCount(account: Stripe.V2.Core.Account) {
@@ -32,7 +32,7 @@ export async function syncProviderPaymentAccount(
 ) {
   const stripe = getStripe();
   const account = await stripe.v2.core.accounts.retrieve(stripeAccountId, {
-    include: ["configuration.recipient", "requirements"],
+    include: ["configuration.merchant", "requirements"],
   });
   if (account.closed) {
     throw new Error("The provider's Stripe account is no longer available.");
@@ -40,17 +40,18 @@ export async function syncProviderPaymentAccount(
 
   const admin = createAdminClient();
   const dueCount = requirementsDueCount(account);
-  const balanceCapabilities = recipientBalanceCapabilities(account);
+  const capabilities = merchantCapabilities(account);
   const detailsSubmitted = dueCount === 0;
-  const payoutsEnabled = balanceCapabilities?.payouts?.status === "active";
-  const transfersActive =
-    balanceCapabilities?.stripe_transfers?.status === "active";
+  const payoutsEnabled =
+    capabilities?.stripe_balance?.payouts?.status === "active";
+  const paymentsEnabled = capabilities?.card_payments?.status === "active";
   const { error } = await admin
     .from("provider_payment_accounts")
     .update({
       details_submitted: detailsSubmitted,
       payouts_enabled: payoutsEnabled,
-      transfers_active: transfersActive,
+      // Keep the existing database column until the direct-charge migration.
+      transfers_active: paymentsEnabled,
       requirements_due_count: dueCount,
       last_synced_at: new Date().toISOString(),
     })
@@ -63,10 +64,10 @@ export async function syncProviderPaymentAccount(
 
   return {
     account,
-    ready: detailsSubmitted && payoutsEnabled && transfersActive,
+    ready: detailsSubmitted && payoutsEnabled && paymentsEnabled,
     detailsSubmitted,
     payoutsEnabled,
-    transfersActive,
+    paymentsEnabled,
     requirementsDueCount: dueCount,
   };
 }
@@ -81,7 +82,7 @@ export async function getProviderPaymentSetup(
       hasAccount: false,
       detailsSubmitted: false,
       payoutsEnabled: false,
-      transfersActive: false,
+      paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
     };
@@ -104,7 +105,7 @@ export async function getProviderPaymentSetup(
       hasAccount: false,
       detailsSubmitted: false,
       payoutsEnabled: false,
-      transfersActive: false,
+      paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
       message: migrationMissing
@@ -120,7 +121,7 @@ export async function getProviderPaymentSetup(
       hasAccount: false,
       detailsSubmitted: false,
       payoutsEnabled: false,
-      transfersActive: false,
+      paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
     };
@@ -138,7 +139,7 @@ export async function getProviderPaymentSetup(
       hasAccount: true,
       detailsSubmitted: status.detailsSubmitted,
       payoutsEnabled: status.payoutsEnabled,
-      transfersActive: status.transfersActive,
+      paymentsEnabled: status.paymentsEnabled,
       requirementsDueCount: status.requirementsDueCount,
       ready: status.ready,
     };
@@ -149,7 +150,7 @@ export async function getProviderPaymentSetup(
       hasAccount: true,
       detailsSubmitted: row.details_submitted,
       payoutsEnabled: row.payouts_enabled,
-      transfersActive: row.transfers_active,
+      paymentsEnabled: row.transfers_active,
       requirementsDueCount: row.requirements_due_count,
       ready:
         row.details_submitted &&

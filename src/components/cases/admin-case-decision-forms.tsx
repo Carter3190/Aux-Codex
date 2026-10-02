@@ -37,8 +37,8 @@ export function AdminCaseDecisionForms({
         <div>
           <p className="font-semibold text-brand-dark">Approve a Stripe refund</p>
           <p className="mt-1 text-xs leading-5 text-muted">
-            This sends money back to the customer and proportionally reverses
-            both the provider transfer and Auxilium’s application fee.
+            This refunds the provider’s Stripe charge and proportionally refunds
+            Auxilium’s application fee.
           </p>
         </div>
         <label className="block text-sm font-semibold text-foreground">
