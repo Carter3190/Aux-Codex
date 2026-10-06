@@ -1,6 +1,5 @@
 import "server-only";
 
-import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/admin-config";
 import { isStripeServerConfigured } from "@/lib/stripe/config";
@@ -16,14 +15,8 @@ type PaymentAccountRow = {
   requirements_due_count: number;
 };
 
-function merchantCapabilities(account: Stripe.V2.Core.Account) {
-  return account.configuration?.merchant?.capabilities;
-}
-
-function requirementsDueCount(account: Stripe.V2.Core.Account) {
-  return (account.requirements?.entries ?? []).filter(
-    (entry) => entry.awaiting_action_from === "user",
-  ).length;
+function requirementsDueCount(currentlyDue?: Array<string> | null) {
+  return new Set(currentlyDue ?? []).size;
 }
 
 export async function syncProviderPaymentAccount(
@@ -31,26 +24,19 @@ export async function syncProviderPaymentAccount(
   stripeAccountId: string,
 ) {
   const stripe = getStripe();
-  const account = await stripe.v2.core.accounts.retrieve(stripeAccountId, {
-    include: ["configuration.merchant", "requirements"],
-  });
-  if (account.closed) {
-    throw new Error("The provider's Stripe account is no longer available.");
-  }
+  const account = await stripe.accounts.retrieve(stripeAccountId);
 
   const admin = createAdminClient();
-  const dueCount = requirementsDueCount(account);
-  const capabilities = merchantCapabilities(account);
-  const detailsSubmitted = dueCount === 0;
-  const payoutsEnabled =
-    capabilities?.stripe_balance?.payouts?.status === "active";
-  const paymentsEnabled = capabilities?.card_payments?.status === "active";
+  const dueCount = requirementsDueCount(account.requirements?.currently_due);
+  const detailsSubmitted = account.details_submitted;
+  const payoutsEnabled = account.payouts_enabled;
+  const paymentsEnabled = account.charges_enabled;
   const { error } = await admin
     .from("provider_payment_accounts")
     .update({
       details_submitted: detailsSubmitted,
       payouts_enabled: payoutsEnabled,
-      // Keep the existing database column until the direct-charge migration.
+      // This legacy column now records whether direct charges are enabled.
       transfers_active: paymentsEnabled,
       requirements_due_count: dueCount,
       last_synced_at: new Date().toISOString(),

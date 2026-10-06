@@ -319,7 +319,7 @@ export async function refundBookingCase(
         ? await stripe.paymentIntents.retrieve(
             prepared.stripe_payment_intent_id,
             {},
-            { stripeContext: stripeAccountId },
+            { stripeAccount: stripeAccountId },
           )
         : await stripe.paymentIntents.retrieve(
             prepared.stripe_payment_intent_id,
@@ -347,7 +347,7 @@ export async function refundBookingCase(
     const refund = stripeAccountId
       ? await stripe.refunds.create(refundParams, {
           idempotencyKey: `auxilium_refund_${prepared.refund_id}`,
-          stripeContext: stripeAccountId,
+          stripeAccount: stripeAccountId,
         })
       : await stripe.refunds.create(
           { ...refundParams, reverse_transfer: true },

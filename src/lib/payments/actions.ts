@@ -42,6 +42,12 @@ type PreparedPaymentRow = {
   checkout_expires_at: string | null;
 };
 
+type StripeErrorDetails = {
+  code?: unknown;
+  requestId?: unknown;
+  type?: unknown;
+};
+
 function success(message: string): PaymentActionState {
   return { status: "success", message };
 }
@@ -77,6 +83,11 @@ function paymentDatabaseMessage(message?: string) {
     return "Install the Stripe payments migration in Supabase first.";
   }
   return "We could not save that payment change. Please try again.";
+}
+
+function isMissingStripeAccount(error: unknown) {
+  const stripeError = error as StripeErrorDetails;
+  return stripeError?.code === "resource_missing";
 }
 
 export async function setBookingPrice(
@@ -186,69 +197,46 @@ export async function startStripeOnboarding(
         : undefined;
     const displayName =
       detailsResult.data?.business_name || profileResult.data.full_name;
+    const appUrl = getAppUrl();
     const createMerchantAccount = () =>
-      stripe.v2.core.accounts.create(
+      stripe.accounts.create(
         {
-          contact_email: contactEmail,
-          display_name: displayName,
-          dashboard: "none",
-          identity: {
-            country: "us",
+          country: "US",
+          email: contactEmail,
+          business_profile: {
+            name: displayName ?? undefined,
+            product_description:
+              "Local services booked through the Auxilium marketplace.",
           },
-          defaults: {
-            currency: "usd",
-            locales: ["en-US"],
-            profile: {
-              doing_business_as: displayName,
-              product_description:
-                "Local services booked through the Auxilium marketplace.",
-            },
-            responsibilities: {
-              fees_collector: "stripe",
-              losses_collector: "stripe",
-            },
+          controller: {
+            fees: { payer: "account" },
+            losses: { payments: "stripe" },
+            requirement_collection: "stripe",
+            stripe_dashboard: { type: "full" },
           },
-          configuration: {
-            merchant: {
-              capabilities: {
-                card_payments: { requested: true },
-              },
-            },
-          },
-          include: ["configuration.merchant", "identity", "requirements"],
           metadata: {
             auxilium_provider_id: userId,
           },
         },
-        { idempotencyKey: `auxilium_provider_v2_merchant_${userId}` },
+        { idempotencyKey: `auxilium_provider_v1_full_dashboard_${userId}` },
       );
 
     let stripeAccountId = existingStripeAccountId;
     if (stripeAccountId) {
-      const account = await stripe.v2.core.accounts.retrieve(stripeAccountId, {
-        include: ["configuration.merchant", "defaults"],
-      });
-      const responsibilities = account.defaults?.responsibilities;
-      const usesMerchantModel =
-        !account.closed &&
-        account.dashboard === "none" &&
-        account.configuration?.merchant?.applied === true &&
-        responsibilities?.fees_collector === "stripe" &&
-        responsibilities.losses_collector === "stripe";
+      let usesMerchantModel = false;
+      try {
+        const account = await stripe.accounts.retrieve(stripeAccountId);
+        const controller = account.controller;
+        usesMerchantModel =
+          controller?.fees?.payer === "account" &&
+          controller.losses?.payments === "stripe" &&
+          controller.requirement_collection === "stripe" &&
+          controller.stripe_dashboard?.type === "full";
+      } catch (error) {
+        if (!isMissingStripeAccount(error)) throw error;
+      }
 
-      if (usesMerchantModel) {
-        await stripe.v2.core.accounts.update(stripeAccountId, {
-          configuration: {
-            merchant: {
-              applied: true,
-              capabilities: {
-                card_payments: { requested: true },
-              },
-            },
-          },
-          include: ["configuration.merchant", "requirements"],
-        });
-      } else {
+      if (!usesMerchantModel) {
         const replacementAccount = await createMerchantAccount();
         stripeAccountId = replacementAccount.id;
 
@@ -274,26 +262,16 @@ export async function startStripeOnboarding(
     }
 
     await syncProviderPaymentAccount(userId, stripeAccountId);
-    const appUrl = getAppUrl();
-    const link = await stripe.v2.core.accountLinks.create({
+    const link = await stripe.accountLinks.create({
       account: stripeAccountId,
-      use_case: {
-        type: "account_onboarding",
-        account_onboarding: {
-          configurations: ["merchant"],
-          refresh_url: `${appUrl}/dashboard/provider?stripe=refresh`,
-          return_url: `${appUrl}/dashboard/provider?stripe=return`,
-          collection_options: { fields: "eventually_due" },
-        },
-      },
+      type: "account_onboarding",
+      refresh_url: `${appUrl}/dashboard/provider?stripe=refresh`,
+      return_url: `${appUrl}/dashboard/provider?stripe=return`,
+      collection_options: { fields: "eventually_due" },
     });
     onboardingUrl = link.url;
   } catch (error) {
-    const stripeError = error as {
-      code?: unknown;
-      requestId?: unknown;
-      type?: unknown;
-    };
+    const stripeError = error as StripeErrorDetails;
     console.error("Stripe provider onboarding failed", {
       name: error instanceof Error ? error.name : "UnknownError",
       message: error instanceof Error ? error.message : "Unknown Stripe error",
@@ -412,12 +390,12 @@ export async function startBookingCheckout(
       );
     }
 
-    const stripeContext = prepared.stripe_account_id;
+    const connectedAccountId = prepared.stripe_account_id;
     if (prepared.stripe_checkout_session_id) {
       const existingSession = await stripe.checkout.sessions.retrieve(
         prepared.stripe_checkout_session_id,
         {},
-        { stripeContext },
+        { stripeAccount: connectedAccountId },
       );
       if (existingSession.status === "open" && existingSession.url) {
         checkoutUrl = existingSession.url;
@@ -476,7 +454,7 @@ export async function startBookingCheckout(
         },
         {
           idempotencyKey: `auxilium_booking_${bookingId.data}_attempt_${prepared.checkout_attempt}`,
-          stripeContext,
+          stripeAccount: connectedAccountId,
         },
       );
 
@@ -487,7 +465,7 @@ export async function startBookingCheckout(
       const { error: saveError } = await admin
         .from("booking_payments")
         .update({
-          stripe_account_id: stripeContext,
+          stripe_account_id: connectedAccountId,
           stripe_checkout_session_id: session.id,
           checkout_expires_at: new Date(session.expires_at * 1000).toISOString(),
         })
@@ -498,7 +476,7 @@ export async function startBookingCheckout(
         await stripe.checkout.sessions.expire(
           session.id,
           {},
-          { stripeContext },
+          { stripeAccount: connectedAccountId },
         );
         return failure("Unable to save the secure checkout session.");
       }
