@@ -214,6 +214,11 @@ export async function startStripeOnboarding(
             requirement_collection: "stripe",
             stripe_dashboard: { type: "full" },
           },
+          settings: {
+            payouts: {
+              schedule: { interval: "daily" },
+            },
+          },
           metadata: {
             auxilium_provider_id: userId,
           },
