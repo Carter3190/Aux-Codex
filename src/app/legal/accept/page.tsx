@@ -63,7 +63,7 @@ export default async function LegalAcceptancePage({
           Review the current agreements
         </h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted">
-          Before continuing, open each current document for your {profile.role}
+          Before continuing, open each current document for your {profile.role}{" "}
           account, read to the end, and complete its separate confirmation.
           Your completed reviews and final acceptance are saved with the
           document versions and server timestamps.
