@@ -53,7 +53,7 @@ export default async function CustomerDashboardPage({
               Ready to find the right provider?
             </h2>
             <p className="mt-2 leading-7 text-muted">
-              Browse approved professionals, compare services, and send a private booking request.
+              Browse listed professionals, compare services, and send a private booking request.
             </p>
           </div>
           <Link

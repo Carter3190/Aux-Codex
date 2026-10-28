@@ -25,14 +25,14 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.14em] text-foreground">
-                Approved provider
+                Listed provider
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-foreground">
                 {provider.displayName}
               </h2>
             </div>
             <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1.5 text-xs font-bold text-foreground">
-              ✓ Verified
+              Application reviewed
             </span>
           </div>
           <p className="mt-2 font-medium text-foreground">{provider.headline}</p>

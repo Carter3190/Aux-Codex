@@ -12,10 +12,12 @@ export function ProviderReviewForm({
   providerId,
   providerStatus,
   canReview,
+  canApprove,
 }: {
   providerId: string;
   providerStatus: ProviderStatus;
   canReview: boolean;
+  canApprove: boolean;
 }) {
   const [state, action, pending] = useActionState(
     reviewProviderApplication,
@@ -46,7 +48,7 @@ export function ProviderReviewForm({
           type="submit"
           name="decision"
           value="approved"
-          disabled={pending || !canReview || providerStatus === "approved"}
+          disabled={pending || !canApprove || providerStatus === "approved"}
           className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           Approve provider
@@ -65,6 +67,12 @@ export function ProviderReviewForm({
         <p className="text-xs leading-5 text-muted">
           This application cannot be reviewed until the provider completes every
           section and submits it.
+        </p>
+      )}
+      {canReview && !canApprove && providerStatus !== "approved" && (
+        <p className="text-xs leading-5 text-muted">
+          Approve a current insurance document above before approving this
+          provider.
         </p>
       )}
     </form>

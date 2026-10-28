@@ -321,10 +321,19 @@ export async function getApprovedProvider(
 
   if (!data) return null;
   const provider = data as ProviderDetailPayload;
-  const [summaries, reviews] = await Promise.all([
+  const [summaries, reviews, bookingEligibilityResult] = await Promise.all([
     getProviderReviewSummaries(supabase, [providerId]),
     getPublicProviderReviews(supabase, providerId),
+    supabase.rpc("is_provider_booking_eligible", {
+      requested_provider_id: providerId,
+    }),
   ]);
+  if (bookingEligibilityResult.error) {
+    if (marketplaceMigrationMissing(bookingEligibilityResult.error.code)) {
+      redirect("/setup?reason=provider-risk-controls");
+    }
+    throw new Error("Unable to verify this provider's booking availability.");
+  }
   const summary = summaries.get(providerId);
   return {
     providerId: provider.providerId,
@@ -344,6 +353,7 @@ export async function getApprovedProvider(
       }),
     ),
     credentials: provider.credentials ?? [],
+    bookingEligible: bookingEligibilityResult.data === true,
     averageRating: summary?.averageRating ?? null,
     reviewCount: summary?.reviewCount ?? 0,
     reviews,

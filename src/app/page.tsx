@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     siteName: "Auxilium",
     title: "Auxilium | Local help, made human",
     description:
-      "Find trusted local professionals or grow your independent service business with Auxilium.",
+      "Find local professionals whose applications have been reviewed, or grow your independent service business with Auxilium.",
     url: "/",
   },
 };
@@ -19,7 +19,7 @@ const benefits = [
     number: "01",
     title: "Find the right person",
     description:
-      "Search local professionals by service, availability, credentials, and reputation.",
+      "Search by service and area, then compare profiles, listed availability, submitted credentials, and customer reviews.",
   },
   {
     number: "02",
@@ -53,9 +53,9 @@ export default function Home() {
               Good work should be easier to find.
             </h1>
             <p className="mt-9 max-w-2xl text-xl leading-[1.45] text-foreground sm:text-2xl">
-              Auxilium connects people who need a hand with skilled local
-              professionals ready to help—without losing the trust that makes
-              local service personal.
+              Auxilium connects people who need a hand with local service
+              providers ready to help—while keeping the experience clear and
+              personal.
             </p>
             <div className="mt-11 grid max-w-2xl gap-4 sm:grid-cols-2">
               <Link
@@ -90,7 +90,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-8 space-y-3">
-                {["Home services", "Personal care", "Tutoring & coaching"].map(
+                {["Home services", "Pet care", "Tutoring & coaching"].map(
                   (service, index) => (
                     <div
                       key={service}
@@ -101,7 +101,7 @@ export default function Home() {
                       </span>
                       <div className="flex-1">
                         <p className="font-semibold text-foreground">{service}</p>
-                        <p className="mt-0.5 text-sm text-muted">Verified local providers</p>
+                        <p className="mt-0.5 text-sm text-muted">Applications reviewed by Auxilium</p>
                       </div>
                       <span aria-hidden="true" className="text-xl text-foreground">
                         →

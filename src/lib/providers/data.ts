@@ -160,12 +160,14 @@ function mapReview(row: ReviewRow): ProviderReviewEvent {
 }
 
 export function calculateProviderCompletion(input: {
+  providerStatus: ProviderStatus;
   details: ProviderDetails;
   services: ProviderService[];
   availability: ProviderAvailability[];
   photos: ProviderPhoto[];
   credentials: ProviderCredential[];
 }): ProviderCompletion {
+  const currentInsurance = hasCurrentInsuranceCredential(input.credentials);
   const checks = {
     introduction:
       input.details.headline.trim().length >= 10 &&
@@ -173,7 +175,8 @@ export function calculateProviderCompletion(input: {
       input.details.serviceArea.trim().length >= 2,
     services: input.services.some((service) => service.isActive),
     photos: input.photos.length > 0,
-    credentials: input.credentials.length > 0,
+    credentials:
+      input.providerStatus === "approved" || currentInsurance,
     availability: input.availability.some((day) => day.isAvailable),
   };
   const values = Object.values(checks);
@@ -186,6 +189,21 @@ export function calculateProviderCompletion(input: {
     percentage: Math.round((completedCount / values.length) * 100),
     isComplete: completedCount === values.length,
   };
+}
+
+export function hasCurrentInsuranceCredential(
+  credentials: ProviderCredential[],
+  requireApproved = false,
+) {
+  const today = new Date().toISOString().slice(0, 10);
+  return credentials.some(
+    (credential) =>
+      credential.credentialType === "insurance" &&
+      credential.issuer.trim().length > 0 &&
+      credential.expiresOn !== null &&
+      credential.expiresOn >= today &&
+      (!requireApproved || credential.reviewStatus === "approved"),
+  );
 }
 
 function emptyAvailability(): ProviderAvailability[] {
@@ -285,6 +303,7 @@ export async function getProviderWorkspace(): Promise<ProviderWorkspace> {
   );
   const reviewEvents = (reviewsResult.data as ReviewRow[]).map(mapReview);
   const completion = calculateProviderCompletion({
+    providerStatus: profile.providerStatus,
     details,
     services,
     availability,
@@ -434,6 +453,7 @@ export async function getAdminProviderApplications(): Promise<{
         mapReview,
       );
       const completion = calculateProviderCompletion({
+        providerStatus: profile.provider_status,
         details,
         services,
         availability,

@@ -9,6 +9,7 @@ import {
 } from "@/lib/providers/actions";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 import type {
+  CredentialType,
   ProviderActionState,
   ProviderCredential,
   ProviderPhoto,
@@ -64,6 +65,8 @@ export function ProviderUploadManager({
   const router = useRouter();
   const [photoState, setPhotoState] = useState<ProviderActionState>({});
   const [credentialState, setCredentialState] = useState<ProviderActionState>({});
+  const [credentialType, setCredentialType] =
+    useState<CredentialType>("insurance");
   const [uploading, setUploading] = useState<"photo" | "credential" | null>(null);
 
   async function uploadFile(
@@ -156,6 +159,7 @@ export function ProviderUploadManager({
           .remove([uploaded.path]);
       } else {
         form.reset();
+        setCredentialType("insurance");
         router.refresh();
       }
     } catch (error) {
@@ -237,7 +241,9 @@ export function ProviderUploadManager({
       <div>
         <h3 className="text-lg font-semibold text-brand-dark">Credentials</h3>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Credential files are private and visible only to you and Auxilium admins.
+          Credential files are private and visible only to you and Auxilium admins.{" "}
+          A current insurance document with its carrier and expiration date is
+          required before a new or updated application can be submitted.
         </p>
         {credentials.length > 0 && (
           <div className="mt-4 space-y-3">
@@ -276,7 +282,14 @@ export function ProviderUploadManager({
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-semibold text-foreground">
               Credential type
-              <select name="credentialType" className={inputClass} defaultValue="license">
+              <select
+                name="credentialType"
+                className={inputClass}
+                value={credentialType}
+                onChange={(event) =>
+                  setCredentialType(event.target.value as CredentialType)
+                }
+              >
                 <option value="license">License</option>
                 <option value="insurance">Insurance</option>
                 <option value="certification">Certification</option>
@@ -292,8 +305,21 @@ export function ProviderUploadManager({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-semibold text-foreground">
-              Issuer <span className="font-normal text-muted">(optional)</span>
-              <input name="issuer" maxLength={120} className={inputClass} />
+              Issuer or carrier{" "}
+              {credentialType !== "insurance" && (
+                <span className="font-normal text-muted">(optional)</span>
+              )}
+              <input
+                name="issuer"
+                required={credentialType === "insurance"}
+                maxLength={120}
+                className={inputClass}
+              />
+              {credentialState.fieldErrors?.issuer?.[0] && (
+                <span className="mt-2 block font-normal text-red-700">
+                  {credentialState.fieldErrors.issuer[0]}
+                </span>
+              )}
             </label>
             <label className="text-sm font-semibold text-foreground">
               Credential number <span className="font-normal text-muted">(optional)</span>
@@ -301,8 +327,21 @@ export function ProviderUploadManager({
             </label>
           </div>
           <label className="block text-sm font-semibold text-foreground">
-            Expiration date <span className="font-normal text-muted">(optional)</span>
-            <input name="expiresOn" type="date" className={inputClass} />
+            Expiration date{" "}
+            {credentialType !== "insurance" && (
+              <span className="font-normal text-muted">(optional)</span>
+            )}
+            <input
+              name="expiresOn"
+              type="date"
+              required={credentialType === "insurance"}
+              className={inputClass}
+            />
+            {credentialState.fieldErrors?.expiresOn?.[0] && (
+              <span className="mt-2 block font-normal text-red-700">
+                {credentialState.fieldErrors.expiresOn[0]}
+              </span>
+            )}
           </label>
           <label className="block text-sm font-semibold text-foreground">
             Document

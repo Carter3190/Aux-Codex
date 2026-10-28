@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
+import { CURRENT_TERMS_VERSION } from "@/lib/legal/agreements";
 import { requestBooking } from "@/lib/marketplace/actions";
 import {
   initialMarketplaceActionState,
@@ -19,10 +21,12 @@ function FieldError({ message }: { message?: string }) {
 
 export function BookingRequestForm({
   providerId,
+  providerName,
   services,
   minimumDate,
 }: {
   providerId: string;
+  providerName: string;
   services: MarketplaceService[];
   minimumDate: string;
 }) {
@@ -103,6 +107,34 @@ export function BookingRequestForm({
         <FieldError message={state.fieldErrors?.notes?.[0]} />
       </label>
 
+      <label className="flex items-start gap-3 rounded-xl border border-border bg-[#f7f7f7] p-4 text-sm leading-6 text-foreground">
+        <input
+          type="checkbox"
+          name="providerResponsibilityAcknowledged"
+          value="accepted"
+          required
+          className="mt-1 h-4 w-4 shrink-0 accent-brand"
+        />
+        <span>
+          I understand that {providerName}, not Auxilium, will perform and be
+          responsible for the requested service; if the provider accepts, any
+          resulting service agreement will be directly with that provider; and I
+          agree to Auxilium’s{" "}
+          <Link
+            href="/terms"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold underline underline-offset-4"
+          >
+            current Terms of Service
+          </Link>
+          {` (version ${CURRENT_TERMS_VERSION}).`}
+          <FieldError
+            message={state.fieldErrors?.providerResponsibilityAcknowledged?.[0]}
+          />
+        </span>
+      </label>
+
       {state.message && (
         <p
           role={state.status === "error" ? "alert" : "status"}
@@ -121,7 +153,7 @@ export function BookingRequestForm({
         disabled={pending || services.length === 0}
         className="w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? "Sending request…" : "Send booking request"}
+        {pending ? "Sending request…" : "Agree and send booking request"}
       </button>
     </form>
   );

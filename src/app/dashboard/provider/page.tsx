@@ -3,7 +3,10 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { BookingCard } from "@/components/marketplace/booking-card";
 import { getProviderBookings } from "@/lib/marketplace/data";
-import { getProviderWorkspace } from "@/lib/providers/data";
+import {
+  getProviderWorkspace,
+  hasCurrentInsuranceCredential,
+} from "@/lib/providers/data";
 import { getProviderPaymentSetup } from "@/lib/payments/data";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 import { ProviderStripeSetupCard } from "@/components/payments/provider-stripe-setup-card";
@@ -16,7 +19,11 @@ const checklist = [
   ["introduction", "Introduction", "Tell customers who you are and where you work."],
   ["services", "Services and pricing", "Add at least one service customers can request."],
   ["photos", "Profile photos", "Show a headshot or examples of completed work."],
-  ["credentials", "Credentials", "Upload a license, insurance, or other verification."],
+  [
+    "credentials",
+    "Insurance & credentials",
+    "Upload current insurance with its carrier and expiration date.",
+  ],
   ["availability", "Availability", "Choose at least one day and time range."],
 ] as const;
 
@@ -65,10 +72,14 @@ export default async function ProviderDashboardPage() {
     getProviderWorkspace(),
     getProviderBookings(),
   ]);
-  const { profile, details, completion, reviewEvents } = workspace;
+  const { profile, details, completion, credentials, reviewEvents } = workspace;
   const paymentSetup = await getProviderPaymentSetup(profile.id);
   const status = statusCopy(profile.providerStatus, details.submittedAt);
   const latestReview = reviewEvents[0];
+  const hasApprovedCurrentInsurance = hasCurrentInsuranceCredential(
+    credentials,
+    true,
+  );
 
   return (
     <DashboardShell
@@ -108,6 +119,25 @@ export default async function ProviderDashboardPage() {
           <p className="mt-2 leading-7 text-foreground">{latestReview.notes}</p>
         </section>
       )}
+
+      {profile.providerStatus === "approved" &&
+        !hasApprovedCurrentInsurance && (
+          <section className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
+            <p className="font-semibold">Current insurance review needed</p>
+            <p className="mt-2 text-sm leading-6">
+              Before accepting new customer work, upload a current insurance
+              document with the carrier and expiration date so Auxilium can
+              review it. Existing approval does not replace your duty to keep
+              required coverage active.
+            </p>
+            <Link
+              href="/dashboard/provider/onboarding"
+              className="mt-3 inline-flex text-sm font-semibold underline underline-offset-4"
+            >
+              Upload insurance
+            </Link>
+          </section>
+        )}
 
       {profile.providerStatus === "approved" && (
         <ProviderStripeSetupCard setup={paymentSetup} />

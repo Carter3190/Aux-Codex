@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { notifyProviderApplication } from "@/lib/email/notifications";
+import { LEGAL_AGREEMENTS } from "@/lib/legal/agreements";
 import { requireActionRole } from "./data";
+import {
+  isClearlyRestrictedProviderService,
+  restrictedProviderServiceMessage,
+} from "./service-policy";
 import type { ProviderActionState } from "./types";
 
 const optionalInteger = (minimum: number, maximum: number, label: string) =>
@@ -50,6 +55,7 @@ const serviceSchema = z.object({
     .max(500, "Use 500 characters or fewer."),
   pricingType: z.enum(["hourly", "fixed", "starting_at", "quote"]),
   price: z.string().trim(),
+  servicePolicyConfirmation: z.literal("accepted"),
 });
 
 const uploadPathSchema = z
@@ -64,39 +70,71 @@ const photoSchema = z.object({
   caption: z.string().trim().max(160, "Use 160 characters or fewer."),
 });
 
-const credentialSchema = z.object({
-  credentialType: z.enum([
-    "license",
-    "insurance",
-    "certification",
-    "identity",
-    "background_check",
-    "other",
-  ]),
-  title: z
-    .string()
-    .trim()
-    .min(2, "Enter a credential title.")
-    .max(120, "Use 120 characters or fewer."),
-  issuer: z.string().trim().max(120, "Use 120 characters or fewer."),
-  credentialNumber: z
-    .string()
-    .trim()
-    .max(120, "Use 120 characters or fewer."),
-  expiresOn: z
-    .string()
-    .trim()
-    .refine(
-      (value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
-      "Enter a valid expiration date.",
-    ),
-  documentPath: uploadPathSchema,
-});
+const credentialSchema = z
+  .object({
+    credentialType: z.enum([
+      "license",
+      "insurance",
+      "certification",
+      "identity",
+      "background_check",
+      "other",
+    ]),
+    title: z
+      .string()
+      .trim()
+      .min(2, "Enter a credential title.")
+      .max(120, "Use 120 characters or fewer."),
+    issuer: z.string().trim().max(120, "Use 120 characters or fewer."),
+    credentialNumber: z
+      .string()
+      .trim()
+      .max(120, "Use 120 characters or fewer."),
+    expiresOn: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
+        "Enter a valid expiration date.",
+      ),
+    documentPath: uploadPathSchema,
+  })
+  .superRefine((credential, context) => {
+    if (credential.credentialType !== "insurance") return;
+
+    if (!credential.issuer) {
+      context.addIssue({
+        code: "custom",
+        path: ["issuer"],
+        message: "Enter the insurance carrier.",
+      });
+    }
+
+    if (!credential.expiresOn) {
+      context.addIssue({
+        code: "custom",
+        path: ["expiresOn"],
+        message: "Enter the insurance expiration date.",
+      });
+    } else if (credential.expiresOn < new Date().toISOString().slice(0, 10)) {
+      context.addIssue({
+        code: "custom",
+        path: ["expiresOn"],
+        message: "Upload a current, unexpired insurance policy.",
+      });
+    }
+  });
 
 const reviewSchema = z.object({
   providerId: z.uuid("Invalid provider account."),
   decision: z.enum(["approved", "rejected"]),
   notes: z.string().trim().max(2000, "Use 2,000 characters or fewer."),
+});
+
+const credentialReviewSchema = z.object({
+  credentialId: z.uuid("Invalid credential."),
+  decision: z.enum(["approved", "rejected"]),
+  notes: z.string().trim().max(1000, "Use 1,000 characters or fewer."),
 });
 
 function databaseMessage(message?: string) {
@@ -109,11 +147,21 @@ function databaseMessage(message?: string) {
     normalized.includes("add at least") ||
     normalized.includes("not submitted") ||
     normalized.includes("clear review notes") ||
-    normalized.includes("no longer complete")
+    normalized.includes("no longer complete") ||
+    normalized.includes("provider agreement") ||
+    normalized.includes("terms of service") ||
+    normalized.includes("current insurance") ||
+    normalized.includes("restricted service") ||
+    normalized.includes("credential was not found") ||
+    normalized.includes("credential review")
   ) {
     return message ?? "Complete the required sections and try again.";
   }
-  if (normalized.includes("relation") || normalized.includes("column")) {
+  if (
+    normalized.includes("relation") ||
+    normalized.includes("column") ||
+    normalized.includes("function")
+  ) {
     return "The provider onboarding migration must be installed in Supabase first.";
   }
   return "We could not save that change. Please try again.";
@@ -188,9 +236,19 @@ export async function addProviderService(
     description: formData.get("description"),
     pricingType: formData.get("pricingType"),
     price: formData.get("price"),
+    servicePolicyConfirmation: formData.get("servicePolicyConfirmation"),
   });
   if (!parsed.success) {
     return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  if (
+    isClearlyRestrictedProviderService(
+      parsed.data.name,
+      parsed.data.description,
+    )
+  ) {
+    return failure(restrictedProviderServiceMessage);
   }
 
   const price = priceInCents(parsed.data.pricingType, parsed.data.price);
@@ -417,13 +475,28 @@ export async function removeProviderUpload(formData: FormData) {
 
 export async function submitProviderApplication(
   _previousState: ProviderActionState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ProviderActionState> {
   void _previousState;
-  void _formData;
+
+  const legalConfirmation = z.literal("accepted").safeParse(
+    formData.get("providerLegalConfirmation"),
+  );
+  if (!legalConfirmation.success) {
+    return failure(
+      "Review and accept the Provider Agreement and Provider Standards before submitting.",
+    );
+  }
+
   try {
     const { supabase, userId } = await requireActionRole("provider");
-    const { error } = await supabase.rpc("submit_provider_application");
+    const { error } = await supabase.rpc("submit_provider_application", {
+      provider_legal_acknowledged: true,
+      accepted_provider_agreement_version:
+        LEGAL_AGREEMENTS.providerAgreement.version,
+      accepted_provider_standards_version:
+        LEGAL_AGREEMENTS.providerStandards.version,
+    });
     if (error) return failure(databaseMessage(error.message));
     await notifyProviderApplication({
       providerId: userId,
@@ -492,5 +565,48 @@ export async function reviewProviderApplication(
     );
   } catch (error) {
     return failure(error instanceof Error ? error.message : "Unable to review provider.");
+  }
+}
+
+export async function reviewProviderCredential(
+  _previousState: ProviderActionState,
+  formData: FormData,
+): Promise<ProviderActionState> {
+  const parsed = credentialReviewSchema.safeParse({
+    credentialId: formData.get("credentialId"),
+    decision: formData.get("decision"),
+    notes: formData.get("notes"),
+  });
+  if (!parsed.success) {
+    return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+  if (parsed.data.decision === "rejected" && parsed.data.notes.length < 10) {
+    return {
+      status: "error",
+      fieldErrors: {
+        notes: ["Explain what the provider needs to correct."],
+      },
+    };
+  }
+
+  try {
+    const { supabase } = await requireActionRole("admin");
+    const { error } = await supabase.rpc("review_provider_credential", {
+      reviewed_credential_id: parsed.data.credentialId,
+      review_decision: parsed.data.decision,
+      review_notes: parsed.data.notes,
+    });
+    if (error) return failure(databaseMessage(error.message));
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/dashboard/provider", "layout");
+    return success(
+      parsed.data.decision === "approved"
+        ? "Credential approved."
+        : "Credential returned with review notes.",
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error ? error.message : "Unable to review credential.",
+    );
   }
 }

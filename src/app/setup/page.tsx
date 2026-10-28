@@ -16,6 +16,7 @@ export default async function SetupPage({
   const paymentsReason = query.reason === "stripe-payments";
   const reviewsReason = query.reason === "booking-reviews";
   const resolutionReason = query.reason === "resolution-center";
+  const riskControlsReason = query.reason === "provider-risk-controls";
 
   return (
     <main className="min-h-screen bg-background px-6 py-16">
@@ -24,7 +25,9 @@ export default async function SetupPage({
           Developer setup
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-brand-dark">
-          {resolutionReason
+          {riskControlsReason
+            ? "Install the provider risk controls."
+            : resolutionReason
             ? "Install the booking resolution center."
             : reviewsReason
             ? "Install completed bookings and verified reviews."
@@ -35,7 +38,9 @@ export default async function SetupPage({
               : "Connect the Supabase project to continue."}
         </h1>
         <p className="mt-4 leading-7 text-muted">
-          {resolutionReason
+          {riskControlsReason
+            ? "Run the legal-acceptance, provider-risk, and booking-acknowledgement migrations in filename order, then return to the provider page. These migrations add versioned agreement records, insurance controls, and booking-specific legal acknowledgements."
+            : resolutionReason
             ? "Run the resolution-center migration in the Supabase SQL Editor, then return to the dashboard. It adds private customer cases, provider responses, audited admin decisions, refund reconciliation, and Stripe dispute visibility."
             : reviewsReason
             ? "Run the verified-reviews migration in the Supabase SQL Editor, then return to the dashboard. The migration adds the completed booking state, secure review rules, and public provider ratings."
@@ -68,7 +73,15 @@ export default async function SetupPage({
             Supabase values.
           </p>
         )}
-        {resolutionReason ? (
+        {riskControlsReason ? (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Install <code>20261026000000_versioned_legal_acceptances.sql</code>,{" "}
+            <code>20261026005000_provider_risk_control_cohort.sql</code>,{" "}
+            <code>20261026010000_booking_legal_acknowledgement.sql</code>, and{" "}
+            <code>20261026020000_provider_risk_controls.sql</code> in that order.
+            These migrations preserve existing bookings and payment records.
+          </p>
+        ) : resolutionReason ? (
           <p className="mt-3 text-sm leading-6 text-muted">
             Install <code>20260914000000_booking_resolution_center.sql</code>.
             This migration preserves existing bookings, payments, and reviews.

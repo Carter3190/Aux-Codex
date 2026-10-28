@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { signUp } from "@/lib/auth/actions";
 import { initialAuthState } from "@/lib/auth/types";
+import { LEGAL_AGREEMENTS } from "@/lib/legal/agreements";
 
 type SignupFormProps = {
   defaultRole: "customer" | "provider";
@@ -132,25 +133,26 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
             <Link href="/terms" className="font-semibold text-brand underline">
               Terms of Service
             </Link>{" "}
-            and acknowledge the{" "}
+            (version {LEGAL_AGREEMENTS.terms.version}) and acknowledge the{" "}
             <Link href="/privacy" className="font-semibold text-brand underline">
               Privacy Policy
-            </Link>
-            . If I offer services, I also agree to the{" "}
+            </Link>{" "}
+            (version {LEGAL_AGREEMENTS.privacy.version}). If I offer services,
+            I also agree to the{" "}
             <Link
               href="/provider-agreement"
               className="font-semibold text-brand underline"
             >
               Provider Agreement
             </Link>{" "}
-            and{" "}
+            (version {LEGAL_AGREEMENTS.providerAgreement.version}) and{" "}
             <Link
               href="/provider-standards"
               className="font-semibold text-brand underline"
             >
               Provider Standards
-            </Link>
-            .
+            </Link>{" "}
+            (version {LEGAL_AGREEMENTS.providerStandards.version}).
           </span>
         </label>
         {state.fieldErrors?.terms && (

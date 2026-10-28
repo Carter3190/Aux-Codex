@@ -14,13 +14,14 @@ export default function PrivacyPage() {
       eyebrow="Privacy"
       title="Privacy policy"
       summary="This policy explains what information Auxilium handles, why it is needed, and the choices available to marketplace users."
-      updated="September 21, 2026"
+      updated="October 26, 2026"
     >
       <PolicySection title="1. Information we collect">
         <ul>
           <li>
             Account information, including name, email address, role, login
-            records, and account preferences.
+            records, account preferences, and legal-agreement acceptance
+            records such as the document, version, affirmation, and timestamp.
           </li>
           <li>
             Provider information, including business profile details, service
@@ -52,6 +53,7 @@ export default function PrivacyPage() {
           <li>process bookings, messages, payments, payouts, refunds, and disputes;</li>
           <li>send transactional and safety-related communications;</li>
           <li>prevent fraud, enforce policies, and comply with legal obligations;</li>
+          <li>document and enforce the agreements users accept;</li>
           <li>diagnose problems and improve reliability and user experience.</li>
         </ul>
       </PolicySection>
@@ -59,7 +61,7 @@ export default function PrivacyPage() {
       <PolicySection title="3. When information is shared">
         <p>
           Booking participants receive information reasonably needed to perform
-          and manage the requested service. Approved provider profile content and
+          and manage the requested service. Listed provider profile content and
           verified reviews are public. Private credentials, private messages,
           payment records, and resolution details are limited to authorized
           participants, Auxilium administrators, and service providers that need
@@ -81,14 +83,16 @@ export default function PrivacyPage() {
         <p>
           We retain information while an account is active and as needed to
           provide services, maintain transaction and safety records, resolve
-          disputes, prevent fraud, meet tax and legal obligations, and enforce
-          agreements. Retention periods vary by record type and legal need.
+          disputes, prevent fraud, meet tax and legal obligations, document and
+          enforce agreements, and establish or defend legal claims. Retention
+          periods vary by record type and legal need.
         </p>
         <p>
           You may request account deletion or correction through the{" "}
           <Link href="/support">Support Center</Link>. Some booking, payment,
-          refund, dispute, review, security, and audit records may be retained or
-          de-identified when deletion is not legally or operationally permitted.
+          refund, dispute, review, agreement-acceptance, security, and audit
+          records may be retained or de-identified when deletion is not legally
+          or operationally permitted.
         </p>
       </PolicySection>
 
