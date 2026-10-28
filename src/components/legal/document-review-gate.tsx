@@ -42,32 +42,30 @@ export function DocumentReviewGate({
     const sentinel = sentinelRef.current;
     if (!sentinel || reachedEnd) return;
 
-    if (typeof IntersectionObserver === "undefined") {
-      const checkPosition = () => {
-        if (sentinel.getBoundingClientRect().top <= window.innerHeight) {
-          setReachedEnd(true);
-          window.removeEventListener("scroll", checkPosition);
-          window.removeEventListener("resize", checkPosition);
-        }
-      };
-      window.addEventListener("scroll", checkPosition, { passive: true });
-      window.addEventListener("resize", checkPosition);
-      checkPosition();
-      return () => {
-        window.removeEventListener("scroll", checkPosition);
-        window.removeEventListener("resize", checkPosition);
-      };
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
+    const checkPosition = () => {
+      if (sentinel.getBoundingClientRect().top <= window.innerHeight) {
         setReachedEnd(true);
-        observer.disconnect();
       }
-    });
+    };
+    window.addEventListener("scroll", checkPosition, { passive: true });
+    window.addEventListener("resize", checkPosition);
+    checkPosition();
 
-    observer.observe(sentinel);
-    return () => observer.disconnect();
+    const observer =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) {
+              setReachedEnd(true);
+            }
+          });
+
+    observer?.observe(sentinel);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("scroll", checkPosition);
+      window.removeEventListener("resize", checkPosition);
+    };
   }, [reachedEnd]);
 
   return (
