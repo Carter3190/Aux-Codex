@@ -42,7 +42,12 @@ export default async function LegalAcceptancePage({
   const profile = await getCurrentProfile();
   const query = await searchParams;
   const nextPath = safeReturnPath(query.next);
+  const errorCode =
+    typeof query.error === "string" ? query.error : undefined;
   const status = await getLegalAcceptanceStatus(profile);
+  const allDocumentsReviewed =
+    status.documents.length > 0 &&
+    status.documents.every((document) => document.reviewed);
 
   if (status.migrationReady && status.missing.length === 0) {
     redirect(nextPath);
@@ -58,24 +63,25 @@ export default async function LegalAcceptancePage({
           Review the current agreements
         </h1>
         <p className="mt-4 max-w-2xl leading-7 text-muted">
-          Before continuing, please review and affirm the current documents
-          that apply to your {profile.role} account. Your acceptance is saved
-          with the document version and a server timestamp.
+          Before continuing, open each current document for your {profile.role}
+          account, read to the end, and complete its separate confirmation.
+          Your completed reviews and final acceptance are saved with the
+          document versions and server timestamps.
         </p>
 
         {!status.migrationReady ? (
           <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-            The versioned agreement migration still needs to be installed. No
-            acceptance was requested or recorded yet.
+            The document-review record migration still needs to be installed.
+            No acceptance was requested or recorded yet.
           </div>
         ) : (
           <form action={acceptCurrentLegalAgreements} className="mt-8">
             <input type="hidden" name="next" value={nextPath} />
             <div className="overflow-hidden rounded-2xl border border-border">
-              {status.missing.map((agreement, index) => (
+              {status.documents.map((agreement, index) => (
                 <div
                   key={`${agreement.key}:${agreement.version}`}
-                  className={`flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between ${
+                  className={`flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between ${
                     index > 0 ? "border-t border-border" : ""
                   }`}
                 >
@@ -86,49 +92,47 @@ export default async function LegalAcceptancePage({
                     <p className="mt-1 text-sm text-muted">
                       Version {agreement.version}
                     </p>
+                    <p
+                      className={`mt-2 text-sm font-semibold ${
+                        agreement.reviewed ? "text-emerald-700" : "text-amber-700"
+                      }`}
+                    >
+                      {agreement.reviewed
+                        ? "Document review completed"
+                        : "Document review required"}
+                    </p>
                   </div>
                   <Link
-                    href={agreement.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-fit text-sm font-semibold text-foreground underline underline-offset-4"
+                    href={`${agreement.href}?review=1&version=${encodeURIComponent(agreement.version)}&hash=${encodeURIComponent(agreement.contentSha256)}&next=${encodeURIComponent(nextPath)}`}
+                    className="w-fit rounded-full border border-foreground px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-foreground hover:text-white"
                   >
-                    Review document
+                    {agreement.reviewed ? "Review again" : "Review document"}
                   </Link>
                 </div>
               ))}
             </div>
 
-            <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-[#fafafa] p-5">
-              <input
-                type="checkbox"
-                name="confirmation"
-                value="accepted"
-                required
-                className="mt-1 h-4 w-4 shrink-0 accent-black"
-              />
-              <span className="text-sm leading-6 text-muted">
-                I have reviewed each current document listed above and agree
-                to or acknowledge it, as applicable. I understand that this
-                action and its timestamp will be retained as part of
-                Auxilium&apos;s legal records.
-              </span>
-            </label>
+            <div className="mt-6 rounded-2xl border border-border bg-[#fafafa] p-5 text-sm leading-6 text-muted">
+              {allDocumentsReviewed
+                ? "All required document reviews are complete. You can now save your final acceptance and continue."
+                : "Complete the separate review and checkbox at the bottom of every required document to activate the final button."}
+            </div>
 
-            {query.error && (
+            {errorCode && (
               <p
                 role="alert"
                 className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
               >
-                {query.error === "confirmation"
-                  ? "Check the confirmation box before continuing."
-                  : "We could not record your acceptance. Please try again."}
+                {errorCode === "reviews"
+                  ? "Complete the separate review for every document before continuing."
+                  : "We could not record your final acceptance. Please try again."}
               </p>
             )}
 
             <button
               type="submit"
-              className="mt-6 w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark"
+              disabled={!allDocumentsReviewed}
+              className="mt-6 w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               Accept and continue
             </button>
@@ -137,8 +141,8 @@ export default async function LegalAcceptancePage({
 
         {!status.migrationReady && (
           <p className="mt-6 text-sm leading-6 text-muted">
-            Dashboard access will resume after the legal-record migration is
-            installed. If this message persists, contact the{" "}
+            Dashboard access will resume after the document-review record
+            migration is installed. If this message persists, contact the{" "}
             <Link
               href="/support"
               className="font-semibold text-foreground underline underline-offset-4"

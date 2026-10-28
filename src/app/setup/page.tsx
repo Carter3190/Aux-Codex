@@ -39,7 +39,7 @@ export default async function SetupPage({
         </h1>
         <p className="mt-4 leading-7 text-muted">
           {riskControlsReason
-            ? "Run the legal-acceptance, provider-risk, and booking-acknowledgement migrations in filename order, then return to the provider page. These migrations add versioned agreement records, insurance controls, and booking-specific legal acknowledgements."
+            ? "Run the legal-acceptance, provider-risk, booking-acknowledgement, and document-review migrations in filename order, then return to the provider page. These migrations add versioned agreement records, insurance controls, booking-specific legal acknowledgements, and separate document-review records."
             : resolutionReason
             ? "Run the resolution-center migration in the Supabase SQL Editor, then return to the dashboard. It adds private customer cases, provider responses, audited admin decisions, refund reconciliation, and Stripe dispute visibility."
             : reviewsReason
@@ -78,8 +78,10 @@ export default async function SetupPage({
             Install <code>20261026000000_versioned_legal_acceptances.sql</code>,{" "}
             <code>20261026005000_provider_risk_control_cohort.sql</code>,{" "}
             <code>20261026010000_booking_legal_acknowledgement.sql</code>, and{" "}
-            <code>20261026020000_provider_risk_controls.sql</code> in that order.
-            These migrations preserve existing bookings and payment records.
+            <code>20261026020000_provider_risk_controls.sql</code>, followed by{" "}
+            <code>20261027000000_legal_document_review_completions.sql</code>.
+            These migrations preserve existing bookings, payment records, and
+            completed legal acceptances.
           </p>
         ) : resolutionReason ? (
           <p className="mt-3 text-sm leading-6 text-muted">
