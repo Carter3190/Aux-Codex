@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ProviderCredentialReviewForm } from "@/components/admin/provider-credential-review-form";
 import { ProviderReviewForm } from "@/components/admin/provider-review-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { getAdminProviderApplications } from "@/lib/providers/data";
+import {
+  getAdminProviderApplications,
+  hasCurrentInsuranceCredential,
+} from "@/lib/providers/data";
 import {
   formatPrice,
   labelFromSnakeCase,
@@ -82,9 +86,13 @@ export default async function AdminDashboardPage() {
             const availableDays = application.availability.filter(
               (day) => day.isAvailable,
             );
-            const canReview =
+            const canReview = Boolean(application.details.submittedAt);
+            const canApprove =
+              canReview &&
               application.completion.isComplete &&
-              Boolean(application.details.submittedAt);
+              hasCurrentInsuranceCredential(application.credentials, true);
+            const hasApprovedCurrentInsurance =
+              hasCurrentInsuranceCredential(application.credentials, true);
 
             return (
               <article
@@ -119,6 +127,13 @@ export default async function AdminDashboardPage() {
                           ? ` · Submitted ${formatDate(application.details.submittedAt)}`
                           : ""}
                       </p>
+                      {application.profile.providerStatus === "approved" &&
+                        !hasApprovedCurrentInsurance && (
+                          <p className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-950">
+                            Existing approval needs a manual current-insurance
+                            audit before this provider takes new customer work.
+                          </p>
+                        )}
                     </div>
                     <div className="text-left sm:text-right">
                       <p className="text-3xl font-semibold text-brand-dark">
@@ -260,6 +275,9 @@ export default async function AdminDashboardPage() {
                                   ? ` · Expires ${credential.expiresOn}`
                                   : ""}
                               </p>
+                              <p className="mt-2 text-xs font-semibold capitalize text-foreground">
+                                Review status: {credential.reviewStatus}
+                              </p>
                               {credential.credentialNumber && (
                                 <p className="mt-2 text-xs text-muted">
                                   Number: {credential.credentialNumber}
@@ -279,6 +297,11 @@ export default async function AdminDashboardPage() {
                                   Document link unavailable.
                                 </p>
                               )}
+                              <ProviderCredentialReviewForm
+                                credentialId={credential.id}
+                                reviewStatus={credential.reviewStatus}
+                                reviewNotes={credential.reviewNotes}
+                              />
                             </div>
                           ))
                         )}
@@ -352,6 +375,7 @@ export default async function AdminDashboardPage() {
                         providerId={application.profile.id}
                         providerStatus={application.profile.providerStatus}
                         canReview={canReview}
+                        canApprove={canApprove}
                       />
                     </section>
                   </aside>

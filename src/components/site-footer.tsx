@@ -56,7 +56,7 @@ export function SiteFooter() {
             Auxilium
           </Link>
           <p className="mx-auto mt-8 max-w-2xl text-xl leading-8 text-foreground sm:text-2xl">
-            A local-service marketplace for finding trusted help, managing the
+            A local-service marketplace for finding local help, managing the
             work, and paying securely.
           </p>
         </div>

@@ -7,7 +7,8 @@ import { searchApprovedProviders } from "@/lib/marketplace/data";
 
 export const metadata: Metadata = {
   title: "Find local providers",
-  description: "Browse approved local service providers on Auxilium.",
+  description:
+    "Browse local service providers whose applications have been reviewed by Auxilium.",
 };
 
 type ProvidersPageProps = {
@@ -40,10 +41,10 @@ export default async function ProvidersPage({ searchParams }: ProvidersPageProps
             Customer marketplace
           </p>
           <h1 className="mt-4 max-w-4xl text-5xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">
-            Find trusted help near you.
+            Find local help near you.
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            Every provider shown here has completed Auxilium’s application and approval process.
+            Every provider shown here submitted an application that Auxilium reviewed before listing.
           </p>
 
           <form
@@ -85,7 +86,7 @@ export default async function ProvidersPage({ searchParams }: ProvidersPageProps
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.14em] text-foreground">
-              Approved professionals
+              Listed professionals
             </p>
             <h2 className="mt-3 text-3xl font-normal tracking-[-0.03em] text-foreground sm:text-4xl">
               {providers.length === 1
@@ -110,7 +111,7 @@ export default async function ProvidersPage({ searchParams }: ProvidersPageProps
           <div className="mt-8 rounded-[1.25rem] border border-border bg-white p-8 text-center sm:p-12">
             <h2 className="text-2xl font-semibold text-brand-dark">No matching providers yet</h2>
             <p className="mx-auto mt-3 max-w-xl leading-7 text-muted">
-              Try a broader service or location. Auxilium will show more professionals as applications are approved.
+              Try a broader service or location. Auxilium will show more professionals as applications are reviewed and listed.
             </p>
           </div>
         )}

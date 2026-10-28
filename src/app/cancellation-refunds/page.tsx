@@ -14,7 +14,7 @@ export default function CancellationRefundsPage() {
       eyebrow="Booking policy"
       title="Cancellations, refunds, and disputes"
       summary="This policy explains what happens when plans change, a service problem occurs, or a payment needs review."
-      updated="September 21, 2026"
+      updated="October 26, 2026"
     >
       <PolicySection title="Before a booking is paid">
         <p>
@@ -61,6 +61,12 @@ export default function CancellationRefundsPage() {
           Submit a request promptly after learning of the problem. Delayed
           reports may be harder to verify and can be limited by payment-network
           deadlines.
+        </p>
+        <p>
+          Resolution review is administrative marketplace assistance. It does
+          not decide legal fault, transfer responsibility for the provider’s
+          services to Auxilium, or prevent a participant from exercising rights
+          that cannot lawfully be waived.
         </p>
       </PolicySection>
 

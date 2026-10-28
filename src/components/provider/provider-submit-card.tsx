@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { submitProviderApplication } from "@/lib/providers/actions";
+import { LEGAL_AGREEMENTS } from "@/lib/legal/agreements";
 import {
   initialProviderActionState,
   type ProviderCompletion,
@@ -38,6 +40,40 @@ export function ProviderSubmitCard({
       <div className="mt-5">
         <FormFeedback state={state} />
       </div>
+      {!submittedAt && (
+        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white p-4">
+          <input
+            type="checkbox"
+            name="providerLegalConfirmation"
+            value="accepted"
+            required
+            className="mt-1 h-4 w-4 shrink-0 accent-black"
+          />
+          <span className="text-sm leading-6 text-muted">
+            I have reviewed and agree to the current{" "}
+            <Link
+              href="/provider-agreement"
+              target="_blank"
+              className="font-semibold text-foreground underline underline-offset-4"
+            >
+              Provider Agreement
+            </Link>{" "}
+            (version {LEGAL_AGREEMENTS.providerAgreement.version}) and{" "}
+            <Link
+              href="/provider-standards"
+              target="_blank"
+              className="font-semibold text-foreground underline underline-offset-4"
+            >
+              Provider Standards
+            </Link>{" "}
+            (version {LEGAL_AGREEMENTS.providerStandards.version}). I accept
+            responsibility for my services and for every employee,
+            contractor, or subcontractor I send to a customer, and I confirm
+            that all licenses, credentials, and insurance required for my
+            services are current.
+          </span>
+        </label>
+      )}
       <button
         type="submit"
         disabled={pending || !completion.isComplete || Boolean(submittedAt)}

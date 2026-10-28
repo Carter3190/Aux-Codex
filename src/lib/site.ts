@@ -1,4 +1,4 @@
-export const legalVersion = "2026-09-21";
+export { CURRENT_TERMS_VERSION as legalVersion } from "@/lib/legal/agreements";
 
 const productionAppUrl = "https://app.theauxillium.com";
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Auxilium",
   },
   description:
-    "Find trusted local professionals or grow your independent service business with Auxilium.",
+    "Find local professionals whose applications have been reviewed, or grow your independent service business with Auxilium.",
 };
 
 export default function RootLayout({

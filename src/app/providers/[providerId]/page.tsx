@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { BookingRequestForm } from "@/components/marketplace/booking-request-form";
 import { MarketplaceHeader } from "@/components/marketplace/marketplace-header";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
+import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
 import { formatPrice, labelFromSnakeCase, weekdays } from "@/lib/providers/presentation";
 
@@ -41,6 +42,15 @@ export default async function ProviderProfilePage({
   ]);
   if (!provider) notFound();
 
+  if (profile?.role === "customer") {
+    const legalStatus = await getLegalAcceptanceStatus(profile);
+    if (!legalStatus.migrationReady || legalStatus.missing.length > 0) {
+      redirect(
+        `/legal/accept?next=${encodeURIComponent(`/providers/${provider.providerId}`)}`,
+      );
+    }
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <MarketplaceHeader profile={profile} />
@@ -68,8 +78,8 @@ export default async function ProviderProfilePage({
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">Approved provider</p>
-                <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1 text-xs font-bold text-foreground">✓ Verified</span>
+                <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">Listed provider</p>
+                <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1 text-xs font-bold text-foreground">Application reviewed</span>
               </div>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight text-brand-dark sm:text-5xl">
                 {provider.displayName}
@@ -180,7 +190,10 @@ export default async function ProviderProfilePage({
               </ul>
             </div>
             <div className="rounded-[1.25rem] border border-border bg-white p-7">
-              <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Reviewed credentials</p>
+              <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Provider-submitted credentials</p>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                Auxilium reviewed the documents this provider submitted with its application. This does not guarantee current licensing, insurance, safety, or service quality.
+              </p>
               {provider.credentials.length > 0 ? (
                 <ul className="mt-5 space-y-4">
                   {provider.credentials.map((credential) => (
@@ -194,7 +207,7 @@ export default async function ProviderProfilePage({
                   ))}
                 </ul>
               ) : (
-                <p className="mt-5 leading-7 text-muted">Auxilium reviewed this provider’s private application documents.</p>
+                <p className="mt-5 leading-7 text-muted">No provider-submitted credential information is displayed on this profile.</p>
               )}
             </div>
           </section>
@@ -221,8 +234,18 @@ export default async function ProviderProfilePage({
           <p className="mt-3 text-sm leading-6 text-muted">This sends a request, not an automatic confirmation. The provider will accept or decline it.</p>
 
           <div className="mt-6">
-            {profile?.role === "customer" ? (
-              <BookingRequestForm providerId={provider.providerId} services={provider.services} minimumDate={tomorrowDate()} />
+            {profile?.role === "customer" && provider.bookingEligible ? (
+              <BookingRequestForm
+                providerId={provider.providerId}
+                providerName={provider.displayName}
+                services={provider.services}
+                minimumDate={tomorrowDate()}
+              />
+            ) : profile?.role === "customer" ? (
+              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
+                This provider is temporarily unavailable for new booking
+                requests while required account information is reviewed.
+              </div>
             ) : profile ? (
               <div className="rounded-2xl bg-[#f4f4f4] p-5 text-sm leading-6 text-muted">
                 Booking requests must be sent from a customer account. Your current account is a {profile.role} account.

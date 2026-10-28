@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
-import { legalVersion } from "@/lib/site";
+import { getRequiredLegalAgreements } from "@/lib/legal/agreements";
 import type { AuthFormState } from "./types";
 
 const passwordSchema = z
@@ -90,6 +90,7 @@ export async function signUp(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
+  const acceptedAgreements = getRequiredLegalAgreements(parsed.data.role);
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -98,7 +99,12 @@ export async function signUp(
       data: {
         full_name: parsed.data.fullName,
         requested_role: parsed.data.role,
-        legal_version: legalVersion,
+        accepted_legal_versions: Object.fromEntries(
+          acceptedAgreements.map((agreement) => [
+            agreement.key,
+            agreement.version,
+          ]),
+        ),
         terms_accepted_at: new Date().toISOString(),
       },
     },

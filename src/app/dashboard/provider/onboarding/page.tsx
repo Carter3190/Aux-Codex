@@ -102,8 +102,8 @@ export default async function ProviderOnboardingPage() {
 
         <Section
           number={3}
-          title="Photos and credentials"
-          description="Add at least one photo and one private verification document."
+          title="Photos, insurance, and credentials"
+          description="Add at least one photo and current insurance with its carrier and expiration date."
           complete={completion.photos && completion.credentials}
         >
           <ProviderUploadManager

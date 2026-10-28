@@ -111,6 +111,26 @@ export function ProviderServiceForm({ services }: { services: ProviderService[] 
             )}
           </label>
         </div>
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white p-4">
+          <input
+            type="checkbox"
+            name="servicePolicyConfirmation"
+            value="accepted"
+            required
+            className="mt-1 h-4 w-4 shrink-0 accent-black"
+          />
+          <span className="text-sm leading-6 text-muted">
+            I confirm this is not healthcare, chiropractic care, medical or
+            clinical diagnosis or treatment, patient care, or emergency-response
+            work, and that I am authorized, licensed, and insured as required to
+            perform this service.
+          </span>
+        </label>
+        {state.fieldErrors?.servicePolicyConfirmation?.[0] && (
+          <p className="text-sm text-red-700">
+            Confirm the service policy before adding this service.
+          </p>
+        )}
         <FormFeedback state={state} />
         <button
           type="submit"

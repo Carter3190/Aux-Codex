@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { notifyBookingParticipants } from "@/lib/email/notifications";
+import { CURRENT_TERMS_VERSION } from "@/lib/legal/agreements";
 import { createClient } from "@/lib/supabase/server";
 import { requireMarketplaceActionRole } from "./data";
 import type { MarketplaceActionState } from "./types";
@@ -22,6 +23,10 @@ const bookingSchema = z.object({
     .min(5, "Enter the address or service location.")
     .max(300, "Use 300 characters or fewer."),
   notes: z.string().trim().max(2000, "Use 2,000 characters or fewer."),
+  providerResponsibilityAcknowledged: z.literal(true, {
+    error:
+      "Confirm that the provider performs the service and accept the current Terms of Service.",
+  }),
 });
 
 const responseSchema = z.object({
@@ -73,6 +78,9 @@ function databaseMessage(message?: string) {
     "choose a date",
     "choose a time",
     "enter a service location",
+    "confirm that the provider performs",
+    "review and accept the current account agreements",
+    "terms of service changed",
     "use 2,000",
     "use 1,000",
     "20 pending requests",
@@ -122,6 +130,8 @@ export async function requestBooking(
     requestedTime: formData.get("requestedTime"),
     serviceLocation: formData.get("serviceLocation"),
     notes: formData.get("notes"),
+    providerResponsibilityAcknowledged:
+      formData.get("providerResponsibilityAcknowledged") === "accepted",
   });
 
   if (!parsed.success) {
@@ -137,6 +147,9 @@ export async function requestBooking(
       requested_start_time: parsed.data.requestedTime,
       requested_location: parsed.data.serviceLocation,
       requested_notes: parsed.data.notes,
+      provider_responsibility_acknowledged:
+        parsed.data.providerResponsibilityAcknowledged,
+      accepted_terms_version: CURRENT_TERMS_VERSION,
     });
     if (error) return failure(databaseMessage(error.message));
 

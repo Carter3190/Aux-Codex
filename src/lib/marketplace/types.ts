@@ -66,6 +66,7 @@ export type MarketplaceProvider = {
   availability: PublicAvailability[];
   photos: PublicPhoto[];
   credentials: PublicCredential[];
+  bookingEligible: boolean;
   averageRating: number | null;
   reviewCount: number;
   reviews: VerifiedReview[];
