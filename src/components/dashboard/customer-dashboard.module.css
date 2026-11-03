@@ -1,0 +1,127 @@
+.page { color: var(--foreground); }
+.overviewGrid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 26px; align-items: start; }
+.sectionHeading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
+.sectionHeading h2 { font-size: 17px; font-weight: 600; letter-spacing: -.025em; }
+.textLink { display: inline-flex; align-items: center; gap: 7px; color: var(--brand); font-size: 13px; font-weight: 600; text-decoration: none; }
+.textLink:hover { text-decoration: underline; text-underline-offset: 4px; }
+.textLink svg { width: 15px; height: 15px; flex-shrink: 0; }
+.hero { position: relative; overflow: hidden; padding: 32px; border-radius: 20px; background: #254468; color: #f3f7fc; min-height: 300px; }
+.hero::before { content: ""; width: 230px; height: 230px; position: absolute; top: -110px; right: -125px; border: 32px solid rgb(255 255 255 / 4%); border-radius: 50%; pointer-events: none; }
+.heroTop { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 27px; }
+.heroLabel { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: #cbd9eb; }
+.hero .badge { background: rgb(255 255 255 / 12%); color: #f0f6ff; }
+.heroMain { display: flex; gap: 22px; align-items: flex-start; }
+.dateTile { width: 57px; flex-shrink: 0; border: 1px solid rgb(255 255 255 / 24%); border-radius: 12px; padding: 7px; text-align: center; }
+.dateTile span { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #cbd9eb; }
+.dateTile strong { display: block; font-size: 29px; font-weight: 500; line-height: 1.2; }
+.hero h3 { margin: 0; max-width: 410px; font-size: clamp(23px, 2.2vw, 30px); font-weight: 500; letter-spacing: -.04em; line-height: 1.25; overflow-wrap: anywhere; }
+.heroProvider { color: #ccdaea; margin-top: 8px; font-size: 14px; }
+.heroTime { display: flex; align-items: center; gap: 8px; color: #ccdaea; margin-top: 22px; font-size: 13px; }
+.heroTime svg { width: 16px; height: 16px; flex-shrink: 0; }
+.heroActions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 27px; }
+.heroButton, .primaryButton, .secondaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; border-radius: 10px; padding: 10px 15px; font-size: 13px; font-weight: 600; text-decoration: none; text-align: center; }
+.heroButton { background: #f1f6fd; color: #254468; border: 1px solid #f1f6fd; }
+.heroButton:hover { background: #dce9fa; }
+.heroLink { display: inline-flex; align-items: center; gap: 7px; color: #f1f6fd; font-size: 13px; padding: 10px 0; }
+.heroLink:hover { text-decoration: underline; }
+.heroButton svg, .heroLink svg, .primaryButton svg, .secondaryButton svg { width: 16px; height: 16px; flex-shrink: 0; }
+.primaryButton { background: var(--brand); border: 1px solid var(--brand); color: white; }
+.primaryButton:hover { background: var(--brand-dark); }
+.secondaryButton { background: var(--surface); border: 1px solid var(--border); color: var(--foreground); }
+.secondaryButton:hover { background: #eaf0f8; }
+.attentionStack { display: grid; gap: 16px; }
+.attention { border: 1px solid #eeddbb; background: #fff6e5; color: #795223; border-radius: 18px; padding: 22px; }
+.attentionTitle { display: flex; align-items: flex-start; gap: 11px; }
+.attentionTitle > svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
+.attention h3 { font-size: 15px; font-weight: 600; margin: 0; }
+.attention p { font-size: 13px; line-height: 1.7; margin-top: 8px; }
+.attention .textLink { color: #795223; margin-top: 15px; }
+.caughtUp { background: #edf4ef; border-color: #d9e7de; color: #326348; }
+.caughtUp .textLink { color: #326348; }
+.updateCard { display: flex; align-items: flex-start; gap: 13px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
+.updateCard h3 { font-size: 14px; margin: 0; font-weight: 600; }
+.updateCard p { font-size: 13px; line-height: 1.7; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
+.updateCard .textLink { margin-top: 10px; }
+.serviceIcon { display: inline-flex; align-items: center; justify-content: center; width: 39px; height: 39px; border-radius: 12px; background: #eaf0f8; color: var(--brand); flex-shrink: 0; }
+.serviceIcon svg { width: 19px; height: 19px; }
+.subtleNotice { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 22px; }
+.subtleNotice svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.subtleNotice a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+.emptyState { border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 36px; text-align: center; }
+.emptyState > .serviceIcon { margin-bottom: 17px; }
+.emptyState h2 { font-size: 21px; font-weight: 500; margin: 0; letter-spacing: -.025em; }
+.emptyState p { color: var(--muted); font-size: 14px; line-height: 1.8; max-width: 460px; margin: 10px auto 0; }
+.emptyState .primaryButton { margin-top: 21px; }
+.emptyFeatured { background: #254468; border-color: #254468; color: #f3f7fc; min-height: 300px; }
+.emptyFeatured p { color: #ccdaea; }
+.emptyFeatured .serviceIcon { background: rgb(255 255 255 / 12%); color: #dbe9ff; }
+.emptyFeatured .primaryButton { background: #f1f6fd; border-color: #f1f6fd; color: #254468; }
+.emptyFeatured .primaryButton:hover { background: #dce9fa; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+.tab { display: inline-flex; gap: 7px; align-items: center; padding: 9px 15px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 500; }
+.tab:hover { background: #eaf0f8; }
+.tab[aria-current="page"] { color: var(--brand); background: #e5edf8; }
+.tab span { font-size: 12px; opacity: .8; }
+.bookingList { display: grid; gap: 16px; }
+.bookingCard { padding: 23px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.bookingCardTop { display: flex; gap: 14px; align-items: flex-start; }
+.bookingTitle { flex: 1; min-width: 0; }
+.bookingTitle h2 { margin: 0; font-size: 18px; line-height: 1.4; letter-spacing: -.025em; font-weight: 600; overflow-wrap: anywhere; }
+.bookingTitle a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 4px; }
+.bookingTitle p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.badges { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; }
+.badge { display: inline-flex; align-items: center; gap: 5px; width: fit-content; font-size: 12px; font-weight: 500; line-height: 1.4; border-radius: 6px; padding: 4px 8px; }
+.badge svg { width: 13px; height: 13px; }
+.paid { color: #2f6945; background: #eaf4ec; }
+.waiting { color: #795223; background: #fff4dd; }
+.processing { color: #345f94; background: #eaf0fa; }
+.failed { color: #a23434; background: #fceeee; }
+.neutral { color: #5f6c7c; background: #eef1f5; }
+.bookingCardBottom { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+.dateLine { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin: 0 auto 0 0; }
+.dateLine svg { width: 16px; height: 16px; flex-shrink: 0; }
+.amount { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.feedback { display: flex; align-items: flex-start; gap: 13px; background: #eaf1fb; border: 1px solid #d3e0f2; border-radius: 14px; padding: 20px; color: #254468; margin-bottom: 26px; }
+.feedback > svg { width: 21px; height: 21px; flex-shrink: 0; margin-top: 2px; }
+.feedback h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.feedback p { font-size: 13px; line-height: 1.75; margin: 6px 0 8px; }
+.feedbackWarning { background: #fff6e5; border-color: #eeddbb; color: #795223; }
+.backLink { margin-bottom: 21px; }
+.detailContent { max-width: 980px; }
+.detailContent > article { border-radius: 20px; border-color: var(--border); box-shadow: 0 6px 24px rgb(30 60 100 / 3%); }
+.detailContent > article > div:first-child > div > p:first-child { color: var(--brand); }
+.detailContent > article > div:first-child > div > h3 { font-size: 24px; }
+.paymentList { display: grid; gap: 14px; }
+.paymentRow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(130px, .6fr) auto; align-items: center; gap: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+.paymentRow h2 { font-size: 16px; font-weight: 600; margin: 0; }
+.paymentRow p { color: var(--muted); font-size: 13px; margin-top: 5px; }
+.paymentAmount { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; display: block; margin-bottom: 8px; }
+.historyIntro { font-size: 13px; color: var(--muted); line-height: 1.75; margin-bottom: 22px; }
+@media (max-width: 900px) {
+  .overviewGrid { grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr); gap: 20px; }
+  .hero { padding: 26px; }
+  .heroMain { gap: 17px; }
+  .hero h3 { font-size: 24px; }
+  .badges { max-width: 185px; }
+}
+@media (max-width: 700px) {
+  .overviewGrid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .hero { padding: 25px; min-height: 0; }
+  .hero h3 { font-size: 25px; }
+  .heroTime { align-items: flex-start; line-height: 1.7; }
+  .heroTime svg { margin-top: 4px; }
+  .heroActions { gap: 12px 18px; }
+  .heroButton, .primaryButton, .secondaryButton { min-height: 44px; }
+  .bookingCard { padding: 18px; }
+  .bookingCardTop { flex-wrap: wrap; }
+  .bookingTitle { min-width: calc(100% - 55px); }
+  .badges { justify-content: flex-start; margin-left: 53px; max-width: none; }
+  .bookingCardBottom .dateLine { width: 100%; }
+  .bookingCardBottom .secondaryButton { margin-left: auto; }
+  .tabs { gap: 4px; }
+  .tab { padding: 9px 11px; font-size: 13px; }
+  .paymentRow { grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 19px; }
+  .paymentRow > div:first-child { grid-column: 1 / -1; }
+  .paymentRow .secondaryButton { justify-self: end; }
+  .emptyState { padding: 28px 20px; }
+}
