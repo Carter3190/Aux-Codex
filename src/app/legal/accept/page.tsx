@@ -48,6 +48,10 @@ export default async function LegalAcceptancePage({
   const allDocumentsReviewed =
     status.documents.length > 0 &&
     status.documents.every((document) => document.reviewed);
+  const documentTitles = new Intl.ListFormat("en", {
+    style: "long",
+    type: "conjunction",
+  }).format(status.documents.map((document) => document.title));
 
   if (status.migrationReady && status.missing.length === 0) {
     redirect(nextPath);
@@ -115,7 +119,7 @@ export default async function LegalAcceptancePage({
             <div className="mt-6 rounded-2xl border border-border bg-[#fafafa] p-5 text-sm leading-6 text-muted">
               {allDocumentsReviewed
                 ? "All required document reviews are complete. You can now save your final acceptance and continue."
-                : "Complete the separate review and checkbox at the bottom of every required document to activate the final button."}
+                : `Read each document and check its box to confirm you agree to the ${documentTitles}. Select “Accept and continue” to proceed.`}
             </div>
 
             {errorCode && (
