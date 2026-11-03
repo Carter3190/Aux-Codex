@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { signOut } from "@/lib/auth/actions";
 import type { CurrentProfile } from "@/lib/auth/profile";
+import { CustomerDashboardShell } from "./customer-shell";
 
 type DashboardShellProps = {
   profile: CurrentProfile;
   eyebrow: string;
   title: string;
+  description?: string;
+  actions?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -13,8 +16,24 @@ export function DashboardShell({
   profile,
   eyebrow,
   title,
+  description,
+  actions,
   children,
 }: DashboardShellProps) {
+  if (profile.role === "customer") {
+    return (
+      <CustomerDashboardShell
+        profile={profile}
+        eyebrow={eyebrow}
+        title={title}
+        description={description}
+        actions={actions}
+      >
+        {children}
+      </CustomerDashboardShell>
+    );
+  }
+
   const navigation =
     profile.role === "provider"
       ? [
