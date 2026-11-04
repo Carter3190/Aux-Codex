@@ -5,7 +5,7 @@ import { CustomerDashboardShell } from "./customer-shell";
 
 type DashboardShellProps = {
   profile: CurrentProfile;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   actions?: React.ReactNode;
