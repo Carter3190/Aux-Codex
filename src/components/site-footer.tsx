@@ -46,7 +46,7 @@ function FooterLinks({
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-[#f4f4f4]">
+    <footer data-site-footer className="border-t border-border bg-[#f4f4f4]">
       <div className="mx-auto max-w-[1500px] px-8 py-16 sm:px-10 lg:px-16 lg:py-20">
         <div className="text-center">
           <Link
