@@ -15,18 +15,35 @@ export function CustomerOverview({ profile, bookings, payment }: {
   const firstName = profile.fullName.trim().split(/\s+/)[0];
   const groups = customerBookingGroups(bookings);
   const next = groups.upcoming[0];
-  const paymentDue = bookings.find(customerPaymentDue);
+  const paymentsDue = bookings.filter(customerPaymentDue);
   const reviewDue = bookings.find((booking) => booking.status === "completed" && !booking.review && (booking.payment?.status === "paid" || booking.payment?.status === "partially_refunded"));
   const processing = bookings.find((booking) => booking.payment?.status === "processing");
   const waiting = bookings.find((booking) => booking.status === "pending");
-  const openPast = groups.pastOpen[0];
-  const followUp = paymentDue ?? reviewDue ?? openPast ?? processing;
 
   return (
     <DashboardShell profile={profile}
       title={firstName ? `How can we help you today, ${firstName}?` : "How can we help you today?"}>
       <div className={styles.page}>
         <CustomerCheckoutFeedback payment={payment} />
+        {paymentsDue.length > 0 && (
+          <section className={styles.actionSection} aria-labelledby="customer-attention-heading">
+            <div className={styles.sectionHeading}><h2 id="customer-attention-heading">Needs your attention</h2></div>
+            <div className={styles.attentionStack}>
+              {paymentsDue.map((booking) => (
+                <article className={styles.attention} key={booking.id}>
+                  <div className={styles.attentionTitle}>
+                    <CustomerIcon name="payments" />
+                    <h3>{booking.payment?.status === "failed" ? "Your payment didn’t go through" : "Your booking price is ready"}</h3>
+                  </div>
+                  <p>{booking.providerName} · {booking.serviceName}. {booking.payment?.status === "failed"
+                    ? `Review the booking and try again when you’re ready. The final price is ${formatCustomerMoney(booking.agreedPriceCents!)}.`
+                    : `Review the final price of ${formatCustomerMoney(booking.agreedPriceCents!)} before paying to confirm your visit.`}</p>
+                  <Link className={styles.textLink} href={customerBookingPath(booking.id)}>{booking.payment?.status === "failed" ? "Review payment" : "Review & pay"}<CustomerIcon name="arrow" /></Link>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
         <div className={styles.overviewGrid}>
           <section aria-labelledby="next-visit-heading">
             <div className={styles.sectionHeading}>
@@ -56,25 +73,41 @@ export function CustomerOverview({ profile, bookings, payment }: {
             )}
             {groups.pastOpen.length > 0 && (
               <p className={styles.subtleNotice}><CustomerIcon name="clock" />
-                <span>{groups.pastOpen.length === 1 ? "One booking has" : `${groups.pastOpen.length} bookings have`} a past visit date and still {groups.pastOpen.length === 1 ? "needs" : "need"} an update. <Link href="/dashboard/customer/bookings">View open bookings</Link></span>
+                <span>{groups.pastOpen.length === 1 ? "One booking has" : `${groups.pastOpen.length} bookings have`} a past visit date and {groups.pastOpen.length === 1 ? "remains" : "remain"} open. <Link href="/dashboard/customer/bookings">View open bookings</Link></span>
               </p>
             )}
           </section>
-          <section aria-labelledby="customer-attention-heading">
-            <div className={styles.sectionHeading}><h2 id="customer-attention-heading">Needs your attention</h2></div>
+          <section aria-labelledby="customer-activity-heading">
+            <div className={styles.sectionHeading}><h2 id="customer-activity-heading">Your activity</h2></div>
             <div className={styles.attentionStack}>
-              <article className={`${styles.attention} ${followUp ? "" : styles.caughtUp}`}>
-                <div className={styles.attentionTitle}>
-                  <CustomerIcon name={followUp ? "pending" : "check"} />
-                  <h3>{paymentDue ? "Your booking price is ready" : reviewDue ? "How did your visit go?" : openPast ? "Check in on an earlier visit" : processing ? "Your payment is processing" : "You’re all caught up"}</h3>
+              <article className={styles.updateCard}>
+                <span className={styles.serviceIcon}><CustomerIcon name="book" /></span>
+                <div>
+                  <h3>Visit previous bookings</h3>
+                  <p>Review your booking details and follow up with your providers.</p>
+                  <Link className={styles.textLink} href="/dashboard/customer/bookings">View bookings<CustomerIcon name="arrow" /></Link>
                 </div>
-                <p>{paymentDue ? `${paymentDue.providerName} accepted your request. Review the final price of ${formatCustomerMoney(paymentDue.agreedPriceCents!)} before paying.`
-                  : reviewDue ? `Share your experience with ${reviewDue.providerName} after your completed visit.`
-                  : openPast ? `${openPast.providerName} · ${openPast.serviceName}. Open the booking to review its status or contact your provider.`
-                  : processing ? "Stripe is confirming your payment. Open the booking for its current payment status."
-                  : "There are no payments or reviews waiting for you right now."}</p>
-                {followUp && <Link className={styles.textLink} href={customerBookingPath(followUp.id)}>{paymentDue ? "Review & pay" : reviewDue ? "Leave a review" : "View booking"}<CustomerIcon name="arrow" /></Link>}
               </article>
+              {reviewDue && (
+                <article className={styles.updateCard}>
+                  <span className={styles.serviceIcon}><CustomerIcon name="check" /></span>
+                  <div>
+                    <h3>How did your visit go?</h3>
+                    <p>Share your experience with {reviewDue.providerName} after your completed visit.</p>
+                    <Link className={styles.textLink} href={customerBookingPath(reviewDue.id)}>Leave a review<CustomerIcon name="arrow" /></Link>
+                  </div>
+                </article>
+              )}
+              {processing && (
+                <article className={styles.updateCard}>
+                  <span className={styles.serviceIcon}><CustomerIcon name="clock" /></span>
+                  <div>
+                    <h3>Your payment is processing</h3>
+                    <p>Stripe is confirming your payment. Open the booking for its current payment status.</p>
+                    <Link className={styles.textLink} href={customerBookingPath(processing.id)}>View booking<CustomerIcon name="arrow" /></Link>
+                  </div>
+                </article>
+              )}
               <article className={styles.updateCard}>
                 <span className={styles.serviceIcon}><CustomerIcon name={waiting ? "clock" : "messages"} /></span>
                 <div>
