@@ -31,7 +31,7 @@ export function CustomerDashboardShell({
     .toUpperCase();
 
   return (
-    <main className={styles.shell}>
+    <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.wordmark}>
@@ -57,7 +57,7 @@ export function CustomerDashboardShell({
         </div>
       </header>
 
-      <div className={styles.content}>
+      <main className={styles.content}>
         <div className={styles.pageHeading}>
           <div className={styles.headingCopy}>
             <p className={styles.eyebrow}>{eyebrow}</p>
@@ -75,9 +75,9 @@ export function CustomerDashboardShell({
           </div>
         </div>
         <div className={styles.pageBody}>{children}</div>
-      </div>
+      </main>
 
-      <footer className={styles.footer} data-customer-footer role="contentinfo">
+      <footer className={styles.footer} data-customer-footer>
         <div className={styles.footerInner}>
           <nav className={styles.footerLinks} aria-label="Customer support and legal">
             <Link href="/support">Support</Link>
@@ -88,6 +88,6 @@ export function CustomerDashboardShell({
           <p>© 2026 Auxilium LLC. <span>Payments processed by Stripe.</span></p>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
