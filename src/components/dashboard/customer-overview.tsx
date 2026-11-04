@@ -12,6 +12,7 @@ export function CustomerOverview({ profile, bookings, payment }: {
   bookings: BookingRequest[];
   payment?: string;
 }) {
+  const firstName = profile.fullName.trim().split(/\s+/)[0];
   const groups = customerBookingGroups(bookings);
   const next = groups.upcoming[0];
   const paymentDue = bookings.find(customerPaymentDue);
@@ -22,9 +23,8 @@ export function CustomerOverview({ profile, bookings, payment }: {
   const followUp = paymentDue ?? reviewDue ?? openPast ?? processing;
 
   return (
-    <DashboardShell profile={profile} eyebrow="Your space"
-      title={next ? "Your next visit, at a glance." : "Your plans, at a glance."}
-      description="Plans, requests, and conversations in one place.">
+    <DashboardShell profile={profile}
+      title={firstName ? `How can we help you today, ${firstName}?` : "How can we help you today?"}>
       <div className={styles.page}>
         <CustomerCheckoutFeedback payment={payment} />
         <div className={styles.overviewGrid}>

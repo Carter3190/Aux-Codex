@@ -7,7 +7,7 @@ import styles from "./customer-shell.module.css";
 
 type CustomerDashboardShellProps = {
   profile: CurrentProfile;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -60,7 +60,7 @@ export function CustomerDashboardShell({
       <main className={styles.content}>
         <div className={styles.pageHeading}>
           <div className={styles.headingCopy}>
-            <p className={styles.eyebrow}>{eyebrow}</p>
+            {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
             <h1>{title}</h1>
             {description && <p className={styles.description}>{description}</p>}
           </div>
