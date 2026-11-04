@@ -31,11 +31,11 @@ export function CustomerDashboardShell({
     .toUpperCase();
 
   return (
-    <main className={styles.shell}>
+    <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.wordmark}>
-            Auxilium<span>.</span>
+            Auxilium
           </Link>
           <div className={styles.account}>
             <span className={styles.avatar} aria-hidden="true">
@@ -57,7 +57,7 @@ export function CustomerDashboardShell({
         </div>
       </header>
 
-      <div className={styles.content}>
+      <main className={styles.content}>
         <div className={styles.pageHeading}>
           <div className={styles.headingCopy}>
             <p className={styles.eyebrow}>{eyebrow}</p>
@@ -75,7 +75,19 @@ export function CustomerDashboardShell({
           </div>
         </div>
         <div className={styles.pageBody}>{children}</div>
-      </div>
-    </main>
+      </main>
+
+      <footer className={styles.footer} data-customer-footer>
+        <div className={styles.footerInner}>
+          <nav className={styles.footerLinks} aria-label="Customer support and legal">
+            <Link href="/support">Support</Link>
+            <Link href="/terms">Terms of service</Link>
+            <Link href="/privacy">Privacy policy</Link>
+            <Link href="/cancellation-refunds">Cancellation & refunds</Link>
+          </nav>
+          <p>© 2026 Auxilium LLC. <span>Payments processed by Stripe.</span></p>
+        </div>
+      </footer>
+    </div>
   );
 }
