@@ -68,7 +68,7 @@ export function CustomerOverview({ profile, bookings, payment }: {
               </article>
             ) : (
               <CustomerEmptyState title="A little help starts here." browse featured>
-                {bookings.length ? "You have no upcoming paid visits. Your open requests and earlier bookings are available in Bookings." : "Find local help and send your first request. Your next appointment will appear here."}
+                {bookings.length ? "You have no upcoming visits. Your open requests and earlier bookings are available in Bookings." : "Find local help and send your first request. Your next appointment will appear here."}
               </CustomerEmptyState>
             )}
             {groups.pastOpen.length > 0 && (
