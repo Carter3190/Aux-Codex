@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 export type CustomerIconName =
   | "overview"
   | "calendar"
+  | "book"
   | "messages"
   | "payments"
   | "arrow"
@@ -26,6 +27,12 @@ const paths: Record<CustomerIconName, ReactNode> = {
     <>
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M12 5.5C9.5 3.7 6.5 3.3 3 4v15c3.5-.7 6.5-.3 9 1.5 2.5-1.8 5.5-2.2 9-1.5V4c-3.5-.7-6.5-.3-9 1.5Z" />
+      <path d="M12 5.5v15" />
     </>
   ),
   messages: <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5Z" />,

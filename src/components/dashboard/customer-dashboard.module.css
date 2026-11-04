@@ -30,14 +30,13 @@
 .secondaryButton { background: var(--surface); border: 1px solid var(--border); color: var(--foreground); }
 .secondaryButton:hover { background: #eaf0f8; }
 .attentionStack { display: grid; gap: 16px; }
+.actionSection { margin-bottom: 26px; }
 .attention { border: 1px solid #eeddbb; background: #fff6e5; color: #795223; border-radius: 18px; padding: 22px; }
 .attentionTitle { display: flex; align-items: flex-start; gap: 11px; }
 .attentionTitle > svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
 .attention h3 { font-size: 15px; font-weight: 600; margin: 0; }
 .attention p { font-size: 13px; line-height: 1.7; margin-top: 8px; }
 .attention .textLink { color: #795223; margin-top: 15px; }
-.caughtUp { background: #edf4ef; border-color: #d9e7de; color: #326348; }
-.caughtUp .textLink { color: #326348; }
 .updateCard { display: flex; align-items: flex-start; gap: 13px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
 .updateCard h3 { font-size: 14px; margin: 0; font-weight: 600; }
 .updateCard p { font-size: 13px; line-height: 1.7; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
