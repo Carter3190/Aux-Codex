@@ -1,0 +1,21 @@
+.status { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 18px; padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); margin-bottom: 24px; }
+.status h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.status p { margin-top: 7px; color: var(--muted); font-size: 13px; line-height: 1.8; max-width: 720px; }
+.badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 6px; color: var(--brand); background: #eaf0f8; font-size: 12px; font-weight: 500; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.tile { display: block; border: 1px solid var(--border); border-radius: 16px; padding: 24px; background: var(--surface); color: var(--foreground); text-decoration: none; transition: border-color 150ms ease; }
+.tile:hover { border-color: var(--brand); }
+.tile h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.tile p { margin: 9px 0 16px; font-size: 13px; color: var(--muted); line-height: 1.8; }
+.tile > span { display: inline-flex; align-items: center; gap: 8px; color: var(--brand); font-size: 13px; font-weight: 600; }
+.tile svg { width: 16px; height: 16px; }
+.navigation { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.navigation a { display: inline-flex; align-items: center; padding: 9px 12px; border-radius: 9px; color: var(--muted); font-size: 13px; text-decoration: none; }
+.navigation a[aria-current="page"] { background: #e5edf8; color: var(--brand); }
+.navigation a:hover { background: #eaf0f8; }
+.panel { max-width: 980px; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 28px; }
+.panel > h2 { font-size: 20px; font-weight: 600; margin: 0 0 10px; }
+.description { color: var(--muted); font-size: 13px; line-height: 1.8; margin-bottom: 24px; }
+.review { max-width: 980px; }
+.privacy { margin-top: 24px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+@media(max-width: 650px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 14px; } .tile { padding: 21px; } .panel { padding: 20px; } .navigation a { padding: 8px 10px; font-size: 12px; } }

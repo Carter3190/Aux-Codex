@@ -8,9 +8,11 @@ import { PaymentFeedback } from "./payment-feedback";
 export function BookingPriceForm({
   bookingId,
   defaultAmountCents,
+  hasAgreedPrice = false,
 }: {
   bookingId: string;
   defaultAmountCents: number | null;
+  hasAgreedPrice?: boolean;
 }) {
   const [state, action, pending] = useActionState(
     setBookingPrice,
@@ -21,10 +23,10 @@ export function BookingPriceForm({
     <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f4f4f4] p-4">
       <input type="hidden" name="bookingId" value={bookingId} />
       <label className="block text-sm font-semibold text-foreground">
-        Final booking price
+        Agreed booking price
         <span className="mt-1 block text-xs font-normal leading-5 text-muted">
-          Confirm the full customer total after discussing the scope. Auxilium’s 5%
-          commission is calculated automatically.
+          Save the full total agreed with your customer. You can update it again
+          before checkout starts. Auxilium’s 5% commission is calculated automatically.
         </span>
         <span className="mt-2 flex items-center rounded-xl border border-border bg-white focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
           <span className="pl-4 text-muted">$</span>
@@ -54,7 +56,7 @@ export function BookingPriceForm({
         disabled={pending}
         className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
       >
-        {pending ? "Saving…" : "Save final price"}
+        {pending ? "Saving…" : hasAgreedPrice ? "Update price" : "Save price"}
       </button>
     </form>
   );

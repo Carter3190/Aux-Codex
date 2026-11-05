@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signOut } from "@/lib/auth/actions";
 import type { CurrentProfile } from "@/lib/auth/profile";
 import { CustomerDashboardShell } from "./customer-shell";
+import { ProviderDashboardShell } from "./provider-shell";
 
 type DashboardShellProps = {
   profile: CurrentProfile;
@@ -34,15 +35,22 @@ export function DashboardShell({
     );
   }
 
+  if (profile.role === "provider") {
+    return (
+      <ProviderDashboardShell
+        profile={profile}
+        eyebrow={eyebrow}
+        title={title}
+        description={description}
+        actions={actions}
+      >
+        {children}
+      </ProviderDashboardShell>
+    );
+  }
+
   const navigation =
-    profile.role === "provider"
-      ? [
-          ["Overview", "/dashboard/provider"],
-          ["Messages", "/dashboard/messages"],
-          ["Profile setup", "/dashboard/provider/onboarding"],
-          ["Marketplace", "/providers"],
-        ]
-      : profile.role === "admin"
+    profile.role === "admin"
         ? [
             ["Review queue", "/dashboard/admin"],
             ["Resolution center", "/dashboard/admin/cases"],

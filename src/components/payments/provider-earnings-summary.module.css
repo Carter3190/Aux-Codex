@@ -1,0 +1,9 @@
+.summary { color: var(--foreground); }
+.amounts { display: grid; gap: 12px; margin-top: 18px; }
+.amounts > div { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; }
+.amounts dt { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.amounts dd { margin: 0; text-align: right; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.amounts .net { border-top: 1px solid var(--border); padding-top: 14px; }
+.net dt, .net dd { color: var(--brand-dark); font-weight: 600; }
+.note { margin-top: 17px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+@media(max-width: 420px) { .amounts > div { gap: 12px; } .amounts dd { max-width: 52%; font-size: 13px; } }

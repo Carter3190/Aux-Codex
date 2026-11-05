@@ -57,10 +57,12 @@ export function ProviderUploadManager({
   providerId,
   photos,
   credentials,
+  section,
 }: {
   providerId: string;
   photos: ProviderPhoto[];
   credentials: CredentialSummary[];
+  section?: "photos" | "credentials";
 }) {
   const router = useRouter();
   const [photoState, setPhotoState] = useState<ProviderActionState>({});
@@ -174,9 +176,9 @@ export function ProviderUploadManager({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-2">
-      <div>
-        <h3 className="text-lg font-semibold text-brand-dark">Profile photos</h3>
+    <div className={section ? "space-y-8" : "grid gap-8 xl:grid-cols-2"}>
+      {section !== "credentials" && <div>
+        {!section && <h3 className="text-lg font-semibold text-brand-dark">Profile photos</h3>}
         <p className="mt-1 text-sm leading-6 text-muted">
           Add a clear headshot or examples of completed work. JPG, PNG, or WebP;
           5 MB maximum.
@@ -236,10 +238,10 @@ export function ProviderUploadManager({
             {uploading === "photo" ? "Uploading…" : "Add photo"}
           </button>
         </form>
-      </div>
+      </div>}
 
-      <div>
-        <h3 className="text-lg font-semibold text-brand-dark">Credentials</h3>
+      {section !== "photos" && <div>
+        {!section && <h3 className="text-lg font-semibold text-brand-dark">Credentials</h3>}
         <p className="mt-1 text-sm leading-6 text-muted">
           Credential files are private and visible only to you and Auxilium admins.{" "}
           A current insurance document with its carrier and expiration date is
@@ -362,7 +364,7 @@ export function ProviderUploadManager({
             {uploading === "credential" ? "Uploading…" : "Add credential"}
           </button>
         </form>
-      </div>
+      </div>}
     </div>
   );
 }
