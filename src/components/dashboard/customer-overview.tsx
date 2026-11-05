@@ -67,7 +67,7 @@ export function CustomerOverview({ profile, bookings, payment }: {
                 </div>
               </article>
             ) : (
-              <CustomerEmptyState title="A little help starts here." browse featured>
+              <CustomerEmptyState title="Book your next service." browse featured>
                 {bookings.length ? "You have no upcoming visits. Your open requests and earlier bookings are available in Bookings." : "Find local help and send your first request. Your next appointment will appear here."}
               </CustomerEmptyState>
             )}
