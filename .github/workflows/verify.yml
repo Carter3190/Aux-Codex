@@ -35,8 +35,8 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      - name: Check customer booking presentation
-        run: node --experimental-strip-types --test tests/customer-dashboard.test.mjs
+      - name: Check dashboard presentation and earnings
+        run: node --experimental-strip-types --test tests/*.test.mjs
 
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high

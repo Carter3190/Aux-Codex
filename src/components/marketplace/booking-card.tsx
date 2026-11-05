@@ -5,6 +5,8 @@ import { BookingResponseForm } from "./booking-response-form";
 import Link from "next/link";
 import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
 import { BookingPriceForm } from "@/components/payments/booking-price-form";
+import { ProviderEarningsSummary } from "@/components/payments/provider-earnings-summary";
+import type { ProviderEarnings } from "@/lib/payments/provider-earnings-types";
 import { BookingCaseRequestForm } from "@/components/cases/booking-case-request-form";
 import { ProviderCaseResponseForm } from "@/components/cases/provider-case-response-form";
 import type { BookingRequest } from "@/lib/marketplace/types";
@@ -75,9 +77,11 @@ const activeCaseStatuses = new Set([
 export function BookingCard({
   booking,
   perspective,
+  providerEarnings,
 }: {
   booking: BookingRequest;
   perspective: "customer" | "provider";
+  providerEarnings?: ProviderEarnings;
 }) {
   const canCancel =
     !booking.payment ||
@@ -100,9 +104,6 @@ export function BookingCard({
     booking.status === "pending" ||
     booking.status === "accepted" ||
     booking.status === "completed";
-  const platformFeeCents = booking.agreedPriceCents
-    ? Math.max(1, Math.round(booking.agreedPriceCents * 0.05))
-    : null;
   const remainingRefundCents = booking.payment
     ? booking.payment.amountCents - booking.payment.refundedAmountCents
     : 0;
@@ -125,7 +126,7 @@ export function BookingCard({
           </p>
           {booking.agreedPriceCents !== null && (
             <p className="mt-2 text-lg font-semibold text-brand-dark">
-              Final price: {formatMoney(booking.agreedPriceCents)}
+              {perspective === "provider" ? "Agreed booking price" : "Final price"}: {formatMoney(booking.agreedPriceCents)}
             </p>
           )}
         </div>
@@ -163,7 +164,7 @@ export function BookingCard({
         </div>
       )}
 
-      {(booking.status === "accepted" || booking.status === "completed") && (
+      {(booking.status === "accepted" || booking.status === "completed" || (perspective === "provider" && booking.payment)) && (
         <section className="mt-5 rounded-2xl border border-border bg-[#fafafa] p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -173,10 +174,10 @@ export function BookingCard({
               <p className="mt-1 text-sm leading-6 text-foreground">
                 {booking.agreedPriceCents === null
                   ? perspective === "provider"
-                    ? "Set the final price to unlock customer checkout."
+                    ? "Set the agreed booking price so the customer can pay."
                     : "Waiting for the provider to confirm the final price."
-                  : perspective === "provider" && platformFeeCents !== null
-                    ? `You receive ${formatMoney(booking.agreedPriceCents - platformFeeCents)} after Auxilium’s 5% commission.`
+                  : perspective === "provider"
+                    ? "Auxilium’s commission and Stripe processing fees are shown below."
                     : `Secure total: ${formatMoney(booking.agreedPriceCents)}`}
               </p>
             </div>
@@ -189,7 +190,9 @@ export function BookingCard({
             )}
           </div>
 
-          {booking.payment && booking.payment.refundedAmountCents > 0 && (
+          {perspective === "provider" && <ProviderEarningsSummary booking={booking} earnings={providerEarnings} />}
+
+          {perspective === "customer" && booking.payment && booking.payment.refundedAmountCents > 0 && (
             <p className="mt-3 text-sm font-semibold text-brand-dark">
               Refunded: {formatMoney(booking.payment.refundedAmountCents)} of {formatMoney(booking.payment.amountCents)}
             </p>
@@ -222,6 +225,7 @@ export function BookingCard({
         <BookingPriceForm
           bookingId={booking.id}
           defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents}
+          hasAgreedPrice={booking.agreedPriceCents !== null}
         />
       )}
       {perspective === "provider" &&

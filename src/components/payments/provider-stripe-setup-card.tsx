@@ -23,21 +23,20 @@ export function ProviderStripeSetupCard({
     return (
       <section className="mt-8 rounded-3xl border border-[#ead6ad] bg-[#fff8e9] p-6 sm:p-7">
         <p className="text-sm font-bold uppercase tracking-[0.15em] text-[#76531c]">
-          Payments: developer setup required
+          Payments temporarily unavailable
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
-          Stripe Connect is ready to be connected
+          Payment setup needs assistance
         </h2>
         <p className="mt-2 max-w-3xl leading-7 text-[#76531c]">
-          Add the server-only Stripe and Supabase secret keys, then install the
-          payments migration. No bank or identity information will be stored by
-          Auxilium.
+          Payment setup is temporarily unavailable. Contact Auxilium support
+          for help before accepting new paid bookings.
         </p>
         <Link
-          href="/setup?reason=stripe-payments"
+          href="/support"
           className="mt-5 inline-flex rounded-full border border-[#d8b979] bg-white px-5 py-2.5 text-sm font-semibold text-[#76531c]"
         >
-          View developer setup
+          Contact support
         </Link>
       </section>
     );
@@ -50,7 +49,7 @@ export function ProviderStripeSetupCard({
           Payments: ready
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
-          Stripe payouts are connected
+          Stripe connected
         </h2>
         <p className="mt-2 leading-7 text-muted">
           Customers can pay accepted bookings after you set the final price.

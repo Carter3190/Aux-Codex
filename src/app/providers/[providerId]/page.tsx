@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { BookingRequestForm } from "@/components/marketplace/booking-request-form";
 import { MarketplaceHeader } from "@/components/marketplace/marketplace-header";
+import styles from "@/components/marketplace/provider-profile.module.css";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
@@ -52,47 +53,47 @@ export default async function ProviderProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className={styles.page}>
       <MarketplaceHeader profile={profile} />
 
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-[1500px] px-6 py-10 sm:px-8 lg:px-12 lg:py-14">
-          <Link href="/providers" className="text-sm font-semibold text-foreground underline underline-offset-4">
+      <section className={styles.heroBand}>
+        <div className={styles.heroInner}>
+          <Link href="/providers" className={styles.backLink}>
             ← Back to providers
           </Link>
-          <div className="mt-7 grid gap-8 lg:grid-cols-[300px_1fr] lg:items-center">
-            <div className="aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-[#ededed] lg:aspect-square">
+          <div className={styles.heroGrid}>
+            <div className={styles.profilePhoto}>
               {provider.photos[0] ? (
                 // Provider photos are served from Auxilium's public Supabase bucket.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={provider.photos[0].publicUrl}
                   alt={provider.photos[0].caption || provider.displayName}
-                  className="h-full w-full object-cover"
+                  className={styles.photoImage}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-7xl font-semibold text-brand/40">
+                <div className={styles.photoFallback}>
                   {provider.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">Listed provider</p>
-                <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1 text-xs font-bold text-foreground">Application reviewed</span>
+            <div className={styles.heroCopy}>
+              <div className={styles.heroLabels}>
+                <p className={styles.eyebrow}>Listed provider</p>
+                <span className={styles.reviewedBadge}>Application reviewed</span>
               </div>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-brand-dark sm:text-5xl">
+              <h1 className={styles.providerName}>
                 {provider.displayName}
               </h1>
-              <p className="mt-3 text-xl font-medium text-foreground">{provider.headline}</p>
+              <p className={styles.headline}>{provider.headline}</p>
               {provider.reviewCount > 0 && provider.averageRating !== null && (
-                <p className="mt-3 font-semibold text-brand-dark">
-                  <span className="text-[#080808]" aria-hidden="true">★</span>{" "}
+                <p className={styles.ratingSummary}>
+                  <span className={styles.stars} aria-hidden="true">★</span>{" "}
                   {provider.averageRating.toFixed(1)} from {provider.reviewCount}{" "}
                   {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
                 </p>
               )}
-              <p className="mt-4 text-muted">
+              <p className={styles.providerMeta}>
                 Serving {provider.serviceArea}
                 {provider.travelRadiusMiles !== null && ` · Travels up to ${provider.travelRadiusMiles} miles`}
                 {provider.yearsExperience !== null && ` · ${provider.yearsExperience} years of experience`}
@@ -102,104 +103,104 @@ export default async function ProviderProfilePage({
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-[1500px] gap-8 px-6 py-12 sm:px-8 lg:grid-cols-[1fr_420px] lg:px-12 lg:py-16">
-        <div className="space-y-8">
-          <section className="rounded-[1.25rem] border border-border bg-white p-7 sm:p-8">
-            <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">About</p>
-            <p className="mt-4 whitespace-pre-wrap text-lg leading-8 text-muted">{provider.bio}</p>
+      <div className={styles.contentGrid}>
+        <div className={styles.profileSections}>
+          <section className={styles.panel}>
+            <h2 className={styles.sectionTitle}>About</h2>
+            <p className={styles.bio}>{provider.bio}</p>
           </section>
 
-          <section className="rounded-[1.25rem] border border-border bg-white p-7 sm:p-8">
-            <div className="flex flex-wrap items-end justify-between gap-3">
+          <section className={styles.panel}>
+            <div className={styles.sectionHeading}>
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">
+                <p className={styles.eyebrow}>
                   Customer reviews
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
+                <h2 className={styles.sectionTitle}>
                   Verified Auxilium bookings
                 </h2>
               </div>
               {provider.reviewCount > 0 && provider.averageRating !== null && (
-                <p className="font-semibold text-brand-dark">
-                  <span className="text-[#080808]" aria-hidden="true">★</span>{" "}
+                <p className={styles.ratingSummary}>
+                  <span className={styles.stars} aria-hidden="true">★</span>{" "}
                   {provider.averageRating.toFixed(1)} · {provider.reviewCount}
                 </p>
               )}
             </div>
             {provider.reviews.length > 0 ? (
-              <div className="mt-6 divide-y divide-border">
+              <div className={styles.reviewList}>
                 {provider.reviews.map((review) => (
-                  <article key={review.id} className="py-6 first:pt-0 last:pb-0">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                  <article key={review.id} className={styles.review}>
+                    <div className={styles.reviewTop}>
                       <div>
-                        <p className="tracking-[0.08em] text-[#080808]" aria-label={`${review.rating} out of 5 stars`}>
+                        <p className={styles.stars} aria-label={`${review.rating} out of 5 stars`}>
                           {"★".repeat(review.rating)}
-                          <span className="text-[#d9d9d9]">{"★".repeat(5 - review.rating)}</span>
+                          <span className={styles.emptyStars}>{"★".repeat(5 - review.rating)}</span>
                         </p>
-                        <p className="mt-2 font-semibold text-brand-dark">
+                        <p className={styles.reviewerName}>
                           {review.reviewerName}
                         </p>
                       </div>
-                      <span className="text-sm text-muted">
+                      <span className={styles.reviewDate}>
                         {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
-                    <p className="mt-3 whitespace-pre-wrap leading-7 text-foreground">
+                    <p className={styles.reviewBody}>
                       {review.body}
                     </p>
-                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-brand">
+                    <p className={styles.verifiedBooking}>
                       ✓ Verified booking · {review.serviceName}
                     </p>
                   </article>
                 ))}
               </div>
             ) : (
-              <p className="mt-5 leading-7 text-muted">
+              <p className={styles.emptyCopy}>
                 This provider has not received a verified customer review yet.
               </p>
             )}
           </section>
 
-          <section className="rounded-[1.25rem] border border-border bg-white p-7 sm:p-8">
-            <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Services</p>
-            <div className="mt-5 divide-y divide-border">
+          <section className={styles.panel}>
+            <h2 className={styles.sectionTitle}>Services</h2>
+            <div className={styles.serviceList}>
               {provider.services.map((service) => (
-                <article key={service.id} className="py-5 first:pt-0 last:pb-0">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <h2 className="text-xl font-semibold text-brand-dark">{service.name}</h2>
-                    <span className="font-semibold text-brand">
+                <article key={service.id} className={styles.service}>
+                  <div className={styles.serviceHeading}>
+                    <h3>{service.name}</h3>
+                    <span className={styles.servicePrice}>
                       {formatPrice(service.pricingType, service.priceCents)}
                     </span>
                   </div>
-                  {service.description && <p className="mt-2 leading-7 text-muted">{service.description}</p>}
+                  {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
                 </article>
               ))}
             </div>
           </section>
 
-          <section className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-[1.25rem] border border-border bg-white p-7">
-              <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Typical availability</p>
-              <ul className="mt-5 space-y-3">
+          <section className={styles.detailsGrid}>
+            <div className={styles.panel}>
+              <h2 className={styles.sectionTitle}>Typical availability</h2>
+              <ul className={styles.availabilityList}>
                 {provider.availability.map((day) => (
-                  <li key={day.weekday} className="flex justify-between gap-4 text-sm">
-                    <span className="font-semibold text-foreground">{weekdays[day.weekday]}</span>
-                    <span className="text-muted">{day.startTime}–{day.endTime}</span>
+                  <li key={day.weekday}>
+                    <span>{weekdays[day.weekday]}</span>
+                    <span className={styles.availabilityTime}>{day.startTime}–{day.endTime}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-[1.25rem] border border-border bg-white p-7">
-              <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Provider-submitted credentials</p>
-              <p className="mt-3 text-sm leading-6 text-muted">
+            <div className={styles.panel}>
+              <h2 className={styles.sectionTitle}>Provider-submitted credentials</h2>
+              <p className={styles.credentialDisclosure}>
                 Auxilium reviewed the documents this provider submitted with its application. This does not guarantee current licensing, insurance, safety, or service quality.
               </p>
               {provider.credentials.length > 0 ? (
-                <ul className="mt-5 space-y-4">
+                <ul className={styles.credentialList}>
                   {provider.credentials.map((credential) => (
                     <li key={credential.id}>
-                      <p className="font-semibold text-foreground">{credential.title}</p>
-                      <p className="mt-1 text-sm text-muted">
+                      <p className={styles.credentialName}>{credential.title}</p>
+                      <p className={styles.credentialMeta}>
                         {labelFromSnakeCase(credential.type)}
                         {credential.issuer && ` · ${credential.issuer}`}
                       </p>
@@ -207,20 +208,20 @@ export default async function ProviderProfilePage({
                   ))}
                 </ul>
               ) : (
-                <p className="mt-5 leading-7 text-muted">No provider-submitted credential information is displayed on this profile.</p>
+                <p className={styles.emptyCopy}>No provider-submitted credential information is displayed on this profile.</p>
               )}
             </div>
           </section>
 
           {provider.photos.length > 1 && (
-            <section>
-              <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Work & profile photos</p>
-              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <section className={styles.gallerySection}>
+              <h2 className={styles.sectionTitle}>Work & profile photos</h2>
+              <div className={styles.photoGrid}>
                 {provider.photos.slice(1).map((photo) => (
-                  <figure key={photo.id} className="overflow-hidden rounded-[1.25rem] border border-border bg-white">
+                  <figure key={photo.id} className={styles.workPhoto}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className="aspect-[4/3] w-full object-cover" />
-                    {photo.caption && <figcaption className="p-4 text-sm text-muted">{photo.caption}</figcaption>}
+                    <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className={styles.workImage} />
+                    {photo.caption && <figcaption className={styles.photoCaption}>{photo.caption}</figcaption>}
                   </figure>
                 ))}
               </div>
@@ -228,12 +229,12 @@ export default async function ProviderProfilePage({
           )}
         </div>
 
-        <aside className="h-fit rounded-[1.25rem] border border-border bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.07)] lg:sticky lg:top-6 sm:p-7">
-          <p className="text-sm font-bold uppercase tracking-[0.15em] text-brand">Request a booking</p>
-          <h2 className="mt-2 text-2xl font-semibold text-brand-dark">Tell {provider.displayName} what you need.</h2>
-          <p className="mt-3 text-sm leading-6 text-muted">This sends a request, not an automatic confirmation. The provider will accept or decline it.</p>
+        <aside className={styles.bookingPanel}>
+          <p className={styles.eyebrow}>Request a booking</p>
+          <h2 className={styles.bookingTitle}>Tell {provider.displayName} what you need.</h2>
+          <p className={styles.bookingIntro}>This sends a request, not an automatic confirmation. The provider will accept or decline it.</p>
 
-          <div className="mt-6">
+          <div className={styles.bookingForm}>
             {profile?.role === "customer" && provider.bookingEligible ? (
               <BookingRequestForm
                 providerId={provider.providerId}
@@ -242,20 +243,20 @@ export default async function ProviderProfilePage({
                 minimumDate={tomorrowDate()}
               />
             ) : profile?.role === "customer" ? (
-              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
+              <div className={styles.bookingUnavailable}>
                 This provider is temporarily unavailable for new booking
                 requests while required account information is reviewed.
               </div>
             ) : profile ? (
-              <div className="rounded-2xl bg-[#f4f4f4] p-5 text-sm leading-6 text-muted">
+              <div className={styles.accountNotice}>
                 Booking requests must be sent from a customer account. Your current account is a {profile.role} account.
               </div>
             ) : (
-              <div className="space-y-3">
-                <Link href="/login" className="block rounded-full bg-brand px-6 py-3 text-center font-semibold text-white hover:bg-brand-dark">
+              <div className={styles.signInActions}>
+                <Link href="/login" className={styles.primaryButton}>
                   Sign in to request
                 </Link>
-                <Link href="/signup?role=customer" className="block rounded-full border border-border px-6 py-3 text-center font-semibold text-brand-dark hover:border-brand">
+                <Link href="/signup?role=customer" className={styles.secondaryButton}>
                   Create customer account
                 </Link>
               </div>

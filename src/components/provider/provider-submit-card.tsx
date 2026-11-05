@@ -7,15 +7,18 @@ import { LEGAL_AGREEMENTS } from "@/lib/legal/agreements";
 import {
   initialProviderActionState,
   type ProviderCompletion,
+  type ProviderStatus,
 } from "@/lib/providers/types";
 import { FormFeedback } from "./form-feedback";
 
 export function ProviderSubmitCard({
   completion,
   submittedAt,
+  providerStatus,
 }: {
   completion: ProviderCompletion;
   submittedAt: string | null;
+  providerStatus?: ProviderStatus;
 }) {
   const [state, action, pending] = useActionState(
     submitProviderApplication,
@@ -28,10 +31,16 @@ export function ProviderSubmitCard({
         Final step
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
-        {submittedAt ? "Application submitted" : "Submit for Auxilium review"}
+        {providerStatus === "approved" ? "Application approved" : providerStatus === "suspended" ? "Account assistance needed" : providerStatus === "rejected" ? "Your application needs changes" : submittedAt ? "Application submitted" : "Submit for Auxilium review"}
       </h2>
       <p className="mt-3 max-w-2xl leading-7 text-muted">
-        {submittedAt
+        {providerStatus === "approved"
+          ? "Your application was approved. Profile and credential changes may require another review."
+          : providerStatus === "suspended"
+            ? "Contact Auxilium support before making further changes to your account."
+          : providerStatus === "rejected"
+            ? "Review the feedback and update your profile before submitting it again."
+          : submittedAt
           ? `Submitted ${new Date(submittedAt).toLocaleDateString()}. Editing any profile section will return the application to draft review.`
           : completion.isComplete
             ? "Every required section is complete. Submit your information for an administrator to review."
@@ -40,7 +49,7 @@ export function ProviderSubmitCard({
       <div className="mt-5">
         <FormFeedback state={state} />
       </div>
-      {!submittedAt && (
+      {!submittedAt && providerStatus !== "approved" && providerStatus !== "suspended" && (
         <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white p-4">
           <input
             type="checkbox"
@@ -76,11 +85,13 @@ export function ProviderSubmitCard({
       )}
       <button
         type="submit"
-        disabled={pending || !completion.isComplete || Boolean(submittedAt)}
+        disabled={pending || !completion.isComplete || Boolean(submittedAt) || providerStatus === "approved" || providerStatus === "suspended"}
         className="mt-5 rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Submitting…" : submittedAt ? "Under review" : "Submit application"}
+        {pending ? "Submitting…" : providerStatus === "approved" ? "Approved" : providerStatus === "suspended" ? "Submission unavailable" : providerStatus === "rejected" ? "Resubmit application" : submittedAt ? "Under review" : "Submit application"}
       </button>
+      {providerStatus === "suspended" && <Link href="/support" className="ml-4 inline-flex text-sm font-semibold text-brand underline underline-offset-4">Contact support</Link>}
+      {providerStatus === "rejected" && <Link href="/dashboard/provider/onboarding" className="ml-4 inline-flex text-sm font-semibold text-brand underline underline-offset-4">Update profile</Link>}
     </form>
   );
 }
