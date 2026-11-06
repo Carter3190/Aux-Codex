@@ -8,6 +8,7 @@ import styles from "@/components/marketplace/provider-profile.module.css";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
+import type { PublicServiceCredentialCheck } from "@/lib/marketplace/types";
 import { formatPrice, labelFromSnakeCase, weekdays } from "@/lib/providers/presentation";
 
 export const metadata: Metadata = {
@@ -20,12 +21,49 @@ function tomorrowDate() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function formatReviewDate(date: string) {
+function formatProfileDate(date: string, timeZone?: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone,
   }).format(new Date(date));
+}
+
+function ServiceCredentialCheck({ check }: { check?: PublicServiceCredentialCheck }) {
+  if (!check?.eligible || !check.checkedAt) {
+    return (
+      <p className={styles.credentialCheckPending}>
+        {check ? "Credential review needed before booking." : "Credential check information is currently unavailable."}
+      </p>
+    );
+  }
+
+  return (
+    <div className={styles.credentialCheck}>
+      <h4>Credentials checked by Auxilium</h4>
+      <p className={styles.credentialMeta}>
+        Service review completed <time dateTime={check.checkedAt}>{formatProfileDate(check.checkedAt, "America/Detroit")}</time>
+      </p>
+      <ul className={styles.credentialList}>
+        {check.credentials.map((credential) => (
+          <li key={credential.id}>
+            <p className={styles.credentialName}>{credential.title}</p>
+            <p className={styles.credentialMeta}>
+              {labelFromSnakeCase(credential.type)}
+              {credential.issuer && ` · ${credential.issuer}`}
+            </p>
+            <p className={styles.credentialMeta}>
+              Checked <time dateTime={credential.checkedAt}>{formatProfileDate(credential.checkedAt, "America/Detroit")}</time>
+              {credential.expiresOn && (
+                <> · Expires <time dateTime={credential.expiresOn}>{formatProfileDate(credential.expiresOn, "UTC")}</time></>
+              )}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default async function ProviderProfilePage({
@@ -51,6 +89,8 @@ export default async function ProviderProfilePage({
       );
     }
   }
+
+  const serviceChecks = new Map(provider.serviceChecks.map((check) => [check.serviceId, check]));
 
   return (
     <main className={styles.page}>
@@ -80,7 +120,9 @@ export default async function ProviderProfilePage({
             <div className={styles.heroCopy}>
               <div className={styles.heroLabels}>
                 <p className={styles.eyebrow}>Listed provider</p>
-                <span className={styles.reviewedBadge}>Application reviewed</span>
+                <span className={styles.reviewedBadge}>
+                  {provider.bookingEligible ? "Booking requests open" : "Booking requests unavailable"}
+                </span>
               </div>
               <h1 className={styles.providerName}>
                 {provider.displayName}
@@ -142,7 +184,7 @@ export default async function ProviderProfilePage({
                         </p>
                       </div>
                       <span className={styles.reviewDate}>
-                        {formatReviewDate(review.createdAt)}
+                        {formatProfileDate(review.createdAt)}
                       </span>
                     </div>
                     <p className={styles.reviewBody}>
@@ -173,44 +215,22 @@ export default async function ProviderProfilePage({
                     </span>
                   </div>
                   {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
+                  <ServiceCredentialCheck check={serviceChecks.get(service.id)} />
                 </article>
               ))}
             </div>
           </section>
 
-          <section className={styles.detailsGrid}>
-            <div className={styles.panel}>
-              <h2 className={styles.sectionTitle}>Typical availability</h2>
-              <ul className={styles.availabilityList}>
-                {provider.availability.map((day) => (
-                  <li key={day.weekday}>
-                    <span>{weekdays[day.weekday]}</span>
-                    <span className={styles.availabilityTime}>{day.startTime}–{day.endTime}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.panel}>
-              <h2 className={styles.sectionTitle}>Provider-submitted credentials</h2>
-              <p className={styles.credentialDisclosure}>
-                Auxilium reviewed the documents this provider submitted with its application. This does not guarantee current licensing, insurance, safety, or service quality.
-              </p>
-              {provider.credentials.length > 0 ? (
-                <ul className={styles.credentialList}>
-                  {provider.credentials.map((credential) => (
-                    <li key={credential.id}>
-                      <p className={styles.credentialName}>{credential.title}</p>
-                      <p className={styles.credentialMeta}>
-                        {labelFromSnakeCase(credential.type)}
-                        {credential.issuer && ` · ${credential.issuer}`}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.emptyCopy}>No provider-submitted credential information is displayed on this profile.</p>
-              )}
-            </div>
+          <section className={styles.panel}>
+            <h2 className={styles.sectionTitle}>Typical availability</h2>
+            <ul className={styles.availabilityList}>
+              {provider.availability.map((day) => (
+                <li key={day.weekday}>
+                  <span>{weekdays[day.weekday]}</span>
+                  <span className={styles.availabilityTime}>{day.startTime}–{day.endTime}</span>
+                </li>
+              ))}
+            </ul>
           </section>
 
           {provider.photos.length > 1 && (
@@ -230,23 +250,28 @@ export default async function ProviderProfilePage({
         </div>
 
         <aside className={styles.bookingPanel}>
-          <p className={styles.eyebrow}>Request a booking</p>
-          <h2 className={styles.bookingTitle}>Tell {provider.displayName} what you need.</h2>
-          <p className={styles.bookingIntro}>This sends a request, not an automatic confirmation. The provider will accept or decline it.</p>
+          <p className={styles.eyebrow}>{provider.bookingEligible ? "Request a booking" : "Booking availability"}</p>
+          <h2 className={styles.bookingTitle}>
+            {provider.bookingEligible ? `Tell ${provider.displayName} what you need.` : "New requests are unavailable"}
+          </h2>
+          {provider.bookingEligible && (
+            <p className={styles.bookingIntro}>
+              The provider reviews your request before confirming the booking. The service’s required credentials must be current on the date you request.
+            </p>
+          )}
 
           <div className={styles.bookingForm}>
-            {profile?.role === "customer" && provider.bookingEligible ? (
+            {!provider.bookingEligible ? (
+              <div className={styles.bookingUnavailable}>
+                Check back for booking availability after Auxilium reviews the required credentials.
+              </div>
+            ) : profile?.role === "customer" ? (
               <BookingRequestForm
                 providerId={provider.providerId}
                 providerName={provider.displayName}
-                services={provider.services}
+                services={provider.bookableServices}
                 minimumDate={tomorrowDate()}
               />
-            ) : profile?.role === "customer" ? (
-              <div className={styles.bookingUnavailable}>
-                This provider is temporarily unavailable for new booking
-                requests while required account information is reviewed.
-              </div>
             ) : profile ? (
               <div className={styles.accountNotice}>
                 Booking requests must be sent from a customer account. Your current account is a {profile.role} account.

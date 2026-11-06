@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ProviderCredentialReviewForm } from "@/components/admin/provider-credential-review-form";
 import { ProviderReviewForm } from "@/components/admin/provider-review-form";
+import { ProviderServiceCredentialReviewForm } from "@/components/admin/provider-service-credential-review-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import {
   getAdminProviderApplications,
@@ -26,7 +27,7 @@ function formatDate(value: string) {
 }
 
 export default async function AdminDashboardPage() {
-  const { admin, applications } = await getAdminProviderApplications();
+  const { admin, applications, serviceReviewAvailable } = await getAdminProviderApplications();
   const submittedCount = applications.filter(
     (application) => application.details.submittedAt,
   ).length;
@@ -71,6 +72,12 @@ export default async function AdminDashboardPage() {
         <span aria-hidden="true">→</span>
       </Link>
 
+      {!serviceReviewAvailable && (
+        <p role="status" className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
+          Service credential reviews are temporarily unavailable. Provider approval will be available when these reviews can be checked.
+        </p>
+      )}
+
       {applications.length === 0 ? (
         <section className="mt-7 rounded-3xl border border-border bg-white p-8">
           <h2 className="text-2xl font-semibold text-brand-dark">
@@ -87,12 +94,20 @@ export default async function AdminDashboardPage() {
               (day) => day.isAvailable,
             );
             const canReview = Boolean(application.details.submittedAt);
-            const canApprove =
-              canReview &&
-              application.completion.isComplete &&
-              hasCurrentInsuranceCredential(application.credentials, true);
             const hasApprovedCurrentInsurance =
               hasCurrentInsuranceCredential(application.credentials, true);
+            const activeServices = application.services.filter((service) => service.isActive);
+            const outstandingServiceReviews = activeServices.filter((service) => !service.credentialReviewCurrent).length;
+            const approvalRequirements: string[] = [];
+            if (!application.completion.isComplete) approvalRequirements.push("Confirm all required application sections are complete.");
+            if (!hasApprovedCurrentInsurance) approvalRequirements.push("Approve a current insurance document in Private credentials.");
+            if (!serviceReviewAvailable) approvalRequirements.push("Restore access to service credential reviews.");
+            else if (outstandingServiceReviews) approvalRequirements.push("Complete the credential review for each active service.");
+            const canApprove = canReview && approvalRequirements.length === 0;
+            const credentialsSectionId = `private-credentials-${application.profile.id}`;
+            const credentialOptions = application.credentials
+              .filter((credential) => credential.eligibleForServiceReview)
+              .map(({ id, credentialType, title, issuer, expiresOn, documentUrl }) => ({ id, credentialType, title, issuer, expiresOn, documentUrl }));
 
             return (
               <article
@@ -183,6 +198,9 @@ export default async function AdminDashboardPage() {
                       <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                         Services
                       </h3>
+                      <p className="mt-2 text-sm leading-6 text-muted">
+                        Review each active service for the provider’s stated service area before approving the application.
+                      </p>
                       <div className="mt-3 space-y-3">
                         {application.services.length === 0 ? (
                           <p className="text-sm text-muted">No services added.</p>
@@ -210,6 +228,28 @@ export default async function AdminDashboardPage() {
                                   )}
                                 </span>
                               </div>
+                              {service.isActive ? (
+                                <>
+                                  {serviceReviewAvailable ? (
+                                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${service.credentialReviewCurrent ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}>
+                                        {service.credentialReviewCurrent ? "Credential review current" : service.credentialReview ? "Re-review needed" : "Credential review required"}
+                                      </span>
+                                      {service.credentialReview && <span className="text-xs text-muted">Last reviewed {formatDate(service.credentialReview.reviewedAt)}</span>}
+                                    </div>
+                                  ) : null}
+                                  {serviceReviewAvailable && service.credentialReview && !service.credentialReviewCurrent && <p className="mt-2 text-xs leading-5 text-muted">Check for expired documents or a change in document approval. Select current documents and save the review again.</p>}
+                                  {serviceReviewAvailable && <ProviderServiceCredentialReviewForm
+                                    key={`${service.id}:${service.updatedAt}:${application.details.updatedAt}:${service.credentialReviewCurrent}`}
+                                    serviceId={service.id}
+                                    serviceUpdatedAt={service.updatedAt}
+                                    profileUpdatedAt={application.details.updatedAt}
+                                    credentials={credentialOptions}
+                                    currentReview={service.credentialReviewCurrent ? service.credentialReview : null}
+                                    credentialsSectionId={credentialsSectionId}
+                                  />}
+                                </>
+                              ) : <p className="mt-3 text-xs text-muted">Inactive service</p>}
                             </div>
                           ))
                         )}
@@ -248,7 +288,7 @@ export default async function AdminDashboardPage() {
                   </div>
 
                   <aside className="space-y-7">
-                    <section>
+                    <section id={credentialsSectionId} className="scroll-mt-6">
                       <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                         Private credentials
                       </h3>
@@ -376,6 +416,7 @@ export default async function AdminDashboardPage() {
                         providerStatus={application.profile.providerStatus}
                         canReview={canReview}
                         canApprove={canApprove}
+                        approvalRequirements={approvalRequirements}
                       />
                     </section>
                   </aside>

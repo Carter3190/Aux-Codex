@@ -5,6 +5,8 @@ import { requireRole, type ProviderStatus } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AdminProviderApplication,
+  AdminProviderCredential,
+  AdminProviderService,
   CredentialReviewStatus,
   CredentialType,
   PricingType,
@@ -85,6 +87,21 @@ type AdminProfileRow = {
   created_at: string;
 };
 
+type AdminDetailsRow = DetailsRow & { updated_at: string };
+type AdminServiceRow = ServiceRow & { updated_at: string };
+type AdminCredentialRow = CredentialRow & {
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+};
+type ServiceCredentialReviewRow = {
+  service_id: string;
+  license_required: boolean;
+  license_credential_ids: string[];
+  insurance_credential_ids: string[];
+  reviewed_at: string;
+  reviewed_by: string;
+};
+
 function migrationMissing(code?: string) {
   return code === "42P01" || code === "42703" || code === "PGRST204";
 }
@@ -147,6 +164,50 @@ function mapCredential(
     documentUrl,
     reviewStatus: row.review_status,
     reviewNotes: row.review_notes,
+  };
+}
+
+function mapAdminCredential(
+  row: AdminCredentialRow,
+  documentUrl: string | null,
+  today: string,
+  adminReviewerIds: ReadonlySet<string>,
+): AdminProviderCredential {
+  const individuallyApproved =
+    row.review_status === "approved" &&
+    Boolean(row.reviewed_at && row.reviewed_by && adminReviewerIds.has(row.reviewed_by) &&
+      row.issuer.trim() && documentUrl && row.document_path.startsWith(`${row.provider_id}/`));
+  const hasCurrentExpiry = row.expires_on !== null && row.expires_on >= today;
+  return {
+    ...mapCredential(row, documentUrl),
+    eligibleForServiceReview: individuallyApproved && (
+      (row.credential_type === "insurance" && hasCurrentExpiry) ||
+      (row.credential_type === "license" && (hasCurrentExpiry || row.expires_on === null))
+    ),
+  };
+}
+
+function mapAdminService(
+  row: AdminServiceRow,
+  review: ServiceCredentialReviewRow | undefined,
+  eligible: ReadonlyMap<string, CredentialType>,
+): AdminProviderService {
+  return {
+    ...mapService(row),
+    updatedAt: row.updated_at,
+    credentialReview: review ? {
+      licenseRequired: review.license_required,
+      licenseCredentialIds: review.license_credential_ids,
+      insuranceCredentialIds: review.insurance_credential_ids,
+      reviewedAt: review.reviewed_at,
+    } : null,
+    credentialReviewCurrent: Boolean(row.is_active && review?.reviewed_by && review.reviewed_at &&
+      review.insurance_credential_ids.length > 0 &&
+      review.insurance_credential_ids.every((id) => eligible.get(id) === "insurance") &&
+      (review.license_required
+        ? review.license_credential_ids.length > 0 &&
+          review.license_credential_ids.every((id) => eligible.get(id) === "license")
+        : review.license_credential_ids.length === 0)),
   };
 }
 
@@ -337,6 +398,7 @@ function groupByProvider<T extends { provider_id: string }>(rows: T[]) {
 export async function getAdminProviderApplications(): Promise<{
   admin: Awaited<ReturnType<typeof requireRole>>;
   applications: AdminProviderApplication[];
+  serviceReviewAvailable: boolean;
 }> {
   const admin = await requireRole("admin");
   const supabase = await createClient();
@@ -355,22 +417,22 @@ export async function getAdminProviderApplications(): Promise<{
 
   const profiles = profilesResult.data as AdminProfileRow[];
   if (profiles.length === 0) {
-    return { admin, applications: [] };
+    return { admin, applications: [], serviceReviewAvailable: true };
   }
 
   const providerIds = profiles.map((profile) => profile.id);
-  const [detailsResult, servicesResult, availabilityResult, photosResult, credentialsResult, reviewsResult] =
+  const [detailsResult, servicesResult, availabilityResult, photosResult, credentialsResult, reviewsResult, adminReviewersResult] =
     await Promise.all([
       supabase
         .from("provider_details")
         .select(
-          "provider_id, business_name, headline, bio, years_experience, service_area, travel_radius_miles, submitted_at, reviewed_at",
+          "provider_id, business_name, headline, bio, years_experience, service_area, travel_radius_miles, submitted_at, reviewed_at, updated_at",
         )
         .in("provider_id", providerIds),
       supabase
         .from("provider_services")
         .select(
-          "id, provider_id, name, description, pricing_type, price_cents, is_active",
+          "id, provider_id, name, description, pricing_type, price_cents, is_active, updated_at",
         )
         .in("provider_id", providerIds),
       supabase
@@ -386,7 +448,7 @@ export async function getAdminProviderApplications(): Promise<{
       supabase
         .from("provider_credentials")
         .select(
-          "id, provider_id, credential_type, title, issuer, credential_number, expires_on, document_path, review_status, review_notes",
+          "id, provider_id, credential_type, title, issuer, credential_number, expires_on, document_path, review_status, review_notes, reviewed_at, reviewed_by",
         )
         .in("provider_id", providerIds),
       supabase
@@ -394,6 +456,7 @@ export async function getAdminProviderApplications(): Promise<{
         .select("id, provider_id, decision, notes, created_at")
         .in("provider_id", providerIds)
         .order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id").eq("role", "admin"),
     ]);
 
   const firstError = [
@@ -403,6 +466,7 @@ export async function getAdminProviderApplications(): Promise<{
     photosResult.error,
     credentialsResult.error,
     reviewsResult.error,
+    adminReviewersResult.error,
   ].find(Boolean);
   if (firstError) {
     if (migrationMissing(firstError.code)) {
@@ -411,21 +475,41 @@ export async function getAdminProviderApplications(): Promise<{
     throw new Error("Unable to load provider applications.");
   }
 
+  const serviceRows = servicesResult.data as AdminServiceRow[];
+  const serviceIds = serviceRows.map((service) => service.id);
+  const serviceReviewQueries = [];
+  // Keep each PostgREST URL within normal proxy limits on larger review queues.
+  for (let offset = 0; offset < serviceIds.length; offset += 100) {
+    serviceReviewQueries.push(supabase.from("provider_service_credential_reviews")
+      .select("service_id, license_required, license_credential_ids, insurance_credential_ids, reviewed_at, reviewed_by")
+      .in("service_id", serviceIds.slice(offset, offset + 100)));
+  }
+  const serviceReviewResults = await Promise.all(serviceReviewQueries);
+  const serviceReviewAvailable = serviceReviewResults.every((result) => !result.error);
+  const serviceReviewById = new Map<string, ServiceCredentialReviewRow>();
+  if (serviceReviewAvailable) {
+    for (const result of serviceReviewResults) {
+      for (const row of (result.data ?? []) as ServiceCredentialReviewRow[]) {
+        serviceReviewById.set(row.service_id, row);
+      }
+    }
+  }
+
   const detailsByProvider = new Map(
-    (detailsResult.data as DetailsRow[]).map((row) => [row.provider_id, row]),
+    (detailsResult.data as AdminDetailsRow[]).map((row) => [row.provider_id, row]),
   );
-  const servicesByProvider = groupByProvider(
-    servicesResult.data as ServiceRow[],
-  );
+  const servicesByProvider = groupByProvider(serviceRows);
   const availabilityByProvider = groupByProvider(
     availabilityResult.data as AvailabilityRow[],
   );
   const photosByProvider = groupByProvider(photosResult.data as PhotoRow[]);
   const credentialsByProvider = groupByProvider(
-    credentialsResult.data as CredentialRow[],
+    credentialsResult.data as AdminCredentialRow[],
   );
   const reviewsByProvider = groupByProvider(reviewsResult.data as ReviewRow[]);
+  const adminReviewerIds = new Set((adminReviewersResult.data ?? []).map((reviewer) => reviewer.id as string));
 
+  const today = new Date().toISOString().slice(0, 10);
   const applications = await Promise.all(
     profiles.map(async (profile): Promise<AdminProviderApplication> => {
       const detailsRow = detailsByProvider.get(profile.id);
@@ -433,8 +517,7 @@ export async function getAdminProviderApplications(): Promise<{
         throw new Error("A provider profile is missing onboarding details.");
       }
 
-      const details = mapDetails(detailsRow);
-      const services = (servicesByProvider.get(profile.id) ?? []).map(mapService);
+      const details = { ...mapDetails(detailsRow), updatedAt: detailsRow.updated_at };
       const availability = mergeAvailability(
         availabilityByProvider.get(profile.id) ?? [],
       );
@@ -446,9 +529,14 @@ export async function getAdminProviderApplications(): Promise<{
           const { data } = await supabase.storage
             .from("provider-credentials")
             .createSignedUrl(row.document_path, 600);
-          return mapCredential(row, data?.signedUrl ?? null);
+          return mapAdminCredential(row, data?.signedUrl ?? null, today, adminReviewerIds);
         }),
       );
+      const eligibleCredentials = new Map(credentials
+        .filter((credential) => credential.eligibleForServiceReview)
+        .map((credential) => [credential.id, credential.credentialType]));
+      const services = (servicesByProvider.get(profile.id) ?? []).map((row) =>
+        mapAdminService(row, serviceReviewById.get(row.id), eligibleCredentials));
       const reviewEvents = (reviewsByProvider.get(profile.id) ?? []).map(
         mapReview,
       );
@@ -487,7 +575,7 @@ export async function getAdminProviderApplications(): Promise<{
     return b.profile.createdAt.localeCompare(a.profile.createdAt);
   });
 
-  return { admin, applications };
+  return { admin, applications, serviceReviewAvailable };
 }
 
 export async function requireActionRole(role: "provider" | "admin") {

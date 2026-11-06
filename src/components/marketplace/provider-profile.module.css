@@ -60,12 +60,28 @@
 .serviceHeading h3 { margin: 0; color: var(--foreground); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
 .servicePrice { color: var(--brand); font-size: 13px; font-weight: 500; }
 .serviceDescription { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
-.detailsGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; }
-.availabilityList { display: grid; gap: 13px; margin: 18px 0 0; padding: 0; list-style: none; }
+.availabilityList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 13px 24px; margin: 18px 0 0; padding: 0; list-style: none; }
 .availabilityList li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 12px; font-size: 12px; }
 .availabilityTime { color: var(--muted); }
-.credentialDisclosure { margin: 13px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
-.credentialList { display: grid; gap: 16px; margin: 18px 0 0; padding: 0; list-style: none; }
+.credentialCheck {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f2f6fb;
+}
+.credentialCheck h4 {
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+.credentialCheckPending {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.credentialList { display: grid; gap: 13px; margin: 14px 0 0; padding: 0; list-style: none; }
 .credentialName { margin: 0; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
 .credentialMeta { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 .gallerySection { min-width: 0; }
@@ -87,11 +103,9 @@
 .secondaryButton { border-color: var(--border); background: var(--surface); color: var(--foreground); }
 .secondaryButton:hover { background: #eaf0f8; }
 
-@media (max-width: 1150px) { .detailsGrid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 1000px) {
   .contentGrid { grid-template-columns: minmax(0, 1fr); }
   .bookingPanel { position: static; }
-  .detailsGrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .heroGrid { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 720px) {
@@ -103,7 +117,6 @@
   .headline { font-size: 17px; }
   .contentGrid { padding-block: 25px 34px; gap: 22px; }
   .panel, .bookingPanel { padding: 22px; }
-  .detailsGrid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
   .bookingForm input, .bookingForm select, .bookingForm textarea { font-size: 16px; }
 }
 @media (max-width: 420px) {
