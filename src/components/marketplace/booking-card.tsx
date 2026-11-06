@@ -177,7 +177,9 @@ export function BookingCard({
                     ? "Set the agreed booking price so the customer can pay."
                     : "Waiting for the provider to confirm the final price."
                   : perspective === "provider"
-                    ? "Auxilium’s commission and Stripe processing fees are shown below."
+                    ? providerEarnings?.status === "test"
+                      ? "Stripe sandbox payment"
+                      : "Auxilium’s commission and Stripe processing fees are shown below."
                     : `Secure total: ${formatMoney(booking.agreedPriceCents)}`}
               </p>
             </div>

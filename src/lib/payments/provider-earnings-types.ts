@@ -1,5 +1,5 @@
 export type ProviderEarnings = {
-  status: "confirmed" | "pending" | "unavailable";
+  status: "confirmed" | "pending" | "unavailable" | "test";
   currency: "usd";
   grossAmountCents: number;
   refundedAmountCents: number;
