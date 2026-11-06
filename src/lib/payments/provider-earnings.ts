@@ -193,10 +193,12 @@ export async function getProviderEarnings(
   }
   const candidates = owned.filter((booking) => settled.has(booking.payment!.status)).slice(0, maximumBatch);
   if (candidates.length === 0) return result;
-  for (const booking of candidates) result[booking.id] = unresolvedProviderEarnings(booking.payment!, "unavailable", "Exact Stripe fee details are temporarily unavailable. Refresh later or check this payment in Stripe.");
-  if (!isStripeServerConfigured()) {
-    for (const booking of candidates) result[booking.id] = unresolvedProviderEarnings(booking.payment!, "unavailable", "Stripe fee reporting is not available right now.");
-    return result;
+  const stripeConfigured = isStripeServerConfigured();
+  const unavailableMessage = stripeConfigured
+    ? "Exact Stripe fee details are temporarily unavailable. Refresh later or check this payment in Stripe."
+    : "Stripe fee reporting is not available right now.";
+  for (const booking of candidates) {
+    result[booking.id] = unresolvedProviderEarnings(booking.payment!, "unavailable", unavailableMessage);
   }
 
   try {
@@ -210,22 +212,41 @@ export async function getProviderEarnings(
       .abortSignal(AbortSignal.timeout(requestTimeoutMs));
     if (error || !data) return result;
     const rows = new Map((data as PaymentRow[]).map((row) => [row.id, row]));
+    const lookups: PaymentRow[] = [];
+    for (const booking of candidates) {
+      const payment = booking.payment!;
+      const row = rows.get(payment.id);
+      if (!row || row.provider_id !== provider.id || row.booking_id !== booking.id) continue;
+
+      // The stored Checkout session retains its Stripe mode across deploys.
+      // Classify sandbox rows before applying the Stripe lookup time budget.
+      if (row.stripe_checkout_session_id?.startsWith("cs_test_")) {
+        result[booking.id] = {
+          ...unresolvedProviderEarnings(rowPayment(row)),
+          status: "test",
+          message: "This is a Stripe test payment. It is excluded from real earnings.",
+        };
+        continue;
+      }
+      if (!stripeConfigured) continue;
+      if (
+        row.amount_cents !== payment.amountCents ||
+        row.refunded_amount_cents !== payment.refundedAmountCents ||
+        row.status !== payment.status
+      ) {
+        result[booking.id] = unresolvedProviderEarnings(payment, "pending", "Payment and refund details are being updated. Refresh shortly.");
+        continue;
+      }
+      lookups.push(row);
+    }
+
+    if (lookups.length === 0) return result;
     const deadline = Date.now() + budgetMs;
     let cursor = 0;
-    await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length) }, async () => {
-      while (cursor < candidates.length) {
-        const booking = candidates[cursor++];
-        const row = rows.get(booking.payment!.id);
-        if (!row || row.provider_id !== provider.id || row.booking_id !== booking.id || Date.now() >= deadline) continue;
-        if (
-          row.amount_cents !== booking.payment!.amountCents ||
-          row.refunded_amount_cents !== booking.payment!.refundedAmountCents ||
-          row.status !== booking.payment!.status
-        ) {
-          result[booking.id] = unresolvedProviderEarnings(booking.payment!, "pending", "Payment and refund details are being updated. Refresh shortly.");
-          continue;
-        }
-        result[booking.id] = await earningsForRow(row, deadline);
+    await Promise.all(Array.from({ length: Math.min(concurrency, lookups.length) }, async () => {
+      while (cursor < lookups.length && Date.now() < deadline) {
+        const row = lookups[cursor++];
+        result[row.booking_id] = await earningsForRow(row, deadline);
       }
     }));
   } catch {
