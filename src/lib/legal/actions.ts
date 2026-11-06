@@ -104,7 +104,10 @@ export async function completeLegalDocumentReview(formData: FormData) {
   const contentSha256 = contentSha256Schema.safeParse(
     formData.get("contentSha256"),
   );
-  if (!documentVersion.success || !contentSha256.success) {
+  const publishedAgreement = Object.values(LEGAL_AGREEMENTS).find(
+    (agreement) => agreement.key === documentKey.data,
+  );
+  if (!documentVersion.success || !contentSha256.success || documentVersion.data !== publishedAgreement?.version) {
     redirect(reviewErrorPath(documentKey.data, "stale", nextPath));
   }
 

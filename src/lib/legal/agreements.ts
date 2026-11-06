@@ -32,14 +32,14 @@ export const LEGAL_AGREEMENTS = {
   providerAgreement: {
     key: "provider_agreement",
     title: "Provider Agreement",
-    version: "2026-10-26",
+    version: "2026-11-05",
     href: "/provider-agreement",
     audience: "provider",
   },
   providerStandards: {
     key: "provider_standards",
     title: "Provider Standards",
-    version: "2026-10-26",
+    version: "2026-11-05",
     href: "/provider-standards",
     audience: "provider",
   },

@@ -37,21 +37,11 @@ export type PublicPhoto = {
   caption: string;
 };
 
-export type PublicCredential = {
-  id: string;
-  type: string;
-  title: string;
-  issuer: string;
-  expiresOn: string | null;
-  checkedAt: string;
-};
-
 export type PublicServiceCredentialCheck = {
   serviceId: string;
   eligible: boolean;
-  checkedAt: string | null;
   licenseRequired: boolean;
-  credentials: PublicCredential[];
+  insuranceRequired: boolean;
 };
 
 export type VerifiedReview = {

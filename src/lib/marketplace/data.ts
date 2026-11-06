@@ -15,6 +15,7 @@ import type {
   MarketplaceService,
   PublicAvailability,
   PublicPhoto,
+  PublicServiceCredentialCheck,
   VerifiedReview,
 } from "./types";
 import type { BookingPayment, PaymentStatus } from "@/lib/payments/types";
@@ -52,24 +53,12 @@ type ProviderDetailPayload = {
   photos: Array<{ id: string; storagePath: string; caption: string }>;
 };
 
-const publicCredentialCheckTime = z.iso.datetime({ offset: true });
-
 const publicServiceChecksSchema = z.array(z.object({
   serviceId: z.uuid(),
   eligible: z.boolean(),
-  checkedAt: publicCredentialCheckTime.nullable(),
   licenseRequired: z.boolean(),
-  credentials: z.array(z.object({
-    id: z.uuid(),
-    type: z.string(),
-    title: z.string(),
-    issuer: z.string(),
-    expiresOn: z.iso.date().nullable(),
-    checkedAt: publicCredentialCheckTime,
-  })),
-}).refine((check) => !check.eligible || (
-  check.checkedAt !== null && check.credentials.length > 0
-)));
+  insuranceRequired: z.boolean(),
+}));
 
 type BookingRow = {
   id: string;
@@ -322,6 +311,21 @@ export async function searchApprovedProviders(input: {
   });
 }
 
+export async function getPublicProviderServiceChecks(
+  providerId: string,
+  existingClient?: Awaited<ReturnType<typeof createClient>>,
+): Promise<PublicServiceCredentialCheck[]> {
+  const supabase = existingClient ?? await createClient();
+  const { data, error } = await supabase.rpc("get_public_provider_service_checks", {
+    requested_provider_id: providerId,
+  });
+
+  if (error) return [];
+
+  const parsed = publicServiceChecksSchema.safeParse(data);
+  return parsed.success ? parsed.data : [];
+}
+
 export async function getApprovedProvider(
   providerId: string,
 ): Promise<MarketplaceProvider | null> {
@@ -339,18 +343,11 @@ export async function getApprovedProvider(
 
   if (!data) return null;
   const provider = data as ProviderDetailPayload;
-  const [summaries, reviews, checksResult] = await Promise.all([
+  const [summaries, reviews, serviceChecks] = await Promise.all([
     getProviderReviewSummaries(supabase, [providerId]),
     getPublicProviderReviews(supabase, providerId),
-    supabase.rpc("get_public_provider_service_checks", {
-      requested_provider_id: providerId,
-    }),
+    getPublicProviderServiceChecks(providerId, supabase),
   ]);
-  // Preserve the public profile when the approved provider's service checks are unavailable.
-  const parsedChecks = publicServiceChecksSchema.safeParse(checksResult.data);
-  const serviceChecks = !checksResult.error && parsedChecks.success
-    ? parsedChecks.data
-    : [];
   const eligibleServiceIds = new Set(
     serviceChecks.filter((check) => check.eligible).map((check) => check.serviceId),
   );

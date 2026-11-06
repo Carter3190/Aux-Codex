@@ -19,9 +19,9 @@ function ActionCard({ icon, title, children, href, action }: {
   </article>;
 }
 
-export function ProviderOverview({ workspace, bookings, paymentSetup, insuranceReady, insurancePending }: {
+export function ProviderOverview({ workspace, bookings, paymentSetup, serviceReviewNeeded }: {
   workspace: ProviderWorkspace; bookings: BookingRequest[]; paymentSetup: ProviderPaymentSetup;
-  insuranceReady: boolean; insurancePending: boolean;
+  serviceReviewNeeded: boolean;
 }) {
   const { profile, details, completion, reviewEvents } = workspace;
   const firstName = profile.fullName.trim().split(/\s+/)[0];
@@ -32,11 +32,11 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, insuranceR
   const rejected = profile.providerStatus === "rejected";
   const underReview = !approved && !suspended && !rejected && Boolean(details.submittedAt);
   const applicationAction = !approved && !suspended && !underReview;
-  const insuranceAction = approved && !insuranceReady && !insurancePending;
+  const serviceReviewAction = approved && serviceReviewNeeded;
   const stripeAction = approved && !paymentSetup.ready;
   const priceNeeded = approved ? groups.priceNeeded : [];
   const cases = groups.caseResponses;
-  const needsAttention = Boolean(groups.requests.length || priceNeeded.length || cases.length || applicationAction || insuranceAction || stripeAction);
+  const needsAttention = Boolean(groups.requests.length || priceNeeded.length || cases.length || applicationAction || serviceReviewAction || stripeAction);
   const latestReview = reviewEvents[0];
 
   return <DashboardShell profile={profile} title={firstName ? `Welcome back, ${firstName}.` : "Welcome back."}>
@@ -46,7 +46,7 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, insuranceR
         <Link href="/support" className={styles.textLink}>Contact support<CustomerIcon name="arrow" /></Link>
       </section>}
       {underReview && <section className={styles.accountNotice}>
-        <h2>Your application is under review</h2><p>Auxilium is reviewing your submitted profile and private credential documents. You can review your application in Profile.</p>
+        <h2>Your application is under review</h2><p>Auxilium is reviewing your profile and service requirements. You can review your application in Profile.</p>
         <Link href="/dashboard/provider/onboarding?section=review" className={styles.textLink}>Review application<CustomerIcon name="arrow" /></Link>
       </section>}
       {!approved && latestReview?.decision === "rejected" && latestReview.notes && <section className={`${styles.accountNotice} ${styles.noticeWarning}`}>
@@ -77,18 +77,14 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, insuranceR
             {applicationAction && <ActionCard icon="overview" title={rejected ? "Update your application" : "Finish your provider profile"} href="/dashboard/provider/onboarding?section=review" action={rejected ? "Review and update" : "Continue setup"}>
               {rejected ? "Review the feedback, update your profile, and submit it again." : `${completion.completedCount} of ${completion.totalCount} profile sections are complete. Finish your application and send it for review.`}
             </ActionCard>}
-            {insuranceAction && <ActionCard icon="help" title="Insurance information needed" href="/dashboard/provider/onboarding?section=credentials" action="Review insurance">Upload current insurance with its carrier and expiration date for review before accepting new customer work.</ActionCard>}
+            {serviceReviewAction && <ActionCard icon="help" title="Service review needed" href="/dashboard/provider/onboarding?section=credentials" action="Review credentials">One or more services need an Auxilium review before they can take bookings. Keep any required documents current.</ActionCard>}
             {groups.requests.length > 0 && <ActionCard icon="calendar" title={groups.requests.length === 1 ? "1 new request" : `${groups.requests.length} new requests`} href="/dashboard/provider/bookings?filter=requests" action="Review requests">Review the job details and respond to your customers.</ActionCard>}
             {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id)} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. The customer can pay once you confirm the price.</ActionCard>}
             {cases.length > 0 && <ActionCard icon="help" title={cases.length === 1 ? "Respond to a resolution request" : `${cases.length} resolution requests`} href={providerBookingPath(cases[0].id)} action="Review request">{cases[0].serviceName} · {cases[0].customerName}. Review the customer’s concern and add your response.</ActionCard>}
             {stripeAction && <div className={styles.stripeSetup}><ProviderStripeSetupCard setup={paymentSetup} /></div>}
-            {!needsAttention && !(approved && !insuranceReady && insurancePending) && <article className={styles.actionCard}><span className={styles.serviceIcon}><CustomerIcon name="check" /></span><div><h3>No booking actions waiting</h3><p>Your bookings, conversations, and profile are available in the tabs above.</p></div></article>}
+            {!needsAttention && <article className={styles.actionCard}><span className={styles.serviceIcon}><CustomerIcon name="check" /></span><div><h3>No booking actions waiting</h3><p>Your bookings, conversations, and profile are available in the tabs above.</p></div></article>}
           </div>
         </section>
-        {approved && !insuranceReady && insurancePending && <section className={styles.activitySection} aria-labelledby="provider-insurance-activity">
-          {needsAttention && <div className={styles.sectionHeading}><h2 id="provider-insurance-activity">Your activity</h2></div>}
-          <article className={styles.actionCard}><span className={styles.serviceIcon}><CustomerIcon name="clock" /></span><div><h3 id={!needsAttention ? "provider-insurance-activity" : undefined}>Insurance review in progress</h3><p>Your current insurance submission is awaiting review. You can check its status in Profile.</p><Link className={styles.textLink} href="/dashboard/provider/onboarding?section=credentials">Review documents<CustomerIcon name="arrow" /></Link></div></article>
-        </section>}
         </div>
       </div>
       {approved && paymentSetup.ready && paymentSetup.message && <p className={styles.statusNote}>{paymentSetup.message} <Link href="/dashboard/provider/payments">View payments</Link></p>}

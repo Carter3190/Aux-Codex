@@ -144,11 +144,29 @@ const serviceCredentialReviewSchema = z.object({
   licenseRequirement: z.enum(["required", "not_required"], {
     error: "Choose the license requirement for this service and area.",
   }),
-  licenseCredentialIds: z.array(z.uuid()).max(100),
-  insuranceCredentialIds: z.array(z.uuid()).min(1, "Select at least one reviewed insurance document.").max(100),
-  scopeConfirmed: z.literal("confirmed", {
-    error: "Confirm that you checked the licensing rules and insurance coverage for this service and area.",
+  insuranceRequirement: z.enum(["required", "not_required"], {
+    error: "Choose the insurance requirement for this service and area.",
   }),
+  licenseCredentialIds: z.array(z.uuid()).max(100),
+  insuranceCredentialIds: z.array(z.uuid()).max(100),
+  scopeConfirmed: z.literal("confirmed", {
+    error: "Confirm that you checked both requirements and reviewed any required documents.",
+  }),
+}).superRefine((review, context) => {
+  if (review.licenseRequirement === "required" && review.licenseCredentialIds.length === 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["licenseCredentialIds"],
+      message: "Select at least one reviewed license for this service.",
+    });
+  }
+  if (review.insuranceRequirement === "required" && review.insuranceCredentialIds.length === 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["insuranceCredentialIds"],
+      message: "Select at least one reviewed insurance document for this service.",
+    });
+  }
 });
 
 function databaseMessage(message?: string) {
@@ -168,6 +186,7 @@ function databaseMessage(message?: string) {
     normalized.includes("restricted service") ||
     normalized.includes("credential was not found") ||
     normalized.includes("required credentials for every active service") ||
+    normalized.includes("credential decisions for every active service") ||
     normalized.includes("credential review")
   ) {
     return message ?? "Complete the required sections and try again.";
@@ -186,9 +205,12 @@ function serviceCredentialReviewMessage(message: string) {
   const expected = [
     "Only administrators can review service credentials.",
     "Choose whether this service requires a license.",
+    "Choose whether this service requires insurance.",
     "Credential selections cannot contain empty values.",
     "Select at least one approved insurance document",
     "Select at least one approved license",
+    "Do not select license",
+    "Do not select insurance",
     "Choose an active provider service",
     "This service changed",
     "Every selected license",
@@ -519,6 +541,7 @@ export async function reviewProviderServiceCredentials(
     serviceUpdatedAt: formData.get("serviceUpdatedAt"),
     profileUpdatedAt: formData.get("profileUpdatedAt"),
     licenseRequirement: formData.get("licenseRequirement"),
+    insuranceRequirement: formData.get("insuranceRequirement"),
     licenseCredentialIds: formData.getAll("licenseCredentialIds"),
     insuranceCredentialIds: formData.getAll("insuranceCredentialIds"),
     scopeConfirmed: formData.get("scopeConfirmed"),
@@ -531,22 +554,26 @@ export async function reviewProviderServiceCredentials(
     };
   }
 
-  const { serviceId, serviceUpdatedAt, profileUpdatedAt, licenseRequirement, licenseCredentialIds, insuranceCredentialIds } = parsed.data;
+  const {
+    serviceId,
+    serviceUpdatedAt,
+    profileUpdatedAt,
+    licenseRequirement,
+    insuranceRequirement,
+    licenseCredentialIds,
+    insuranceCredentialIds,
+  } = parsed.data;
   const requiresLicense = licenseRequirement === "required";
-  if (requiresLicense && licenseCredentialIds.length === 0) {
-    return {
-      status: "error",
-      fieldErrors: { licenseCredentialIds: ["Select at least one reviewed license for this service."] },
-    };
-  }
+  const requiresInsurance = insuranceRequirement === "required";
 
   try {
     const { supabase } = await requireActionRole("admin");
     const { error } = await supabase.rpc("review_provider_service_credentials", {
       reviewed_service_id: serviceId,
       requires_license: requiresLicense,
+      requires_insurance: requiresInsurance,
       selected_license_ids: requiresLicense ? [...new Set(licenseCredentialIds)] : [],
-      selected_insurance_ids: [...new Set(insuranceCredentialIds)],
+      selected_insurance_ids: requiresInsurance ? [...new Set(insuranceCredentialIds)] : [],
       expected_service_updated_at: serviceUpdatedAt,
       expected_profile_updated_at: profileUpdatedAt,
     });

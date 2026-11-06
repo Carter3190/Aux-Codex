@@ -14,7 +14,7 @@ export default function ProviderAgreementPage() {
       eyebrow="For providers"
       title="Provider agreement"
       summary="This agreement supplements the Terms of Service for every person or business that applies to offer services through Auxilium."
-      updated="October 26, 2026"
+      updated="November 5, 2026"
     >
       <PolicySection title="1. Independent provider relationship and personnel">
         <p>
@@ -40,9 +40,10 @@ export default function ProviderAgreementPage() {
           connection with a booking. Providers are responsible for Provider
           Personnel and their acts and omissions as if they were the provider’s
           own. Providers must select, train, supervise, and verify that Provider
-          Personnel are legally authorized, properly licensed, qualified, and
-          insured for the work they perform. Providers are also responsible for
-          their tools, transportation, expenses, taxes, licenses, permits,
+          Personnel are legally authorized and qualified for the work they
+          perform, and hold the licenses and coverage required by applicable law
+          or Auxilium for that service and location. Providers are also responsible
+          for their tools, transportation, expenses, taxes, licenses, permits,
           insurance, and service results.
         </p>
       </PolicySection>
@@ -137,11 +138,11 @@ export default function ProviderAgreementPage() {
 
       <PolicySection title="6. Insurance and proof of coverage">
         <p>
-          Providers must maintain insurance that is valid where services are
-          performed, covers the services and Provider Personnel using the
-          marketplace, and satisfies applicable law and all category-specific
-          requirements communicated by Auxilium. Depending on the service, those
-          requirements may include commercial general liability, workers’
+          Providers must maintain the coverage required by applicable law or
+          Auxilium for each service and location. Required coverage must be
+          valid where the work is performed and cover the service and Provider
+          Personnel. Depending on the service, coverage requirements may include
+          commercial general liability, workers’
           compensation and employer’s liability, commercial or hired and
           non-owned automobile coverage, professional liability, garage or
           garagekeepers coverage, bonds, or other specialty coverage.

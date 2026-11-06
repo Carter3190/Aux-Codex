@@ -1,5 +1,4 @@
 .page { color: var(--foreground); }
-.activitySection { margin-top: 20px; }
 .overviewGrid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr); gap: 26px; align-items: start; }
 .sectionHeading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
 .sectionHeading h2 { font-size: 17px; font-weight: 600; letter-spacing: -.025em; }

@@ -9,7 +9,7 @@ import { getOptionalCurrentProfile } from "@/lib/auth/profile";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
 import type { PublicServiceCredentialCheck } from "@/lib/marketplace/types";
-import { formatPrice, labelFromSnakeCase, weekdays } from "@/lib/providers/presentation";
+import { formatPrice, weekdays } from "@/lib/providers/presentation";
 
 export const metadata: Metadata = {
   title: "Provider profile",
@@ -21,47 +21,38 @@ function tomorrowDate() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function formatProfileDate(date: string, timeZone?: string) {
+function formatReviewDate(date: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
-    timeZone,
   }).format(new Date(date));
 }
 
-function ServiceCredentialCheck({ check }: { check?: PublicServiceCredentialCheck }) {
-  if (!check?.eligible || !check.checkedAt) {
+function ServiceApproval({ check }: { check?: PublicServiceCredentialCheck }) {
+  if (!check?.eligible) {
     return (
-      <p className={styles.credentialCheckPending}>
-        {check ? "Credential review needed before booking." : "Credential check information is currently unavailable."}
+      <p className={styles.serviceApprovalPending}>
+        {check ? "Service review needed before booking." : "Service review information is currently unavailable."}
       </p>
     );
   }
 
+  let credentialLabel: string | undefined;
+  if (check.insuranceRequired && check.licenseRequired) {
+    credentialLabel = "Insured and licensed";
+  } else if (check.insuranceRequired) {
+    credentialLabel = "Insured";
+  } else if (check.licenseRequired) {
+    credentialLabel = "Licensed";
+  }
+
   return (
-    <div className={styles.credentialCheck}>
-      <h4>Credentials checked by Auxilium</h4>
-      <p className={styles.credentialMeta}>
-        Service review completed <time dateTime={check.checkedAt}>{formatProfileDate(check.checkedAt, "America/Detroit")}</time>
+    <div className={styles.serviceApproval}>
+      {credentialLabel && <p className={styles.serviceApprovalLabel}>{credentialLabel}</p>}
+      <p className={credentialLabel ? styles.serviceApprovalNote : styles.serviceApprovalLabel}>
+        Approved by Auxilium
       </p>
-      <ul className={styles.credentialList}>
-        {check.credentials.map((credential) => (
-          <li key={credential.id}>
-            <p className={styles.credentialName}>{credential.title}</p>
-            <p className={styles.credentialMeta}>
-              {labelFromSnakeCase(credential.type)}
-              {credential.issuer && ` · ${credential.issuer}`}
-            </p>
-            <p className={styles.credentialMeta}>
-              Checked <time dateTime={credential.checkedAt}>{formatProfileDate(credential.checkedAt, "America/Detroit")}</time>
-              {credential.expiresOn && (
-                <> · Expires <time dateTime={credential.expiresOn}>{formatProfileDate(credential.expiresOn, "UTC")}</time></>
-              )}
-            </p>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -184,7 +175,7 @@ export default async function ProviderProfilePage({
                         </p>
                       </div>
                       <span className={styles.reviewDate}>
-                        {formatProfileDate(review.createdAt)}
+                        {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
                     <p className={styles.reviewBody}>
@@ -215,7 +206,7 @@ export default async function ProviderProfilePage({
                     </span>
                   </div>
                   {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
-                  <ServiceCredentialCheck check={serviceChecks.get(service.id)} />
+                  <ServiceApproval check={serviceChecks.get(service.id)} />
                 </article>
               ))}
             </div>
@@ -256,14 +247,14 @@ export default async function ProviderProfilePage({
           </h2>
           {provider.bookingEligible && (
             <p className={styles.bookingIntro}>
-              The provider reviews your request before confirming the booking. The service’s required credentials must be current on the date you request.
+              The provider reviews your request before confirming the booking. Any required insurance or license must be valid on the date you request.
             </p>
           )}
 
           <div className={styles.bookingForm}>
             {!provider.bookingEligible ? (
               <div className={styles.bookingUnavailable}>
-                Check back for booking availability after Auxilium reviews the required credentials.
+                Check back for booking availability after Auxilium reviews the service.
               </div>
             ) : profile?.role === "customer" ? (
               <BookingRequestForm

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import type { LegalAgreementKey } from "@/lib/legal/agreements";
+import { LEGAL_AGREEMENTS, type LegalAgreementKey } from "@/lib/legal/agreements";
 import { DocumentReviewGate } from "./document-review-gate";
 
 const sha256Pattern = /^[0-9a-f]{64}$/;
@@ -26,8 +26,11 @@ export function LegalDocumentReviewLayout({
   const documentVersion = searchParams.get("version") ?? "";
   const contentSha256 = searchParams.get("hash") ?? "";
   const error = searchParams.get("error") ?? undefined;
+  const publishedAgreement = Object.values(LEGAL_AGREEMENTS).find(
+    (agreement) => agreement.key === documentKey,
+  );
   const bindingIsPresent =
-    documentVersion.length > 0 && sha256Pattern.test(contentSha256);
+    documentVersion === publishedAgreement?.version && sha256Pattern.test(contentSha256);
   const acceptancePath = `/legal/accept?next=${encodeURIComponent(nextPath)}`;
 
   return (
