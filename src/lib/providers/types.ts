@@ -93,7 +93,30 @@ export type ProviderWorkspace = {
   completion: ProviderCompletion;
 };
 
-export type AdminProviderApplication = Omit<ProviderWorkspace, "profile"> & {
+export type ProviderServiceCredentialReview = {
+  licenseRequired: boolean;
+  licenseCredentialIds: string[];
+  insuranceCredentialIds: string[];
+  reviewedAt: string;
+};
+
+export type AdminProviderService = ProviderService & {
+  updatedAt: string;
+  credentialReview: ProviderServiceCredentialReview | null;
+  credentialReviewCurrent: boolean;
+};
+
+export type AdminProviderCredential = ProviderCredential & {
+  eligibleForServiceReview: boolean;
+};
+
+export type AdminProviderApplication = Omit<
+  ProviderWorkspace,
+  "profile" | "details" | "services" | "credentials"
+> & {
+  details: ProviderDetails & { updatedAt: string };
+  services: AdminProviderService[];
+  credentials: AdminProviderCredential[];
   profile: {
     id: string;
     email: string;

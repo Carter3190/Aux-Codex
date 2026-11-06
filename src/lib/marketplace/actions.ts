@@ -86,6 +86,7 @@ function databaseMessage(message?: string) {
     "20 pending requests",
     "already have an active request",
     "booking request not found",
+    "this service is not currently available for booking",
     "only pending requests",
     "already accepted another booking",
     "booking cannot be cancelled",

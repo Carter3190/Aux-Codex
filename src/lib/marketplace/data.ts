@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { getCurrentProfile, requireRole } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -13,7 +14,6 @@ import type {
   MarketplaceProviderCard,
   MarketplaceService,
   PublicAvailability,
-  PublicCredential,
   PublicPhoto,
   VerifiedReview,
 } from "./types";
@@ -50,8 +50,26 @@ type ProviderDetailPayload = {
   services: MarketplaceService[];
   availability: PublicAvailability[];
   photos: Array<{ id: string; storagePath: string; caption: string }>;
-  credentials: PublicCredential[];
 };
+
+const publicCredentialCheckTime = z.iso.datetime({ offset: true });
+
+const publicServiceChecksSchema = z.array(z.object({
+  serviceId: z.uuid(),
+  eligible: z.boolean(),
+  checkedAt: publicCredentialCheckTime.nullable(),
+  licenseRequired: z.boolean(),
+  credentials: z.array(z.object({
+    id: z.uuid(),
+    type: z.string(),
+    title: z.string(),
+    issuer: z.string(),
+    expiresOn: z.iso.date().nullable(),
+    checkedAt: publicCredentialCheckTime,
+  })),
+}).refine((check) => !check.eligible || (
+  check.checkedAt !== null && check.credentials.length > 0
+)));
 
 type BookingRow = {
   id: string;
@@ -321,19 +339,23 @@ export async function getApprovedProvider(
 
   if (!data) return null;
   const provider = data as ProviderDetailPayload;
-  const [summaries, reviews, bookingEligibilityResult] = await Promise.all([
+  const [summaries, reviews, checksResult] = await Promise.all([
     getProviderReviewSummaries(supabase, [providerId]),
     getPublicProviderReviews(supabase, providerId),
-    supabase.rpc("is_provider_booking_eligible", {
+    supabase.rpc("get_public_provider_service_checks", {
       requested_provider_id: providerId,
     }),
   ]);
-  if (bookingEligibilityResult.error) {
-    if (marketplaceMigrationMissing(bookingEligibilityResult.error.code)) {
-      redirect("/setup?reason=provider-risk-controls");
-    }
-    throw new Error("Unable to verify this provider's booking availability.");
-  }
+  // Preserve the public profile when the approved provider's service checks are unavailable.
+  const parsedChecks = publicServiceChecksSchema.safeParse(checksResult.data);
+  const serviceChecks = !checksResult.error && parsedChecks.success
+    ? parsedChecks.data
+    : [];
+  const eligibleServiceIds = new Set(
+    serviceChecks.filter((check) => check.eligible).map((check) => check.serviceId),
+  );
+  const services = provider.services ?? [];
+  const bookableServices = services.filter((service) => eligibleServiceIds.has(service.id));
   const summary = summaries.get(providerId);
   return {
     providerId: provider.providerId,
@@ -343,7 +365,9 @@ export async function getApprovedProvider(
     serviceArea: provider.serviceArea,
     yearsExperience: provider.yearsExperience,
     travelRadiusMiles: provider.travelRadiusMiles,
-    services: provider.services ?? [],
+    services,
+    bookableServices,
+    serviceChecks,
     availability: provider.availability ?? [],
     photos: (provider.photos ?? []).map(
       (photo): PublicPhoto => ({
@@ -352,8 +376,7 @@ export async function getApprovedProvider(
         caption: photo.caption,
       }),
     ),
-    credentials: provider.credentials ?? [],
-    bookingEligible: bookingEligibilityResult.data === true,
+    bookingEligible: bookableServices.length > 0,
     averageRating: summary?.averageRating ?? null,
     reviewCount: summary?.reviewCount ?? 0,
     reviews,

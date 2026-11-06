@@ -62,7 +62,7 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
               href={`/providers/${provider.providerId}`}
               className="inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
             >
-              View profile & request booking
+              View provider profile
             </Link>
           </div>
         </div>

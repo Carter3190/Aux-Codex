@@ -43,6 +43,15 @@ export type PublicCredential = {
   title: string;
   issuer: string;
   expiresOn: string | null;
+  checkedAt: string;
+};
+
+export type PublicServiceCredentialCheck = {
+  serviceId: string;
+  eligible: boolean;
+  checkedAt: string | null;
+  licenseRequired: boolean;
+  credentials: PublicCredential[];
 };
 
 export type VerifiedReview = {
@@ -63,9 +72,10 @@ export type MarketplaceProvider = {
   yearsExperience: number | null;
   travelRadiusMiles: number | null;
   services: MarketplaceService[];
+  bookableServices: MarketplaceService[];
+  serviceChecks: PublicServiceCredentialCheck[];
   availability: PublicAvailability[];
   photos: PublicPhoto[];
-  credentials: PublicCredential[];
   bookingEligible: boolean;
   averageRating: number | null;
   reviewCount: number;

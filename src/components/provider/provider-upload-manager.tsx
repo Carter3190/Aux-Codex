@@ -244,8 +244,10 @@ export function ProviderUploadManager({
         {!section && <h3 className="text-lg font-semibold text-brand-dark">Credentials</h3>}
         <p className="mt-1 text-sm leading-6 text-muted">
           Credential files are private and visible only to you and Auxilium admins.{" "}
-          A current insurance document with its carrier and expiration date is
-          required before a new or updated application can be submitted.
+          Current insurance is required before you submit your application. Upload
+          any required licenses or certifications, with the issuer and expiration
+          date where applicable. Auxilium checks which documents cover each service
+          before it can take bookings. Submit renewals before required documents expire.
         </p>
         {credentials.length > 0 && (
           <div className="mt-4 space-y-3">

@@ -137,6 +137,20 @@ const credentialReviewSchema = z.object({
   notes: z.string().trim().max(1000, "Use 1,000 characters or fewer."),
 });
 
+const serviceCredentialReviewSchema = z.object({
+  serviceId: z.uuid("Invalid service."),
+  serviceUpdatedAt: z.iso.datetime({ offset: true }),
+  profileUpdatedAt: z.iso.datetime({ offset: true }),
+  licenseRequirement: z.enum(["required", "not_required"], {
+    error: "Choose the license requirement for this service and area.",
+  }),
+  licenseCredentialIds: z.array(z.uuid()).max(100),
+  insuranceCredentialIds: z.array(z.uuid()).min(1, "Select at least one reviewed insurance document.").max(100),
+  scopeConfirmed: z.literal("confirmed", {
+    error: "Confirm that you checked the licensing rules and insurance coverage for this service and area.",
+  }),
+});
+
 function databaseMessage(message?: string) {
   const normalized = message?.toLowerCase() ?? "";
   if (normalized.includes("provider_services_provider_id_name_key")) {
@@ -153,6 +167,7 @@ function databaseMessage(message?: string) {
     normalized.includes("current insurance") ||
     normalized.includes("restricted service") ||
     normalized.includes("credential was not found") ||
+    normalized.includes("required credentials for every active service") ||
     normalized.includes("credential review")
   ) {
     return message ?? "Complete the required sections and try again.";
@@ -165,6 +180,26 @@ function databaseMessage(message?: string) {
     return "The provider onboarding migration must be installed in Supabase first.";
   }
   return "We could not save that change. Please try again.";
+}
+
+function serviceCredentialReviewMessage(message: string) {
+  const expected = [
+    "Only administrators can review service credentials.",
+    "Choose whether this service requires a license.",
+    "Credential selections cannot contain empty values.",
+    "Select at least one approved insurance document",
+    "Select at least one approved license",
+    "Choose an active provider service",
+    "This service changed",
+    "Every selected license",
+    "Every selected insurance",
+    "Provider profile details were not found.",
+    "This provider profile changed",
+    "The service credential review could not be recorded",
+  ];
+  return expected.some((prefix) => message.startsWith(prefix))
+    ? message
+    : "We could not save the service credential review. Reload and try again.";
 }
 
 function success(message: string): ProviderActionState {
@@ -437,40 +472,93 @@ export async function removeProviderUpload(formData: FormData) {
   if (!id.success || !kind.success) return;
 
   const { supabase, userId } = await requireActionRole("provider");
-  let storagePath: string | undefined;
-
-  if (kind.data === "photo") {
-    const { data } = await supabase
-      .from("provider_photos")
-      .select("storage_path")
-      .eq("id", id.data)
-      .eq("provider_id", userId)
-      .single();
-    storagePath = data?.storage_path;
-  } else {
-    const { data } = await supabase
+  if (kind.data === "credential") {
+    // Invalidate the credential and its linked reviews before deleting the file.
+    const { data, error } = await supabase
       .from("provider_credentials")
-      .select("document_path")
+      .delete()
       .eq("id", id.data)
       .eq("provider_id", userId)
-      .single();
-    storagePath = data?.document_path;
+      .select("document_path")
+      .maybeSingle();
+    if (error || !data) return;
+
+    await supabase.storage.from("provider-credentials").remove([data.document_path]);
+    revalidatePath("/dashboard/provider", "layout");
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/providers", "layout");
+    return;
   }
 
-  if (!storagePath) return;
-  const table = kind.data === "photo" ? "provider_photos" : "provider_credentials";
-  const bucket = kind.data === "photo" ? "provider-photos" : "provider-credentials";
+  const { data } = await supabase
+    .from("provider_photos")
+    .select("storage_path")
+    .eq("id", id.data)
+    .eq("provider_id", userId)
+    .single();
+  if (!data?.storage_path) return;
   const { error: storageError } = await supabase.storage
-    .from(bucket)
-    .remove([storagePath]);
+    .from("provider-photos")
+    .remove([data.storage_path]);
   if (storageError) return;
 
   await supabase
-    .from(table)
+    .from("provider_photos")
     .delete()
     .eq("id", id.data)
     .eq("provider_id", userId);
   revalidatePath("/dashboard/provider", "layout");
+}
+
+export async function reviewProviderServiceCredentials(
+  _previousState: ProviderActionState,
+  formData: FormData,
+): Promise<ProviderActionState> {
+  const parsed = serviceCredentialReviewSchema.safeParse({
+    serviceId: formData.get("serviceId"),
+    serviceUpdatedAt: formData.get("serviceUpdatedAt"),
+    profileUpdatedAt: formData.get("profileUpdatedAt"),
+    licenseRequirement: formData.get("licenseRequirement"),
+    licenseCredentialIds: formData.getAll("licenseCredentialIds"),
+    insuranceCredentialIds: formData.getAll("insuranceCredentialIds"),
+    scopeConfirmed: formData.get("scopeConfirmed"),
+  });
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Check the service credential review and try again.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { serviceId, serviceUpdatedAt, profileUpdatedAt, licenseRequirement, licenseCredentialIds, insuranceCredentialIds } = parsed.data;
+  const requiresLicense = licenseRequirement === "required";
+  if (requiresLicense && licenseCredentialIds.length === 0) {
+    return {
+      status: "error",
+      fieldErrors: { licenseCredentialIds: ["Select at least one reviewed license for this service."] },
+    };
+  }
+
+  try {
+    const { supabase } = await requireActionRole("admin");
+    const { error } = await supabase.rpc("review_provider_service_credentials", {
+      reviewed_service_id: serviceId,
+      requires_license: requiresLicense,
+      selected_license_ids: requiresLicense ? [...new Set(licenseCredentialIds)] : [],
+      selected_insurance_ids: [...new Set(insuranceCredentialIds)],
+      expected_service_updated_at: serviceUpdatedAt,
+      expected_profile_updated_at: profileUpdatedAt,
+    });
+    if (error) return failure(serviceCredentialReviewMessage(error.message));
+
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/dashboard/provider", "layout");
+    revalidatePath("/providers", "layout");
+    return success("Service credential review saved.");
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Unable to save the service credential review.");
+  }
 }
 
 export async function submitProviderApplication(

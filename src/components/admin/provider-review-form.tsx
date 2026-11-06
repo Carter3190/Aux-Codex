@@ -13,11 +13,13 @@ export function ProviderReviewForm({
   providerStatus,
   canReview,
   canApprove,
+  approvalRequirements,
 }: {
   providerId: string;
   providerStatus: ProviderStatus;
   canReview: boolean;
   canApprove: boolean;
+  approvalRequirements: string[];
 }) {
   const [state, action, pending] = useActionState(
     reviewProviderApplication,
@@ -70,10 +72,9 @@ export function ProviderReviewForm({
         </p>
       )}
       {canReview && !canApprove && providerStatus !== "approved" && (
-        <p className="text-xs leading-5 text-muted">
-          Approve a current insurance document above before approving this
-          provider.
-        </p>
+        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-muted">
+          {approvalRequirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
+        </ul>
       )}
     </form>
   );
