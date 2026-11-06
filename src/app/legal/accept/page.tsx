@@ -75,8 +75,7 @@ export default async function LegalAcceptancePage({
 
         {!status.migrationReady ? (
           <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-            The document-review record migration still needs to be installed.
-            No acceptance was requested or recorded yet.
+            The current agreements are temporarily unavailable for review.
           </div>
         ) : (
           <form action={acceptCurrentLegalAgreements} className="mt-8">
@@ -145,8 +144,7 @@ export default async function LegalAcceptancePage({
 
         {!status.migrationReady && (
           <p className="mt-6 text-sm leading-6 text-muted">
-            Dashboard access will resume after the document-review record
-            migration is installed. If this message persists, contact the{" "}
+            Check back to review the current agreements. If this message persists, contact the{" "}
             <Link
               href="/support"
               className="font-semibold text-foreground underline underline-offset-4"

@@ -44,7 +44,7 @@ export function ProviderSubmitCard({
           ? `Submitted ${new Date(submittedAt).toLocaleDateString()}. Editing any profile section will return the application to draft review.`
           : completion.isComplete
             ? "Every required section is complete. Submit your information for an administrator to review."
-            : `Complete all five sections first. You have finished ${completion.completedCount} of ${completion.totalCount}.`}
+            : `Complete all ${completion.totalCount} required sections first. You have finished ${completion.completedCount} of ${completion.totalCount}.`}
       </p>
       <div className="mt-5">
         <FormFeedback state={state} />

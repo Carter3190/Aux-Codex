@@ -74,7 +74,6 @@ export type ProviderCompletion = {
   introduction: boolean;
   services: boolean;
   photos: boolean;
-  credentials: boolean;
   availability: boolean;
   completedCount: number;
   totalCount: number;
@@ -95,6 +94,7 @@ export type ProviderWorkspace = {
 
 export type ProviderServiceCredentialReview = {
   licenseRequired: boolean;
+  insuranceRequired: boolean;
   licenseCredentialIds: string[];
   insuranceCredentialIds: string[];
   reviewedAt: string;

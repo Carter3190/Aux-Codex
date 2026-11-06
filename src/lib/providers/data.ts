@@ -96,6 +96,7 @@ type AdminCredentialRow = CredentialRow & {
 type ServiceCredentialReviewRow = {
   service_id: string;
   license_required: boolean;
+  insurance_required: boolean;
   license_credential_ids: string[];
   insurance_credential_ids: string[];
   reviewed_at: string;
@@ -197,13 +198,16 @@ function mapAdminService(
     updatedAt: row.updated_at,
     credentialReview: review ? {
       licenseRequired: review.license_required,
+      insuranceRequired: review.insurance_required,
       licenseCredentialIds: review.license_credential_ids,
       insuranceCredentialIds: review.insurance_credential_ids,
       reviewedAt: review.reviewed_at,
     } : null,
     credentialReviewCurrent: Boolean(row.is_active && review?.reviewed_by && review.reviewed_at &&
-      review.insurance_credential_ids.length > 0 &&
-      review.insurance_credential_ids.every((id) => eligible.get(id) === "insurance") &&
+      (review.insurance_required
+        ? review.insurance_credential_ids.length > 0 &&
+          review.insurance_credential_ids.every((id) => eligible.get(id) === "insurance")
+        : review.insurance_credential_ids.length === 0) &&
       (review.license_required
         ? review.license_credential_ids.length > 0 &&
           review.license_credential_ids.every((id) => eligible.get(id) === "license")
@@ -221,14 +225,11 @@ function mapReview(row: ReviewRow): ProviderReviewEvent {
 }
 
 export function calculateProviderCompletion(input: {
-  providerStatus: ProviderStatus;
   details: ProviderDetails;
   services: ProviderService[];
   availability: ProviderAvailability[];
   photos: ProviderPhoto[];
-  credentials: ProviderCredential[];
 }): ProviderCompletion {
-  const currentInsurance = hasCurrentInsuranceCredential(input.credentials);
   const checks = {
     introduction:
       input.details.headline.trim().length >= 10 &&
@@ -236,8 +237,6 @@ export function calculateProviderCompletion(input: {
       input.details.serviceArea.trim().length >= 2,
     services: input.services.some((service) => service.isActive),
     photos: input.photos.length > 0,
-    credentials:
-      input.providerStatus === "approved" || currentInsurance,
     availability: input.availability.some((day) => day.isAvailable),
   };
   const values = Object.values(checks);
@@ -250,21 +249,6 @@ export function calculateProviderCompletion(input: {
     percentage: Math.round((completedCount / values.length) * 100),
     isComplete: completedCount === values.length,
   };
-}
-
-export function hasCurrentInsuranceCredential(
-  credentials: ProviderCredential[],
-  requireApproved = false,
-) {
-  const today = new Date().toISOString().slice(0, 10);
-  return credentials.some(
-    (credential) =>
-      credential.credentialType === "insurance" &&
-      credential.issuer.trim().length > 0 &&
-      credential.expiresOn !== null &&
-      credential.expiresOn >= today &&
-      (!requireApproved || credential.reviewStatus === "approved"),
-  );
 }
 
 function emptyAvailability(): ProviderAvailability[] {
@@ -364,12 +348,10 @@ export async function getProviderWorkspace(): Promise<ProviderWorkspace> {
   );
   const reviewEvents = (reviewsResult.data as ReviewRow[]).map(mapReview);
   const completion = calculateProviderCompletion({
-    providerStatus: profile.providerStatus,
     details,
     services,
     availability,
     photos,
-    credentials,
   });
 
   return {
@@ -481,7 +463,7 @@ export async function getAdminProviderApplications(): Promise<{
   // Keep each PostgREST URL within normal proxy limits on larger review queues.
   for (let offset = 0; offset < serviceIds.length; offset += 100) {
     serviceReviewQueries.push(supabase.from("provider_service_credential_reviews")
-      .select("service_id, license_required, license_credential_ids, insurance_credential_ids, reviewed_at, reviewed_by")
+      .select("service_id, license_required, insurance_required, license_credential_ids, insurance_credential_ids, reviewed_at, reviewed_by")
       .in("service_id", serviceIds.slice(offset, offset + 100)));
   }
   const serviceReviewResults = await Promise.all(serviceReviewQueries);
@@ -541,12 +523,10 @@ export async function getAdminProviderApplications(): Promise<{
         mapReview,
       );
       const completion = calculateProviderCompletion({
-        providerStatus: profile.provider_status,
         details,
         services,
         availability,
         photos,
-        credentials,
       });
 
       return {

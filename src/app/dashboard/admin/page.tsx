@@ -4,10 +4,7 @@ import { ProviderCredentialReviewForm } from "@/components/admin/provider-creden
 import { ProviderReviewForm } from "@/components/admin/provider-review-form";
 import { ProviderServiceCredentialReviewForm } from "@/components/admin/provider-service-credential-review-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import {
-  getAdminProviderApplications,
-  hasCurrentInsuranceCredential,
-} from "@/lib/providers/data";
+import { getAdminProviderApplications } from "@/lib/providers/data";
 import {
   formatPrice,
   labelFromSnakeCase,
@@ -94,13 +91,10 @@ export default async function AdminDashboardPage() {
               (day) => day.isAvailable,
             );
             const canReview = Boolean(application.details.submittedAt);
-            const hasApprovedCurrentInsurance =
-              hasCurrentInsuranceCredential(application.credentials, true);
             const activeServices = application.services.filter((service) => service.isActive);
             const outstandingServiceReviews = activeServices.filter((service) => !service.credentialReviewCurrent).length;
             const approvalRequirements: string[] = [];
             if (!application.completion.isComplete) approvalRequirements.push("Confirm all required application sections are complete.");
-            if (!hasApprovedCurrentInsurance) approvalRequirements.push("Approve a current insurance document in Private credentials.");
             if (!serviceReviewAvailable) approvalRequirements.push("Restore access to service credential reviews.");
             else if (outstandingServiceReviews) approvalRequirements.push("Complete the credential review for each active service.");
             const canApprove = canReview && approvalRequirements.length === 0;
@@ -143,10 +137,9 @@ export default async function AdminDashboardPage() {
                           : ""}
                       </p>
                       {application.profile.providerStatus === "approved" &&
-                        !hasApprovedCurrentInsurance && (
+                        serviceReviewAvailable && outstandingServiceReviews > 0 && (
                           <p className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-950">
-                            Existing approval needs a manual current-insurance
-                            audit before this provider takes new customer work.
+                            Complete the outstanding service credential reviews to make those services eligible for new bookings.
                           </p>
                         )}
                     </div>
@@ -235,10 +228,18 @@ export default async function AdminDashboardPage() {
                                       <span className={`rounded-full px-3 py-1 text-xs font-semibold ${service.credentialReviewCurrent ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}>
                                         {service.credentialReviewCurrent ? "Credential review current" : service.credentialReview ? "Re-review needed" : "Credential review required"}
                                       </span>
-                                      {service.credentialReview && <span className="text-xs text-muted">Last reviewed {formatDate(service.credentialReview.reviewedAt)}</span>}
+                                      {service.credentialReview && (
+                                        <span className="text-xs text-muted">
+                                          {service.credentialReview.licenseRequired ? "License required" : "No license required"}
+                                          {" · "}
+                                          {service.credentialReview.insuranceRequired ? "Insurance required" : "No insurance required"}
+                                          {" · "}
+                                          Last reviewed {formatDate(service.credentialReview.reviewedAt)}
+                                        </span>
+                                      )}
                                     </div>
                                   ) : null}
-                                  {serviceReviewAvailable && service.credentialReview && !service.credentialReviewCurrent && <p className="mt-2 text-xs leading-5 text-muted">Check for expired documents or a change in document approval. Select current documents and save the review again.</p>}
+                                  {serviceReviewAvailable && service.credentialReview && !service.credentialReviewCurrent && <p className="mt-2 text-xs leading-5 text-muted">Check both requirements and confirm any required documents are current, then save the review again.</p>}
                                   {serviceReviewAvailable && <ProviderServiceCredentialReviewForm
                                     key={`${service.id}:${service.updatedAt}:${application.details.updatedAt}:${service.credentialReviewCurrent}`}
                                     serviceId={service.id}

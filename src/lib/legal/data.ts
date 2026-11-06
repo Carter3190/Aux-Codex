@@ -108,7 +108,7 @@ export async function getLegalAcceptanceStatus(
   const required = [...requiredByKey.values()];
   if (
     required.length !== expectedKeys.size ||
-    [...expectedKeys].some((key) => !requiredByKey.has(key))
+    required.some(({ agreement }) => expectedByKey.get(agreement.key)?.version !== agreement.version)
   ) {
     return { migrationReady: false, missing: [], documents: [] };
   }

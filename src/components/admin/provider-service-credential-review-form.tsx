@@ -12,7 +12,48 @@ import {
 type CredentialOption = Pick<AdminProviderCredential,
   "id" | "credentialType" | "title" | "issuer" | "expiresOn" | "documentUrl"
 >;
-type LicenseRequirement = "required" | "not_required" | "";
+type Requirement = "required" | "not_required" | "";
+
+function RequirementChoice({
+  name,
+  title,
+  value,
+  onChange,
+  error,
+}: {
+  name: "licenseRequirement" | "insuranceRequirement";
+  title: string;
+  value: Requirement;
+  onChange: (value: Requirement) => void;
+  error?: string;
+}) {
+  const labels = name === "licenseRequirement"
+    ? { required: "License required", not_required: "No license required" }
+    : { required: "Insurance required", not_required: "No insurance required" };
+
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold text-foreground">{title}</legend>
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        {(["required", "not_required"] as const).map((option) => (
+          <label key={option} className="inline-flex min-h-8 items-center gap-2 text-sm text-foreground">
+            <input
+              type="radio"
+              name={name}
+              value={option}
+              required
+              checked={value === option}
+              onChange={() => onChange(option)}
+              className="h-4 w-4 accent-brand"
+            />
+            {labels[option]}
+          </label>
+        ))}
+      </div>
+      {error && <p className="text-xs text-red-700">{error}</p>}
+    </fieldset>
+  );
+}
 
 function CredentialChoices({
   name,
@@ -90,8 +131,11 @@ export function ProviderServiceCredentialReviewForm({
     reviewProviderServiceCredentials,
     initialProviderActionState,
   );
-  const [licenseRequirement, setLicenseRequirement] = useState<LicenseRequirement>(
+  const [licenseRequirement, setLicenseRequirement] = useState<Requirement>(
     currentReview ? currentReview.licenseRequired ? "required" : "not_required" : "",
+  );
+  const [insuranceRequirement, setInsuranceRequirement] = useState<Requirement>(
+    currentReview ? currentReview.insuranceRequired ? "required" : "not_required" : "",
   );
   const [licenseIds, setLicenseIds] = useState(currentReview?.licenseCredentialIds ?? []);
   const [insuranceIds, setInsuranceIds] = useState(currentReview?.insuranceCredentialIds ?? []);
@@ -99,6 +143,9 @@ export function ProviderServiceCredentialReviewForm({
   const insurance = credentials.filter((credential) => credential.credentialType === "insurance");
   const hasInsurance = insurance.some((credential) => insuranceIds.includes(credential.id));
   const hasLicense = licenses.some((credential) => licenseIds.includes(credential.id));
+  const canSave = licenseRequirement && insuranceRequirement &&
+    (licenseRequirement === "not_required" || hasLicense) &&
+    (insuranceRequirement === "not_required" || hasInsurance);
   const privateCredentials = (
     <a href={`#${credentialsSectionId}`} className="font-semibold text-brand underline underline-offset-4">
       Private credentials
@@ -111,20 +158,15 @@ export function ProviderServiceCredentialReviewForm({
       <input type="hidden" name="serviceUpdatedAt" value={serviceUpdatedAt} />
       <input type="hidden" name="profileUpdatedAt" value={profileUpdatedAt} />
       <p className="text-sm leading-6 text-muted">
-        Check the licensing authority for this work and service area. Confirm the insured party, covered work, and service area with the insurer or broker. Select the individually approved documents that apply.
+        Check the licensing rules and insurance requirements for this work and service area. If insurance is required, confirm the insured party, covered work, and service area with the insurer or broker. Select the individually approved documents that apply.
       </p>
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-semibold text-foreground">License requirement for this service and area</legend>
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          {([ ["required", "License required"], ["not_required", "No license required"] ] as const).map(([value, label]) => (
-            <label key={value} className="inline-flex min-h-8 items-center gap-2 text-sm text-foreground">
-              <input type="radio" name="licenseRequirement" value={value} required checked={licenseRequirement === value} onChange={() => setLicenseRequirement(value)} className="h-4 w-4 accent-brand" />
-              {label}
-            </label>
-          ))}
-        </div>
-        {state.fieldErrors?.licenseRequirement?.[0] && <p className="text-xs text-red-700">{state.fieldErrors.licenseRequirement[0]}</p>}
-      </fieldset>
+      <RequirementChoice
+        name="licenseRequirement"
+        title="License requirement for this service and area"
+        value={licenseRequirement}
+        onChange={setLicenseRequirement}
+        error={state.fieldErrors?.licenseRequirement?.[0]}
+      />
       {licenseRequirement === "required" && <CredentialChoices
         name="licenseCredentialIds"
         title="Applicable licenses"
@@ -134,7 +176,14 @@ export function ProviderServiceCredentialReviewForm({
         empty={<>Confirm an applicable license in {privateCredentials} before selecting it.</>}
         error={state.fieldErrors?.licenseCredentialIds?.[0]}
       />}
-      <CredentialChoices
+      <RequirementChoice
+        name="insuranceRequirement"
+        title="Insurance requirement for this service and area"
+        value={insuranceRequirement}
+        onChange={setInsuranceRequirement}
+        error={state.fieldErrors?.insuranceRequirement?.[0]}
+      />
+      {insuranceRequirement === "required" && <CredentialChoices
         name="insuranceCredentialIds"
         title="Applicable insurance documents"
         options={insurance}
@@ -142,14 +191,14 @@ export function ProviderServiceCredentialReviewForm({
         onChange={setInsuranceIds}
         empty={<>Approve current insurance in {privateCredentials} before selecting it. Use “Confirm approval” to record an individual review on an earlier approval.</>}
         error={state.fieldErrors?.insuranceCredentialIds?.[0]}
-      />
+      />}
       <label className="flex items-start gap-2.5 rounded-xl border border-border bg-[#f7f7f7] p-3 text-sm leading-6 text-foreground">
         <input type="checkbox" name="scopeConfirmed" value="confirmed" required className="mt-1 h-4 w-4 shrink-0 accent-brand" />
-        <span>I checked the licensing rules for this work and area, confirmed the status of any required licenses with their issuing authorities, and confirmed that the insured party and selected coverage apply to this work and area.</span>
+        <span>I checked both requirements for this work and area. If a license is required, I confirmed its status with the issuing authority. If insurance is required, I confirmed the insured party and applicable coverage with the insurer or broker.</span>
       </label>
       {state.fieldErrors?.scopeConfirmed?.[0] && <p className="text-xs text-red-700">{state.fieldErrors.scopeConfirmed[0]}</p>}
       <FormFeedback state={state} />
-      <button type="submit" disabled={pending || !licenseRequirement || !hasInsurance || (licenseRequirement === "required" && !hasLicense)} className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" disabled={pending || !canSave} className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
         {pending ? "Saving…" : "Save service credential review"}
       </button>
     </form>

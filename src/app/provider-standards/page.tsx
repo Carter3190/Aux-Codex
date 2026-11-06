@@ -14,7 +14,7 @@ export default function ProviderStandardsPage() {
       eyebrow="Trust & safety"
       title="Provider standards"
       summary="These standards describe the minimum expectations for providers who apply, appear in the marketplace, and serve Auxilium customers."
-      updated="October 26, 2026"
+      updated="November 5, 2026"
     >
       <PolicySection title="Eligibility">
         <ul>
@@ -27,7 +27,9 @@ export default function ProviderStandardsPage() {
           <li>Disclose the actual service area, experience, pricing approach, and availability.</li>
           <li>
             Use only personnel who are legally authorized, appropriately trained,
-            supervised, licensed, and insured for the work they perform.
+            and supervised for the work they perform. Confirm they hold the
+            licenses and coverage required by applicable law or Auxilium for the
+            service and location.
           </li>
           <li>Do not apply while prohibited from the work by law, license action, or court order.</li>
         </ul>
@@ -47,9 +49,10 @@ export default function ProviderStandardsPage() {
         </p>
         <p>
           Auxilium may review documents, request clarification, or confirm
-          information with an issuer where permitted. A profile label means only
-          the specific review described as of the applicable date. Document
-          review is not a guarantee of coverage, policy exclusions, scope,
+          information with an issuer where permitted. Public labels summarize
+          the license and insurance requirements Auxilium confirmed for the
+          listed service and area. Document review is not a guarantee of
+          coverage, policy exclusions, scope,
           identity, work quality, safety, or future conduct. Customers should
           request current proof directly when the nature of a job warrants it.
         </p>

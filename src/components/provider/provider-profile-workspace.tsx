@@ -7,7 +7,6 @@ import { ProviderServiceForm } from "@/components/provider/provider-service-form
 import { ProviderSubmitCard } from "@/components/provider/provider-submit-card";
 import { ProviderUploadManager } from "@/components/provider/provider-upload-manager";
 import styles from "@/components/provider/provider-profile-workspace.module.css";
-import { hasCurrentInsuranceCredential } from "@/lib/providers/data";
 import type { ProviderWorkspace } from "@/lib/providers/types";
 
 const sections = [
@@ -25,7 +24,6 @@ export function ProviderProfileWorkspace({ workspace, section }: {
   const { profile, details, services, photos, credentials, availability, completion } = workspace;
   const selected = sections.find(([key]) => key === section);
   const reviewing = section === "review";
-  const currentInsurance = hasCurrentInsuranceCredential(credentials, profile.providerStatus === "approved");
   const progress = `${completion.completedCount} of ${completion.totalCount} sections complete`;
   const status = profile.providerStatus === "approved" ? "Application approved"
     : profile.providerStatus === "rejected" ? "Application needs changes"
@@ -52,7 +50,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
           </section>
           <div className={styles.grid}>
             {sections.map(([key, title, description]) => {
-              const complete = key === "credentials" ? currentInsurance : completion[key];
+              const complete = key === "credentials" || completion[key];
               return <Link className={styles.tile} href={`/dashboard/provider/onboarding?section=${key}`} key={key}><h2>{title}</h2><p>{description}</p><span>{complete ? "Manage details" : "Continue setup"}<CustomerIcon name="arrow" /></span></Link>;
             })}
           </div>
