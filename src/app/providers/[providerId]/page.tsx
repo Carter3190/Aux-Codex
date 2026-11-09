@@ -138,99 +138,95 @@ export default async function ProviderProfilePage({
 
       <div className={styles.contentGrid}>
         <div className={styles.overviewGrid}>
-          <div className={styles.profileSections}>
-            <section className={styles.panel}>
-              <h2 className={styles.sectionTitle}>About</h2>
-              <p className={styles.bio}>{provider.bio}</p>
-            </section>
+          <section className={`${styles.panel} ${styles.aboutPanel}`}>
+            <h2 className={styles.sectionTitle}>About</h2>
+            <p className={styles.bio}>{provider.bio}</p>
+          </section>
 
-            <section className={styles.panel}>
-              <div className={styles.sectionHeading}>
-                <div>
-                  <p className={styles.eyebrow}>
-                    Customer reviews
-                  </p>
-                  <h2 className={styles.sectionTitle}>
-                    Verified Auxilium bookings
-                  </h2>
-                </div>
-                {provider.reviewCount > 0 && provider.averageRating !== null && (
-                  <p className={styles.ratingSummary}>
-                    <span className={styles.stars} aria-hidden="true">★</span>{" "}
-                    {provider.averageRating.toFixed(1)} · {provider.reviewCount}
-                  </p>
-                )}
+          <section className={`${styles.panel} ${styles.servicesPanel}`}>
+            <h2 className={styles.sectionTitle}>Services</h2>
+            <div className={styles.serviceList}>
+              {provider.services.map((service) => (
+                <article key={service.id} className={styles.service}>
+                  <div className={styles.serviceHeading}>
+                    <h3>{service.name}</h3>
+                    <span className={styles.servicePrice}>
+                      {formatPrice(service.pricingType, service.priceCents)}
+                    </span>
+                  </div>
+                  {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
+                  <ServiceApproval check={serviceChecks.get(service.id)} />
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className={`${styles.panel} ${styles.reviewsPanel}`}>
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.eyebrow}>
+                  Customer reviews
+                </p>
+                <h2 className={styles.sectionTitle}>
+                  Verified Auxilium bookings
+                </h2>
               </div>
-              {provider.reviews.length > 0 ? (
-                <div className={styles.reviewList}>
-                  {provider.reviews.map((review) => (
-                    <article key={review.id} className={styles.review}>
-                      <div className={styles.reviewTop}>
-                        <div>
-                          <p className={styles.stars} aria-label={`${review.rating} out of 5 stars`}>
-                            {"★".repeat(review.rating)}
-                            <span className={styles.emptyStars}>{"★".repeat(5 - review.rating)}</span>
-                          </p>
-                          <p className={styles.reviewerName}>
-                            {review.reviewerName}
-                          </p>
-                        </div>
-                        <span className={styles.reviewDate}>
-                          {formatReviewDate(review.createdAt)}
-                        </span>
-                      </div>
-                      <p className={styles.reviewBody}>
-                        {review.body}
-                      </p>
-                      <p className={styles.verifiedBooking}>
-                        ✓ Verified booking · {review.serviceName}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <p className={styles.emptyCopy}>
-                  This provider has not received a verified customer review yet.
+              {provider.reviewCount > 0 && provider.averageRating !== null && (
+                <p className={styles.ratingSummary}>
+                  <span className={styles.stars} aria-hidden="true">★</span>{" "}
+                  {provider.averageRating.toFixed(1)} · {provider.reviewCount}
                 </p>
               )}
-            </section>
-          </div>
-
-          <div className={styles.profileSections}>
-            <section className={styles.panel}>
-              <h2 className={styles.sectionTitle}>Services</h2>
-              <div className={styles.serviceList}>
-                {provider.services.map((service) => (
-                  <article key={service.id} className={styles.service}>
-                    <div className={styles.serviceHeading}>
-                      <h3>{service.name}</h3>
-                      <span className={styles.servicePrice}>
-                        {formatPrice(service.pricingType, service.priceCents)}
+            </div>
+            {provider.reviews.length > 0 ? (
+              <div className={styles.reviewList}>
+                {provider.reviews.map((review) => (
+                  <article key={review.id} className={styles.review}>
+                    <div className={styles.reviewTop}>
+                      <div>
+                        <p className={styles.stars} aria-label={`${review.rating} out of 5 stars`}>
+                          {"★".repeat(review.rating)}
+                          <span className={styles.emptyStars}>{"★".repeat(5 - review.rating)}</span>
+                        </p>
+                        <p className={styles.reviewerName}>
+                          {review.reviewerName}
+                        </p>
+                      </div>
+                      <span className={styles.reviewDate}>
+                        {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
-                    {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
-                    <ServiceApproval check={serviceChecks.get(service.id)} />
+                    <p className={styles.reviewBody}>
+                      {review.body}
+                    </p>
+                    <p className={styles.verifiedBooking}>
+                      ✓ Verified booking · {review.serviceName}
+                    </p>
                   </article>
                 ))}
               </div>
-            </section>
-
-            {provider.photos.length > 1 && (
-              <section className={styles.gallerySection}>
-                <h2 className={styles.sectionTitle}>Work & profile photos</h2>
-                <div className={styles.photoGrid}>
-                  {provider.photos.slice(1).map((photo) => (
-                    <figure key={photo.id} className={styles.workPhoto}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className={styles.workImage} />
-                      {photo.caption && <figcaption className={styles.photoCaption}>{photo.caption}</figcaption>}
-                    </figure>
-                  ))}
-                </div>
-              </section>
+            ) : (
+              <p className={styles.emptyCopy}>
+                This provider has not received a verified customer review yet.
+              </p>
             )}
-          </div>
+          </section>
         </div>
+
+        {provider.photos.length > 1 && (
+          <section className={`${styles.panel} ${styles.gallerySection}`}>
+            <h2 className={styles.sectionTitle}>Work & profile photos</h2>
+            <div className={styles.photoGrid}>
+              {provider.photos.slice(1).map((photo) => (
+                <figure key={photo.id} className={styles.workPhoto}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className={styles.workImage} />
+                  {photo.caption && <figcaption className={styles.photoCaption}>{photo.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className={styles.bookingRow}>
           <section className={styles.panel} aria-labelledby="provider-availability-title">
