@@ -1,0 +1,79 @@
+.shell {
+  --background: #f2f5f8;
+  --foreground: #203346;
+  --surface: #ffffff;
+  --muted: #66778a;
+  --brand: #345f94;
+  --border: #dce4ed;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: light;
+}
+
+.shell > main {
+  flex: 1;
+  min-height: 0;
+}
+
+.shell ~ :global(footer[data-site-footer]) {
+  display: none;
+}
+
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.footerInner {
+  display: flex;
+  width: min(100%, 1240px);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-inline: auto;
+  padding: 16px 36px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+.footerLinks a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footerInner p { margin: 0; }
+.footerInner p span { display: inline-block; }
+
+@media (max-width: 720px) {
+  .footerInner { padding-inline: 22px; }
+}
+
+@media (max-width: 380px) {
+  .footerInner { padding-inline: 16px; }
+}
+
+@media (pointer: coarse) {
+  .footerLinks a { min-height: 44px; }
+}
