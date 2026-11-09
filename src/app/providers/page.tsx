@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketplaceHeader } from "@/components/marketplace/marketplace-header";
 import { ProviderCard } from "@/components/marketplace/provider-card";
+import styles from "@/components/marketplace/provider-directory.module.css";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
 import { searchApprovedProviders } from "@/lib/marketplace/data";
 
 export const metadata: Metadata = {
   title: "Find local providers",
   description:
-    "Browse local service providers whose applications have been reviewed by Auxilium.",
+    "Find local providers, explore their profiles, and request your next service through Auxilium.",
 };
 
 type ProvidersPageProps = {
@@ -32,90 +33,83 @@ export default async function ProvidersPage({ searchParams }: ProvidersPageProps
   ]);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className={styles.page}>
       <MarketplaceHeader profile={profile} />
-
-      <section className="border-b border-border bg-[#f4f4f4]">
-        <div className="mx-auto max-w-[1500px] px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
-          <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">
-            Customer marketplace
-          </p>
-          <h1 className="mt-4 max-w-4xl text-5xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">
+      <div className={styles.content}>
+        <section aria-labelledby="provider-search-title">
+          <p className={styles.eyebrow}>Customer marketplace</p>
+          <h1 id="provider-search-title" className={styles.title}>
             Find local help near you.
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            Every provider shown here submitted an application that Auxilium reviewed before listing.
-          </p>
-
           <form
             action="/providers"
             method="get"
-            className="mt-10 grid gap-4 rounded-[1.25rem] border border-border bg-white p-5 md:grid-cols-[1fr_1fr_auto]"
+            role="search"
+            aria-label="Search providers"
+            className={styles.searchForm}
           >
-            <label className="text-sm font-semibold text-foreground">
+            <label className={styles.field}>
               Service or provider
               <input
+                type="search"
                 name="q"
                 defaultValue={search}
                 maxLength={100}
-                className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
-                placeholder="Roofing, tutoring, lawn care…"
+                className={styles.input}
+                placeholder="What are you looking for?"
               />
             </label>
-            <label className="text-sm font-semibold text-foreground">
+            <label className={styles.field}>
               Service area
               <input
+                type="search"
                 name="area"
                 defaultValue={area}
                 maxLength={100}
-                className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+                className={styles.input}
                 placeholder="City or community"
               />
             </label>
-            <button
-              type="submit"
-              className="self-end rounded-full bg-brand px-7 py-3 font-semibold text-white transition hover:bg-brand-dark"
-            >
+            <button type="submit" className={styles.searchButton}>
               Search
             </button>
           </form>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-auto max-w-[1500px] px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.14em] text-foreground">
-              Listed professionals
-            </p>
-            <h2 className="mt-3 text-3xl font-normal tracking-[-0.03em] text-foreground sm:text-4xl">
-              {providers.length === 1
-                ? "1 provider found"
-                : `${providers.length} providers found`}
-            </h2>
+        <section aria-labelledby="provider-results-title">
+          <div className={styles.resultsHeading}>
+            <div>
+              <h2 id="provider-results-title" className={styles.resultsTitle}>
+                Listed professionals
+              </h2>
+              <p className={styles.resultCount} role="status">
+                {providers.length === 1
+                  ? "1 provider found"
+                  : `${providers.length} providers found`}
+              </p>
+            </div>
+            {(search || area) && (
+              <Link href="/providers" className={styles.clearLink}>
+                Clear search
+              </Link>
+            )}
           </div>
-          {(search || area) && (
-            <Link href="/providers" className="text-sm font-semibold text-foreground underline underline-offset-4">
-              Clear search
-            </Link>
+          {providers.length > 0 ? (
+            <div className={styles.providerList}>
+              {providers.map((provider) => (
+                <ProviderCard key={provider.providerId} provider={provider} />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <h3>No matching providers yet</h3>
+              <p>
+                Try a different search or location, or check back as more providers join Auxilium.
+              </p>
+            </div>
           )}
-        </div>
-
-        {providers.length > 0 ? (
-          <div className="mt-8 grid gap-6 xl:grid-cols-2">
-            {providers.map((provider) => (
-              <ProviderCard key={provider.providerId} provider={provider} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-8 rounded-[1.25rem] border border-border bg-white p-8 text-center sm:p-12">
-            <h2 className="text-2xl font-semibold text-brand-dark">No matching providers yet</h2>
-            <p className="mx-auto mt-3 max-w-xl leading-7 text-muted">
-              Try a broader service or location. Auxilium will show more professionals as applications are reviewed and listed.
-            </p>
-          </div>
-        )}
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

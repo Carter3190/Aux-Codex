@@ -1,72 +1,53 @@
 import Link from "next/link";
-import { formatPrice } from "@/lib/providers/presentation";
+import styles from "@/components/marketplace/provider-directory.module.css";
 import type { MarketplaceProviderCard } from "@/lib/marketplace/types";
 
 export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }) {
+  const initials = provider.displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+
   return (
-    <article className="overflow-hidden rounded-[1.25rem] border border-border bg-white transition-shadow hover:shadow-[0_18px_45px_rgba(0,0,0,0.08)]">
-      <div className="grid h-full sm:grid-cols-[210px_1fr]">
-        <div className="min-h-52 bg-[#ededed]">
+    <article className={styles.providerCard}>
+      <div className={styles.identity}>
+        <div className={styles.avatar}>
           {provider.primaryPhotoUrl ? (
             // Provider photos are served from Auxilium's public Supabase bucket.
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={provider.primaryPhotoUrl}
-              alt={provider.displayName}
-              className="h-full w-full object-cover"
-            />
+            <img src={provider.primaryPhotoUrl} alt="" className={styles.avatarImage} />
           ) : (
-            <div className="flex h-full min-h-52 items-center justify-center text-5xl font-semibold text-brand/40">
-              {provider.displayName.charAt(0).toUpperCase()}
-            </div>
+            <span aria-hidden="true">{initials}</span>
           )}
         </div>
-        <div className="flex flex-col p-6 sm:p-7">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium uppercase tracking-[0.14em] text-foreground">
-                Listed provider
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold text-foreground">
-                {provider.displayName}
-              </h2>
-            </div>
-            <span className="rounded-full border border-foreground/20 bg-[#f2f2f2] px-3 py-1.5 text-xs font-bold text-foreground">
-              Application reviewed
-            </span>
-          </div>
-          <p className="mt-2 font-medium text-foreground">{provider.headline}</p>
-          <p className="mt-3 text-sm text-muted">Serving {provider.serviceArea}</p>
-          {provider.reviewCount > 0 && provider.averageRating !== null && (
-            <p className="mt-3 text-sm font-semibold text-brand-dark">
-              <span className="text-[#080808]" aria-hidden="true">★</span>{" "}
-              {provider.averageRating.toFixed(1)} · {provider.reviewCount}{" "}
-              {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
-            </p>
-          )}
-          <p className="mt-4 line-clamp-3 leading-7 text-muted">
-            {provider.bioPreview}
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {provider.services.slice(0, 4).map((service) => (
-              <span
-                key={service.id}
-                className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground"
-              >
-                {service.name} · {formatPrice(service.pricingType, service.priceCents)}
+        <div className={styles.identityCopy}>
+          <h3 className={styles.providerName}>{provider.displayName}</h3>
+          <div className={styles.providerMeta}>
+            <span>{provider.serviceArea}</span>
+            {provider.reviewCount > 0 && provider.averageRating !== null && (
+              <span className={styles.rating}>
+                <span aria-hidden="true">★</span>{" "}
+                {provider.averageRating.toFixed(1)} · {provider.reviewCount}{" "}
+                {provider.reviewCount === 1 ? "verified review" : "verified reviews"}
               </span>
-            ))}
-          </div>
-          <div className="mt-auto pt-6">
-            <Link
-              href={`/providers/${provider.providerId}`}
-              className="inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
-            >
-              View provider profile
-            </Link>
+            )}
           </div>
         </div>
       </div>
+      <p className={styles.summary}>{provider.headline || provider.bioPreview}</p>
+      {provider.services.length > 0 && (
+        <ul className={styles.services} aria-label="Services offered">
+          {provider.services.slice(0, 4).map((service) => (
+            <li key={service.id}>{service.name}</li>
+          ))}
+        </ul>
+      )}
+      <Link href={`/providers/${provider.providerId}`} className={styles.profileLink}>
+        View provider profile <span aria-hidden="true">→</span>
+      </Link>
     </article>
   );
 }
