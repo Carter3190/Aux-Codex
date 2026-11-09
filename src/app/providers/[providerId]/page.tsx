@@ -137,83 +137,104 @@ export default async function ProviderProfilePage({
       </section>
 
       <div className={styles.contentGrid}>
-        <div className={styles.profileSections}>
-          <section className={styles.panel}>
-            <h2 className={styles.sectionTitle}>About</h2>
-            <p className={styles.bio}>{provider.bio}</p>
-          </section>
+        <div className={styles.overviewGrid}>
+          <div className={styles.profileSections}>
+            <section className={styles.panel}>
+              <h2 className={styles.sectionTitle}>About</h2>
+              <p className={styles.bio}>{provider.bio}</p>
+            </section>
 
-          <section className={styles.panel}>
-            <div className={styles.sectionHeading}>
-              <div>
-                <p className={styles.eyebrow}>
-                  Customer reviews
-                </p>
-                <h2 className={styles.sectionTitle}>
-                  Verified Auxilium bookings
-                </h2>
+            <section className={styles.panel}>
+              <div className={styles.sectionHeading}>
+                <div>
+                  <p className={styles.eyebrow}>
+                    Customer reviews
+                  </p>
+                  <h2 className={styles.sectionTitle}>
+                    Verified Auxilium bookings
+                  </h2>
+                </div>
+                {provider.reviewCount > 0 && provider.averageRating !== null && (
+                  <p className={styles.ratingSummary}>
+                    <span className={styles.stars} aria-hidden="true">★</span>{" "}
+                    {provider.averageRating.toFixed(1)} · {provider.reviewCount}
+                  </p>
+                )}
               </div>
-              {provider.reviewCount > 0 && provider.averageRating !== null && (
-                <p className={styles.ratingSummary}>
-                  <span className={styles.stars} aria-hidden="true">★</span>{" "}
-                  {provider.averageRating.toFixed(1)} · {provider.reviewCount}
+              {provider.reviews.length > 0 ? (
+                <div className={styles.reviewList}>
+                  {provider.reviews.map((review) => (
+                    <article key={review.id} className={styles.review}>
+                      <div className={styles.reviewTop}>
+                        <div>
+                          <p className={styles.stars} aria-label={`${review.rating} out of 5 stars`}>
+                            {"★".repeat(review.rating)}
+                            <span className={styles.emptyStars}>{"★".repeat(5 - review.rating)}</span>
+                          </p>
+                          <p className={styles.reviewerName}>
+                            {review.reviewerName}
+                          </p>
+                        </div>
+                        <span className={styles.reviewDate}>
+                          {formatReviewDate(review.createdAt)}
+                        </span>
+                      </div>
+                      <p className={styles.reviewBody}>
+                        {review.body}
+                      </p>
+                      <p className={styles.verifiedBooking}>
+                        ✓ Verified booking · {review.serviceName}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.emptyCopy}>
+                  This provider has not received a verified customer review yet.
                 </p>
               )}
-            </div>
-            {provider.reviews.length > 0 ? (
-              <div className={styles.reviewList}>
-                {provider.reviews.map((review) => (
-                  <article key={review.id} className={styles.review}>
-                    <div className={styles.reviewTop}>
-                      <div>
-                        <p className={styles.stars} aria-label={`${review.rating} out of 5 stars`}>
-                          {"★".repeat(review.rating)}
-                          <span className={styles.emptyStars}>{"★".repeat(5 - review.rating)}</span>
-                        </p>
-                        <p className={styles.reviewerName}>
-                          {review.reviewerName}
-                        </p>
-                      </div>
-                      <span className={styles.reviewDate}>
-                        {formatReviewDate(review.createdAt)}
+            </section>
+          </div>
+
+          <div className={styles.profileSections}>
+            <section className={styles.panel}>
+              <h2 className={styles.sectionTitle}>Services</h2>
+              <div className={styles.serviceList}>
+                {provider.services.map((service) => (
+                  <article key={service.id} className={styles.service}>
+                    <div className={styles.serviceHeading}>
+                      <h3>{service.name}</h3>
+                      <span className={styles.servicePrice}>
+                        {formatPrice(service.pricingType, service.priceCents)}
                       </span>
                     </div>
-                    <p className={styles.reviewBody}>
-                      {review.body}
-                    </p>
-                    <p className={styles.verifiedBooking}>
-                      ✓ Verified booking · {review.serviceName}
-                    </p>
+                    {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
+                    <ServiceApproval check={serviceChecks.get(service.id)} />
                   </article>
                 ))}
               </div>
-            ) : (
-              <p className={styles.emptyCopy}>
-                This provider has not received a verified customer review yet.
-              </p>
+            </section>
+
+            {provider.photos.length > 1 && (
+              <section className={styles.gallerySection}>
+                <h2 className={styles.sectionTitle}>Work & profile photos</h2>
+                <div className={styles.photoGrid}>
+                  {provider.photos.slice(1).map((photo) => (
+                    <figure key={photo.id} className={styles.workPhoto}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className={styles.workImage} />
+                      {photo.caption && <figcaption className={styles.photoCaption}>{photo.caption}</figcaption>}
+                    </figure>
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
+          </div>
+        </div>
 
-          <section className={styles.panel}>
-            <h2 className={styles.sectionTitle}>Services</h2>
-            <div className={styles.serviceList}>
-              {provider.services.map((service) => (
-                <article key={service.id} className={styles.service}>
-                  <div className={styles.serviceHeading}>
-                    <h3>{service.name}</h3>
-                    <span className={styles.servicePrice}>
-                      {formatPrice(service.pricingType, service.priceCents)}
-                    </span>
-                  </div>
-                  {service.description && <p className={styles.serviceDescription}>{service.description}</p>}
-                  <ServiceApproval check={serviceChecks.get(service.id)} />
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.panel}>
-            <h2 className={styles.sectionTitle}>Typical availability</h2>
+        <div className={styles.bookingRow}>
+          <section className={styles.panel} aria-labelledby="provider-availability-title">
+            <h2 id="provider-availability-title" className={styles.sectionTitle}>Availability</h2>
             <ul className={styles.availabilityList}>
               {provider.availability.map((day) => (
                 <li key={day.weekday}>
@@ -223,62 +244,46 @@ export default async function ProviderProfilePage({
               ))}
             </ul>
           </section>
-
-          {provider.photos.length > 1 && (
-            <section className={styles.gallerySection}>
-              <h2 className={styles.sectionTitle}>Work & profile photos</h2>
-              <div className={styles.photoGrid}>
-                {provider.photos.slice(1).map((photo) => (
-                  <figure key={photo.id} className={styles.workPhoto}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.publicUrl} alt={photo.caption || provider.displayName} className={styles.workImage} />
-                    {photo.caption && <figcaption className={styles.photoCaption}>{photo.caption}</figcaption>}
-                  </figure>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-
-        <aside className={styles.bookingPanel}>
-          <p className={styles.eyebrow}>{provider.bookingEligible ? "Request a booking" : "Booking availability"}</p>
-          <h2 className={styles.bookingTitle}>
-            {provider.bookingEligible ? `Tell ${provider.displayName} what you need.` : "New requests are unavailable"}
-          </h2>
-          {provider.bookingEligible && (
-            <p className={styles.bookingIntro}>
-              The provider reviews your request before confirming the booking. Any required insurance or license must be valid on the date you request.
-            </p>
-          )}
-
-          <div className={styles.bookingForm}>
-            {!provider.bookingEligible ? (
-              <div className={styles.bookingUnavailable}>
-                Check back for booking availability after Auxilium reviews the service.
-              </div>
-            ) : profile?.role === "customer" ? (
-              <BookingRequestForm
-                providerId={provider.providerId}
-                providerName={provider.displayName}
-                services={provider.bookableServices}
-                minimumDate={tomorrowDate()}
-              />
-            ) : profile ? (
-              <div className={styles.accountNotice}>
-                Booking requests must be sent from a customer account. Your current account is a {profile.role} account.
-              </div>
-            ) : (
-              <div className={styles.signInActions}>
-                <Link href="/login" className={styles.primaryButton}>
-                  Sign in to request
-                </Link>
-                <Link href="/signup?role=customer" className={styles.secondaryButton}>
-                  Create customer account
-                </Link>
-              </div>
+          <aside className={styles.bookingPanel}>
+            <p className={styles.eyebrow}>{provider.bookingEligible ? "Request a booking" : "Booking availability"}</p>
+            <h2 className={styles.bookingTitle}>
+              {provider.bookingEligible ? `Tell ${provider.displayName} what you need.` : "New requests are unavailable"}
+            </h2>
+            {provider.bookingEligible && (
+              <p className={styles.bookingIntro}>
+                The provider reviews your request before confirming the booking. Any required insurance or license must be valid on the date you request.
+              </p>
             )}
-          </div>
-        </aside>
+
+            <div className={styles.bookingForm}>
+              {!provider.bookingEligible ? (
+                <div className={styles.bookingUnavailable}>
+                  Check back for booking availability after Auxilium reviews the service.
+                </div>
+              ) : profile?.role === "customer" ? (
+                <BookingRequestForm
+                  providerId={provider.providerId}
+                  providerName={provider.displayName}
+                  services={provider.bookableServices}
+                  minimumDate={tomorrowDate()}
+                />
+              ) : profile ? (
+                <div className={styles.accountNotice}>
+                  Booking requests must be sent from a customer account. Your current account is a {profile.role} account.
+                </div>
+              ) : (
+                <div className={styles.signInActions}>
+                  <Link href="/login" className={styles.primaryButton}>
+                    Sign in to request
+                  </Link>
+                  <Link href="/signup?role=customer" className={styles.secondaryButton}>
+                    Create customer account
+                  </Link>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );
