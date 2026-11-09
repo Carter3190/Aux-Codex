@@ -16,7 +16,7 @@
 }
 
 .heroBand { border-bottom: 1px solid var(--border); background: var(--surface); }
-.heroInner, .contentGrid { width: min(100%, 1240px); margin-inline: auto; padding-inline: 36px; }
+.heroInner, .contentGrid { width: min(100%, 1120px); margin-inline: auto; padding-inline: 36px; }
 .heroInner { padding-block: 25px 34px; }
 .backLink { display: inline-flex; align-items: center; min-height: 32px; color: var(--brand); font-size: 13px; font-weight: 500; text-decoration: none; }
 .backLink:hover { text-decoration: underline; text-underline-offset: 4px; }
@@ -34,9 +34,10 @@
 .stars { margin: 0; color: var(--brand); font-size: 15px; letter-spacing: 1px; }
 .emptyStars { color: #d6e0eb; }
 .providerMeta { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
-.contentGrid { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 26px; align-items: start; padding-block: 32px 44px; }
+.contentGrid { display: grid; gap: 22px; align-items: start; padding-block: 28px 36px; }
+.overviewGrid, .bookingRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; min-width: 0; }
 .profileSections { display: grid; min-width: 0; gap: 22px; }
-.panel, .bookingPanel { min-width: 0; padding: 25px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.panel, .bookingPanel { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
 .sectionTitle { margin: 0; color: var(--foreground); font-size: 17px; font-weight: 500; line-height: 1.45; letter-spacing: -.35px; overflow-wrap: anywhere; }
 .bio { margin: 14px 0 0; color: var(--muted); font-size: 15px; line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
 .sectionHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
@@ -60,7 +61,7 @@
 .serviceHeading h3 { margin: 0; color: var(--foreground); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
 .servicePrice { color: var(--brand); font-size: 13px; font-weight: 500; }
 .serviceDescription { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
-.availabilityList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 13px 24px; margin: 18px 0 0; padding: 0; list-style: none; }
+.availabilityList { display: grid; gap: 13px; margin: 18px 0 0; padding: 0; list-style: none; }
 .availabilityList li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 12px; font-size: 12px; }
 .availabilityTime { color: var(--muted); }
 .serviceApproval {
@@ -91,13 +92,13 @@
 .workPhoto { margin: 0; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
 .workImage { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
 .photoCaption { padding: 13px 16px; color: var(--muted); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
-.bookingPanel { position: sticky; top: 22px; align-self: start; box-shadow: 0 6px 24px rgb(30 60 100 / 3%); }
-.bookingTitle { margin: 10px 0 0; font-size: 23px; font-weight: 500; line-height: 1.35; letter-spacing: -.6px; overflow-wrap: anywhere; }
+.bookingPanel { align-self: start; box-shadow: 0 6px 24px rgb(30 60 100 / 3%); }
+.bookingTitle { margin: 10px 0 0; font-size: 21px; font-weight: 500; line-height: 1.35; letter-spacing: -.6px; overflow-wrap: anywhere; }
 .bookingIntro { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
-.bookingForm { margin-top: 22px; }
+.bookingForm { margin-top: 18px; }
 .bookingForm input, .bookingForm select, .bookingForm textarea { min-width: 0; border-radius: 10px; }
 .bookingForm button { border-radius: 10px; font-size: 14px; }
-.bookingUnavailable { padding: 18px; border: 1px solid #eeddbb; border-radius: 12px; background: #fff6e5; color: #795223; font-size: 13px; line-height: 1.8; }
+.bookingUnavailable { padding: 14px; border: 1px solid #eeddbb; border-radius: 12px; background: #fff6e5; color: #795223; font-size: 13px; line-height: 1.8; }
 .accountNotice { padding: 18px; border-radius: 12px; background: #edf2f8; color: var(--muted); font-size: 13px; line-height: 1.8; }
 .signInActions { display: grid; gap: 11px; }
 .primaryButton, .secondaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 11px 16px; border: 1px solid var(--brand); border-radius: 10px; background: var(--brand); color: white; text-align: center; font-size: 13px; font-weight: 500; text-decoration: none; transition: background 150ms ease; }
@@ -106,8 +107,6 @@
 .secondaryButton:hover { background: #eaf0f8; }
 
 @media (max-width: 1000px) {
-  .contentGrid { grid-template-columns: minmax(0, 1fr); }
-  .bookingPanel { position: static; }
   .heroGrid { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 720px) {
@@ -118,8 +117,10 @@
   .providerName { font-size: 32px; }
   .headline { font-size: 17px; }
   .contentGrid { padding-block: 25px 34px; gap: 22px; }
-  .panel, .bookingPanel { padding: 22px; }
   .bookingForm input, .bookingForm select, .bookingForm textarea { font-size: 16px; }
+}
+@media (max-width: 639px) {
+  .overviewGrid, .bookingRow { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 420px) {
   .heroInner, .contentGrid { padding-inline: 16px; }

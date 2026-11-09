@@ -53,7 +53,7 @@ export function BookingRequestForm({
         <FieldError message={state.fieldErrors?.serviceId?.[0]} />
       </label>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-5">
         <label className="text-sm font-semibold text-foreground">
           Requested date
           <input
