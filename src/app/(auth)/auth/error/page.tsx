@@ -1,34 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EmailIcon } from "@/components/auth/email-icon";
+import { ResendConfirmationForm } from "@/components/auth/resend-confirmation-form";
+import styles from "@/components/auth/auth.module.css";
 
-export const metadata: Metadata = {
-  title: "Confirmation problem",
-};
+export const metadata: Metadata = { title: "Email confirmation" };
 
 export default function AuthErrorPage() {
   return (
-    <section className="mt-10 rounded-3xl border border-border bg-white p-8 text-center shadow-[0_24px_70px_rgba(27,62,48,0.1)]">
-      <h1 className="text-3xl font-semibold tracking-tight text-brand-dark">
-        That confirmation link did not work
-      </h1>
-      <p className="mt-4 leading-7 text-muted">
-        The link may have expired or already been used. Try signing in, or create
-        your account again to receive a new email.
-      </p>
-      <div className="mt-7 flex justify-center gap-3">
-        <Link
-          href="/login"
-          className="rounded-full bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark"
-        >
-          Sign in
-        </Link>
-        <Link
-          href="/signup"
-          className="rounded-full border border-brand/25 px-6 py-3 font-semibold text-brand hover:bg-[#f2f2f2]"
-        >
-          Sign up
-        </Link>
-      </div>
+    <section className={styles.card}>
+      <EmailIcon issue />
+      <p className={styles.kicker}>Email confirmation</p>
+      <h1 className={styles.title}>We couldn’t confirm your email</h1>
+      <p className={styles.description}>The link may have expired, already been used, or be incomplete. Enter the email address you used to create your account to request a new link.</p>
+      <ResendConfirmationForm />
+      <div className={styles.notice}>Check your spam folder and use the newest confirmation email.</div>
+      <p className={styles.footnote}>Already confirmed your email? <Link href="/login" className={styles.textLink}>Sign in</Link></p>
+      <p className={styles.footnote}>Need a hand? <Link href="/support" className={styles.textLink}>Contact support</Link></p>
     </section>
   );
 }

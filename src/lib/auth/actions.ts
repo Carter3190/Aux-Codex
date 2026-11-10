@@ -6,7 +6,7 @@ import { z } from "zod";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { getRequiredLegalAgreements } from "@/lib/legal/agreements";
-import type { AuthFormState } from "./types";
+import type { AuthFormState, ConfirmationFormState } from "./types";
 
 const passwordSchema = z
   .string()
@@ -34,6 +34,10 @@ const signUpSchema = z.object({
 const loginSchema = z.object({
   email: z.email("Enter a valid email address.").trim().toLowerCase(),
   password: z.string().min(1, "Enter your password."),
+});
+
+const confirmationSchema = z.object({
+  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.").max(254)),
 });
 
 function configurationError(): AuthFormState | null {
@@ -159,4 +163,32 @@ export async function signOut() {
 
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+export async function resendConfirmation(
+  _previousState: ConfirmationFormState,
+  formData: FormData,
+): Promise<ConfirmationFormState> {
+  const parsed = confirmationSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { message: "Email confirmation is temporarily unavailable. Please try again later." };
+  }
+
+  try {
+    const supabase = await createClient();
+    // Use the same configured confirmation template and callback as signup.
+    // Supabase enforces its existing delivery and authentication rate limits.
+    await supabase.auth.resend({ type: "signup", email: parsed.data.email });
+  } catch {
+    // Keep account existence and account-specific delivery results private.
+  }
+
+  return {
+    message: "Check your inbox and spam folder for the newest confirmation email. If your account is already confirmed, you can sign in. Wait a minute before requesting another link.",
+    retryAfterSeconds: 60,
+  };
 }

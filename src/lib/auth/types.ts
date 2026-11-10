@@ -12,3 +12,11 @@ export type AuthFormState = {
 };
 
 export const initialAuthState: AuthFormState = {};
+
+export type ConfirmationFormState = {
+  message?: string;
+  fieldErrors?: Pick<AuthFieldErrors, "email">;
+  retryAfterSeconds?: number;
+};
+
+export const initialConfirmationState: ConfirmationFormState = {};

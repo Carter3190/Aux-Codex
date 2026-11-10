@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
+import styles from "@/components/auth/auth.module.css";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -8,22 +9,20 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <section className="mt-10 rounded-[1.25rem] border border-border bg-white p-7 shadow-[0_18px_55px_rgba(0,0,0,0.07)] sm:p-10">
-      <p className="text-sm font-medium uppercase tracking-[0.16em] text-foreground">
+    <section className={styles.card}>
+      <p className={styles.kicker}>
         Welcome back
       </p>
-      <h1 className="mt-4 text-4xl font-normal tracking-[-0.04em] text-foreground">
+      <h1 className={styles.title}>
         Sign in to Auxilium
       </h1>
-      <p className="mt-3 leading-7 text-muted">
+      <p className={styles.description}>
         Access your bookings, profile, and conversations.
       </p>
-      <div className="mt-8">
-        <LoginForm />
-      </div>
-      <p className="mt-7 text-center text-sm text-muted">
+      <LoginForm />
+      <p className={styles.footnote}>
         New to Auxilium?{" "}
-        <Link href="/signup" className="font-semibold text-foreground underline underline-offset-4">
+        <Link href="/signup" className={styles.textLink}>
           Create an account
         </Link>
       </p>

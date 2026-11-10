@@ -1,183 +1,69 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUp } from "@/lib/auth/actions";
 import { initialAuthState } from "@/lib/auth/types";
-import { LEGAL_AGREEMENTS } from "@/lib/legal/agreements";
+import styles from "./auth.module.css";
 
-type SignupFormProps = {
-  defaultRole: "customer" | "provider";
-};
+type SignupFormProps = { defaultRole: "customer" | "provider" };
 
 export function SignupForm({ defaultRole }: SignupFormProps) {
   const [state, action, pending] = useActionState(signUp, initialAuthState);
+  const [role, setRole] = useState(defaultRole);
+  const [agreed, setAgreed] = useState(false);
+
+  function chooseRole(nextRole: "customer" | "provider") {
+    if (nextRole === role) return;
+    setRole(nextRole);
+    setAgreed(false);
+  }
 
   return (
-    <form action={action} className="space-y-5">
-      <fieldset>
-        <legend className="text-sm font-semibold text-foreground">
-          I want to
-        </legend>
-        <div className="mt-2 grid grid-cols-2 gap-3">
-          <label className="cursor-pointer">
-            <input
-              className="peer sr-only"
-              type="radio"
-              name="role"
-              value="customer"
-              defaultChecked={defaultRole === "customer"}
-            />
-            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-foreground peer-checked:bg-[#f1f1f1] peer-checked:text-foreground peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
-              Find help
-            </span>
+    <form action={action} className={styles.form}>
+      <p className={styles.formDescription} aria-live="polite">Create a {role} account to get started.</p>
+      <fieldset className={styles.roleFieldset}>
+        <legend>I want to</legend>
+        <div className={styles.roles}>
+          <label className={styles.roleChoice}>
+            <input type="radio" name="role" value="customer" checked={role === "customer"} onChange={() => chooseRole("customer")} />
+            <span>Find help</span>
           </label>
-          <label className="cursor-pointer">
-            <input
-              className="peer sr-only"
-              type="radio"
-              name="role"
-              value="provider"
-              defaultChecked={defaultRole === "provider"}
-            />
-            <span className="block rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-muted transition peer-checked:border-foreground peer-checked:bg-[#f1f1f1] peer-checked:text-foreground peer-focus-visible:ring-4 peer-focus-visible:ring-brand/15">
-              Offer services
-            </span>
+          <label className={styles.roleChoice}>
+            <input type="radio" name="role" value="provider" checked={role === "provider"} onChange={() => chooseRole("provider")} />
+            <span>Offer services</span>
           </label>
         </div>
-        {state.fieldErrors?.role && (
-          <p className="mt-2 text-sm text-red-700">{state.fieldErrors.role[0]}</p>
-        )}
+        {state.fieldErrors?.role && <p className={styles.error}>{state.fieldErrors.role[0]}</p>}
       </fieldset>
-
+      <label className={styles.field} htmlFor="signup-name">
+        Full name
+        <input id="signup-name" name="fullName" type="text" autoComplete="name" required maxLength={100} placeholder="Your full name" />
+        {state.fieldErrors?.fullName && <span className={styles.error}>{state.fieldErrors.fullName[0]}</span>}
+      </label>
+      <label className={styles.field} htmlFor="signup-email">
+        Email address
+        <input id="signup-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+        {state.fieldErrors?.email && <span className={styles.error}>{state.fieldErrors.email[0]}</span>}
+      </label>
+      <label className={styles.field} htmlFor="signup-password">
+        Password
+        <input id="signup-password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required placeholder="Create a password" aria-describedby="signup-password-help" />
+        <span id="signup-password-help" className={styles.help}>Use 8 or more characters with at least one letter and one number.</span>
+        {state.fieldErrors?.password && <span className={styles.error}>{state.fieldErrors.password.join(" ")}</span>}
+      </label>
       <div>
-        <label
-          htmlFor="fullName"
-          className="text-sm font-semibold text-foreground"
-        >
-          Full name
-        </label>
-        <input
-          id="fullName"
-          name="fullName"
-          type="text"
-          autoComplete="name"
-          required
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
-          placeholder="Your full name"
-        />
-        {state.fieldErrors?.fullName && (
-          <p className="mt-2 text-sm text-red-700">
-            {state.fieldErrors.fullName[0]}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="email" className="text-sm font-semibold text-foreground">
-          Email address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
-          placeholder="you@example.com"
-        />
-        {state.fieldErrors?.email && (
-          <p className="mt-2 text-sm text-red-700">{state.fieldErrors.email[0]}</p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="password"
-          className="text-sm font-semibold text-foreground"
-        >
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-        />
-        <p className="mt-2 text-xs leading-5 text-muted">
-          Use 8 or more characters with at least one letter and one number.
-        </p>
-        {state.fieldErrors?.password && (
-          <ul className="mt-2 space-y-1 text-sm text-red-700">
-            {state.fieldErrors.password.map((error) => (
-              <li key={error}>{error}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div>
-        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-[#fafafa] p-4">
-          <input
-            type="checkbox"
-            name="terms"
-            value="accepted"
-            required
-            className="mt-1 h-4 w-4 shrink-0 accent-black"
-          />
-          <span className="text-sm leading-6 text-muted">
-            I agree to the{" "}
-            <Link href="/terms" className="font-semibold text-brand underline">
-              Terms of Service
-            </Link>{" "}
-            (version {LEGAL_AGREEMENTS.terms.version}) and acknowledge the{" "}
-            <Link href="/privacy" className="font-semibold text-brand underline">
-              Privacy Policy
-            </Link>{" "}
-            (version {LEGAL_AGREEMENTS.privacy.version}). If I offer services,
-            I also agree to the{" "}
-            <Link
-              href="/provider-agreement"
-              className="font-semibold text-brand underline"
-            >
-              Provider Agreement
-            </Link>{" "}
-            (version {LEGAL_AGREEMENTS.providerAgreement.version}) and{" "}
-            <Link
-              href="/provider-standards"
-              className="font-semibold text-brand underline"
-            >
-              Provider Standards
-            </Link>{" "}
-            (version {LEGAL_AGREEMENTS.providerStandards.version}).
+        <label className={styles.consent}>
+          <input type="checkbox" name="terms" value="accepted" required checked={agreed} onChange={(event) => setAgreed(event.target.checked)} />
+          <span>
+            I agree to the current <Link href="/terms" className={styles.textLink}>Terms of Service</Link> and acknowledge the <Link href="/privacy" className={styles.textLink}>Privacy Policy</Link>.
+            {role === "provider" && <> I also agree to the <Link href="/provider-agreement" className={styles.textLink}>Provider Agreement</Link> and <Link href="/provider-standards" className={styles.textLink}>Provider Standards</Link>.</>}
           </span>
         </label>
-        {state.fieldErrors?.terms && (
-          <p className="mt-2 text-sm text-red-700">
-            {state.fieldErrors.terms[0]}
-          </p>
-        )}
+        {state.fieldErrors?.terms && <p className={styles.error}>{state.fieldErrors.terms[0]}</p>}
       </div>
-
-      {state.message && (
-        <p
-          role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {state.message}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-full bg-brand px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? "Creating account…" : "Create account"}
-      </button>
+      {state.message && <p role="alert" className={styles.alert}>{state.message}</p>}
+      <button type="submit" disabled={pending} className={styles.primary}>{pending ? "Creating account…" : "Create account"}</button>
     </form>
   );
 }
