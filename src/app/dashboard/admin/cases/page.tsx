@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import styles from "@/components/admin/admin-pages.module.css";
 import { AdminCaseDecisionForms } from "@/components/cases/admin-case-decision-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getAdminResolutionWorkspace } from "@/lib/cases/data";
@@ -33,8 +35,17 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export default async function AdminCasesPage() {
+export default async function AdminCasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ case?: string; view?: string }>;
+}) {
+  const query = await searchParams;
+  const selectedCaseId = query.case;
+  const view = !selectedCaseId && (query.view === "history" || query.view === "disputes") ? query.view : "open";
   const { admin, cases, disputes } = await getAdminResolutionWorkspace();
+  const selectedCase = selectedCaseId ? cases.find((item) => item.id === selectedCaseId) : undefined;
+  const filteredCases = cases.filter((item) => view === "history" ? !activeStatuses.has(item.status) : activeStatuses.has(item.status));
   const activeCases = cases.filter((item) => activeStatuses.has(item.status));
   const activeDisputes = disputes.filter((item) =>
     activeDisputeStatuses.has(item.status),
@@ -44,8 +55,11 @@ export default async function AdminCasesPage() {
     <DashboardShell
       profile={admin}
       eyebrow="Admin dashboard"
-      title="Resolution center"
+      title={selectedCaseId ? "Service issue review" : "Resolution center"}
+      description="Review the booking, both parties’ statements, and the payment record together."
     >
+      {selectedCaseId && <Link className={styles.back} href="/dashboard/admin/cases">← Resolution center</Link>}
+      {!selectedCaseId && <>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-5">
           <p className="text-sm text-muted">Open requests</p>
@@ -67,7 +81,12 @@ export default async function AdminCasesPage() {
         </div>
       </div>
 
-      <section className="mt-8">
+      <nav className={styles.filters} aria-label="Resolution views">
+        {[["open", "Open cases"], ["history", "Case history"], ["disputes", "Card disputes"]].map(([key, label]) => <Link className={styles.filter} key={key} href={key === "open" ? "/dashboard/admin/cases" : `/dashboard/admin/cases?view=${key}`} aria-current={view === key ? "page" : undefined}>{label}</Link>)}
+      </nav>
+      </>}
+
+      {view !== "disputes" && <section className="mt-6">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
             Customer requests
@@ -77,18 +96,18 @@ export default async function AdminCasesPage() {
           </h2>
         </div>
 
-        {cases.length === 0 ? (
+        {(selectedCaseId && !selectedCase) || (!selectedCaseId && filteredCases.length === 0) ? (
           <div className="mt-6 rounded-3xl border border-dashed border-border bg-white p-8 text-center">
             <h3 className="text-xl font-semibold text-brand-dark">
-              No resolution requests yet
+              {selectedCaseId ? "Case unavailable" : view === "history" ? "No closed cases yet" : "No open cases"}
             </h3>
             <p className="mt-2 text-muted">
-              Paid-booking issues submitted by customers will appear here.
+              {selectedCaseId ? "Return to the resolution center to open an available case." : "Paid-booking issues submitted by customers will appear here."}
             </p>
           </div>
-        ) : (
+        ) : selectedCase ? (
           <div className="mt-6 space-y-6">
-            {cases.map((item) => {
+            {[selectedCase].map((item) => {
               const remainingRefundCents =
                 item.payment.amountCents - item.payment.refundedAmountCents;
               const isActive = activeStatuses.has(item.status);
@@ -144,7 +163,8 @@ export default async function AdminCasesPage() {
                       </div>
                     </dl>
 
-                    <div>
+                    <div className="grid gap-5 lg:grid-cols-2">
+                    <div className="rounded-2xl border border-border p-5">
                       <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
                         Customer statement
                       </p>
@@ -160,6 +180,8 @@ export default async function AdminCasesPage() {
                       <p className="mt-2 whitespace-pre-wrap leading-7 text-foreground">
                         {item.providerResponse || "The provider has not responded yet."}
                       </p>
+                    </div>
+
                     </div>
 
                     {item.adminNotes && !isActive && (
@@ -185,10 +207,22 @@ export default async function AdminCasesPage() {
               );
             })}
           </div>
+        ) : (
+          <section className={`${styles.panel} mt-6`} aria-label={view === "history" ? "Case history" : "Open cases"}>
+            {filteredCases.map((item) => <article className={styles.row} key={item.id}>
+              <div className={styles.rowCopy}>
+                <h3>{labelFromSnakeCase(item.category)} · {item.serviceName}</h3>
+                <p>{item.customerName} → {item.providerName}</p>
+                <span className={styles.badge}>{labelFromSnakeCase(item.status)}</span>
+                <p>Opened {formatDate(item.createdAt)} · Requested {formatMoney(item.requestedRefundCents)}</p>
+              </div>
+              <Link className={styles.button} href={`/dashboard/admin/cases?case=${encodeURIComponent(item.id)}`}>{activeStatuses.has(item.status) ? "Review case" : "View case"}</Link>
+            </article>)}
+          </section>
         )}
-      </section>
+      </section>}
 
-      <section className="mt-10">
+      {view === "disputes" && !selectedCaseId && <section className="mt-6">
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
           Stripe alerts
         </p>
@@ -257,7 +291,7 @@ export default async function AdminCasesPage() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
     </DashboardShell>
   );
 }

@@ -1,4 +1,13 @@
 import { SiteHeader } from "@/components/site-header";
+import { Children, cloneElement, isValidElement, type ReactNode } from "react";
+import { PolicyContents, PolicyReviewReturnLink } from "./policy-navigation";
+import styles from "./legal-pages.module.css";
+
+type PolicySectionProps = { title: string; children: ReactNode; anchorId?: string };
+
+function sectionId(title: string) {
+  return `policy-section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
 
 export function PolicyPage({
   eyebrow,
@@ -13,24 +22,39 @@ export function PolicyPage({
   updated: string;
   children: React.ReactNode;
 }) {
-  return (
-    <main className="bg-background">
-      <SiteHeader />
+  const sections = Children.toArray(children).filter(
+    (child) => isValidElement<PolicySectionProps>(child) && child.type === PolicySection,
+  );
+  const contents = sections.map((child) => {
+    const section = child as React.ReactElement<PolicySectionProps>;
+    return { id: section.props.anchorId ?? sectionId(section.props.title), title: section.props.title };
+  });
+  const documentSections = Children.map(children, (child) =>
+    isValidElement<PolicySectionProps>(child) && child.type === PolicySection
+      ? cloneElement(child, { anchorId: child.props.anchorId ?? sectionId(child.props.title) })
+      : child,
+  );
 
-      <article className="mx-auto max-w-4xl px-6 py-14 lg:px-10 lg:py-20">
-        <p className="text-sm font-medium uppercase tracking-[0.17em] text-foreground">
+  return (
+    <main className={styles.surface}>
+      <SiteHeader />
+      <article className={styles.container}>
+        <PolicyReviewReturnLink />
+        <header className={styles.heading}>
+        <p className={styles.eyebrow}>
           {eyebrow}
         </p>
-        <h1 className="mt-4 text-5xl font-normal leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">
+        <h1 className={styles.title}>
           {title}
         </h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-muted">{summary}</p>
-        <p className="mt-5 text-sm font-semibold text-muted">
+        <p className={styles.description}>{summary}</p>
+        <p className={styles.updated}>
           Last updated {updated}
         </p>
-
-        <div className="policy-content mt-12 space-y-10 rounded-[1.25rem] border border-border bg-white p-7 sm:p-10">
-          {children}
+        </header>
+        <div className={styles.layout}>
+          <PolicyContents sections={contents} />
+          <div className={`policy-content ${styles.document}`}>{documentSections}</div>
         </div>
       </article>
     </main>
@@ -40,16 +64,14 @@ export function PolicyPage({
 export function PolicySection({
   title,
   children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+  anchorId,
+}: PolicySectionProps) {
   return (
-    <section>
-      <h2 className="text-2xl font-semibold tracking-tight text-brand-dark">
+    <section id={anchorId ?? sectionId(title)} className={styles.section}>
+      <h2>
         {title}
       </h2>
-      <div className="mt-4 space-y-4 leading-7 text-muted">{children}</div>
+      <div className={styles.sectionBody}>{children}</div>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import { ProviderCredentialReviewForm } from "@/components/admin/provider-creden
 import { ProviderReviewForm } from "@/components/admin/provider-review-form";
 import { ProviderServiceCredentialReviewForm } from "@/components/admin/provider-service-credential-review-form";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import styles from "@/components/admin/admin-pages.module.css";
 import { getAdminProviderApplications } from "@/lib/providers/data";
 import {
   formatPrice,
@@ -23,8 +24,21 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ provider?: string; filter?: string }>;
+}) {
+  const query = await searchParams;
+  const selectedId = query.provider;
+  const filter = query.filter === "pending" || query.filter === "updates" ? query.filter : "all";
   const { admin, applications, serviceReviewAvailable } = await getAdminProviderApplications();
+  const selectedApplication = selectedId ? applications.find((application) => application.profile.id === selectedId) : undefined;
+  const filteredApplications = applications.filter((application) => {
+    if (filter === "pending") return application.profile.providerStatus === "pending" && Boolean(application.details.submittedAt);
+    if (filter === "updates") return application.profile.providerStatus === "rejected";
+    return true;
+  });
   const submittedCount = applications.filter(
     (application) => application.details.submittedAt,
   ).length;
@@ -33,8 +47,11 @@ export default async function AdminDashboardPage() {
     <DashboardShell
       profile={admin}
       eyebrow="Admin dashboard"
-      title="Provider review queue"
+      title={selectedApplication ? selectedApplication.details.businessName || selectedApplication.profile.fullName : "Provider review queue"}
+      description={selectedId ? "Review the profile, service requirements, and private evidence before making a decision." : "Review each application and its service requirements before making a decision."}
     >
+      {selectedId && <Link href="/dashboard/admin" className={styles.back}>← Review queue</Link>}
+      {!selectedId && <>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-5">
           <p className="text-sm text-muted">Provider accounts</p>
@@ -63,11 +80,13 @@ export default async function AdminDashboardPage() {
 
       <Link
         href="/dashboard/admin/cases"
-        className="mt-5 flex items-center justify-between rounded-2xl border border-brand/25 bg-[#f2f2f2] px-5 py-4 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#e4f1e9]"
+        className="mt-5 flex items-center justify-between rounded-2xl border border-brand/25 bg-[#eaf0f8] px-5 py-4 font-semibold text-brand-dark transition hover:border-brand hover:bg-[#e1eaf5]"
       >
         <span>Open resolution center</span>
         <span aria-hidden="true">→</span>
       </Link>
+
+      </>}
 
       {!serviceReviewAvailable && (
         <p role="status" className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
@@ -75,18 +94,18 @@ export default async function AdminDashboardPage() {
         </p>
       )}
 
-      {applications.length === 0 ? (
+      {applications.length === 0 || (selectedId && !selectedApplication) ? (
         <section className="mt-7 rounded-3xl border border-border bg-white p-8">
           <h2 className="text-2xl font-semibold text-brand-dark">
-            No provider accounts yet
+            {selectedId ? "Application unavailable" : "No provider accounts yet"}
           </h2>
           <p className="mt-3 leading-7 text-muted">
-            New provider registrations will appear here automatically.
+            {selectedId ? "Return to the review queue to open an available application." : "New provider registrations will appear here automatically."}
           </p>
         </section>
-      ) : (
-        <div className="mt-7 space-y-7">
-          {applications.map((application) => {
+      ) : selectedApplication ? (
+        <div className={styles.detail}>
+          {[selectedApplication].map((application) => {
             const availableDays = application.availability.filter(
               (day) => day.isAvailable,
             );
@@ -426,6 +445,28 @@ export default async function AdminDashboardPage() {
             );
           })}
         </div>
+      ) : (
+        <>
+          <nav className={styles.filters} aria-label="Filter applications">
+            {[["all", "All applications"], ["pending", "Pending review"], ["updates", "Updates requested"]].map(([key, label]) => (
+              <Link key={key} href={key === "all" ? "/dashboard/admin" : `/dashboard/admin?filter=${key}`} className={styles.filter} aria-current={filter === key ? "page" : undefined}>{label}</Link>
+            ))}
+          </nav>
+          <section className={styles.panel} aria-labelledby="admin-applications-heading">
+            <h2 id="admin-applications-heading">Applications</h2>
+            {filteredApplications.length === 0 ? <p className={styles.empty}>No applications match this view.</p> : filteredApplications.map((application) => (
+              <article className={styles.row} key={application.profile.id}>
+                <div className={styles.rowCopy}>
+                  <h3>{application.details.businessName || application.profile.fullName}</h3>
+                  <p>{application.details.headline || "Provider application"}{application.details.serviceArea ? ` · ${application.details.serviceArea}` : ""}</p>
+                  <span className={styles.badge}>{labelFromSnakeCase(application.profile.providerStatus)}</span>
+                  <p>{application.details.submittedAt ? `Submitted ${formatDate(application.details.submittedAt)}` : "Application not yet submitted"} · {application.completion.percentage}% complete</p>
+                </div>
+                <Link className={styles.button} href={`/dashboard/admin?provider=${encodeURIComponent(application.profile.id)}`}>{application.details.submittedAt ? "Review application" : "View application"}</Link>
+              </article>
+            ))}
+          </section>
+        </>
       )}
     </DashboardShell>
   );

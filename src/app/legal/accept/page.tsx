@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/profile";
 import { acceptCurrentLegalAgreements } from "@/lib/legal/actions";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
+import { SiteHeader } from "@/components/site-header";
+import styles from "@/components/legal/legal-pages.module.css";
 
 export const metadata: Metadata = {
   title: "Review updated agreements",
@@ -58,56 +60,53 @@ export default async function LegalAcceptancePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] px-6 py-14 sm:py-20">
-      <section className="mx-auto max-w-3xl rounded-3xl border border-border bg-white p-7 shadow-[0_24px_70px_rgba(0,0,0,0.08)] sm:p-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-foreground">
+    <main className={styles.surface}>
+      <SiteHeader />
+      <div className={`${styles.container} ${styles.acceptContainer}`}>
+        <header className={styles.heading}>
+        <p className={styles.eyebrow}>
           Account update
         </p>
-        <h1 className="mt-4 text-4xl font-normal tracking-[-0.04em] text-foreground sm:text-5xl">
+        <h1 className={styles.title}>
           Review the current agreements
         </h1>
-        <p className="mt-4 max-w-2xl leading-7 text-muted">
+        <p className={styles.description}>
           Before continuing, open each current document for your {profile.role}{" "}
           account, read to the end, and complete its separate confirmation.
-          Your completed reviews and final acceptance are saved with the
-          document versions and server timestamps.
         </p>
-
+        </header>
+      <section className={styles.acceptPanel} aria-label="Required agreements">
         {!status.migrationReady ? (
-          <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
+          <div className={styles.warning}>
             The current agreements are temporarily unavailable for review.
           </div>
         ) : (
-          <form action={acceptCurrentLegalAgreements} className="mt-8">
+          <form action={acceptCurrentLegalAgreements}>
             <input type="hidden" name="next" value={nextPath} />
-            <div className="overflow-hidden rounded-2xl border border-border">
-              {status.documents.map((agreement, index) => (
+            <div>
+              {status.documents.map((agreement) => (
                 <div
                   key={`${agreement.key}:${agreement.version}`}
-                  className={`flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between ${
-                    index > 0 ? "border-t border-border" : ""
-                  }`}
+                  className={styles.agreementRow}
                 >
                   <div>
-                    <p className="font-semibold text-foreground">
+                    <h2 className={styles.agreementTitle}>
                       {agreement.title}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">
+                    </h2>
+                    <p className={styles.version}>
                       Version {agreement.version}
                     </p>
                     <p
-                      className={`mt-2 text-sm font-semibold ${
-                        agreement.reviewed ? "text-emerald-700" : "text-amber-700"
-                      }`}
+                      className={`${styles.badge} ${agreement.reviewed ? "" : styles.pendingBadge}`}
                     >
                       {agreement.reviewed
-                        ? "Document review completed"
-                        : "Document review required"}
+                        ? "Review completed"
+                        : "Review required"}
                     </p>
                   </div>
                   <Link
                     href={`${agreement.href}?review=1&version=${encodeURIComponent(agreement.version)}&hash=${encodeURIComponent(agreement.contentSha256)}&next=${encodeURIComponent(nextPath)}`}
-                    className="w-fit rounded-full border border-foreground px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-foreground hover:text-white"
+                    className={styles.secondary}
                   >
                     {agreement.reviewed ? "Review again" : "Review document"}
                   </Link>
@@ -115,7 +114,7 @@ export default async function LegalAcceptancePage({
               ))}
             </div>
 
-            <div className="mt-6 rounded-2xl border border-border bg-[#fafafa] p-5 text-sm leading-6 text-muted">
+            <div className={styles.notice}>
               {allDocumentsReviewed
                 ? "All required document reviews are complete. You can now save your final acceptance and continue."
                 : `Read each document and check its box to confirm you agree to the ${documentTitles}. Select “Accept and continue” to proceed.`}
@@ -124,7 +123,7 @@ export default async function LegalAcceptancePage({
             {errorCode && (
               <p
                 role="alert"
-                className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                className={styles.error}
               >
                 {errorCode === "reviews"
                   ? "Complete the separate review for every document before continuing."
@@ -132,22 +131,24 @@ export default async function LegalAcceptancePage({
               </p>
             )}
 
+            <div className={styles.acceptActions}>
             <button
               type="submit"
               disabled={!allDocumentsReviewed}
-              className="mt-6 w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
+              className={styles.primary}
             >
               Accept and continue
             </button>
+            <span className={styles.progress}>{status.documents.filter((document) => document.reviewed).length} of {status.documents.length} documents reviewed</span>
+            </div>
           </form>
         )}
 
         {!status.migrationReady && (
-          <p className="mt-6 text-sm leading-6 text-muted">
+          <p className={styles.notice}>
             Check back to review the current agreements. If this message persists, contact the{" "}
             <Link
               href="/support"
-              className="font-semibold text-foreground underline underline-offset-4"
             >
               Support Center
             </Link>
@@ -155,6 +156,7 @@ export default async function LegalAcceptancePage({
           </p>
         )}
       </section>
+      </div>
     </main>
   );
 }

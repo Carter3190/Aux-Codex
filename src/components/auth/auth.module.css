@@ -1,0 +1,56 @@
+.surface {
+  --background: #f2f5f8;
+  --foreground: #203346;
+  --muted: #526477;
+  --brand: #345f94;
+  --brand-dark: #254468;
+  --border: #dce4ed;
+  min-height: calc(100vh - 84px);
+  background: var(--background);
+  color: var(--foreground);
+}
+.content { width: min(100%, 544px); margin: 0 auto; padding: 38px 32px 48px; }
+.card { min-width: 0; padding: 28px; border: 1px solid var(--border); border-radius: 18px; background: #fff; }
+.kicker { margin: 0 0 10px; color: var(--brand); font-size: 11px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; }
+.title { margin: 0; font-size: clamp(28px, 3.5vw, 36px); font-weight: 500; letter-spacing: -1.1px; line-height: 1.18; }
+.description { margin: 16px 0 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.form { display: grid; gap: 22px; margin-top: 24px; min-width: 0; }
+.formDescription { margin: -8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.field { display: grid; min-width: 0; gap: 7px; color: var(--foreground); font-size: 13px; font-weight: 600; }
+.field input { width: 100%; min-width: 0; min-height: 45px; padding: 11px 13px; border: 1px solid #bdccdf; border-radius: 10px; background: #fff; color: var(--foreground); font-size: 14px; font-weight: 400; }
+.field input::placeholder { color: #738194; }
+.field input:focus-visible { outline-color: var(--brand); }
+.help { margin: 0; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.7; }
+.error { margin: 0; color: #a32323; font-size: 13px; font-weight: 400; line-height: 1.6; }
+.alert { margin: 0; padding: 12px 14px; border: 1px solid #f1cdcd; border-radius: 10px; background: #fff5f5; color: #8e2424; font-size: 13px; line-height: 1.7; }
+.notice { margin: 22px 0 0; padding: 15px 16px; border-radius: 11px; background: #eaf0f8; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.status { margin: 0; padding: 14px 16px; border-radius: 11px; background: #eaf0f8; color: #254468; font-size: 13px; line-height: 1.7; }
+.primary, .secondary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--brand); border-radius: 10px; background: var(--brand); color: #fff; font-size: 13px; font-weight: 600; text-align: center; text-decoration: none; cursor: pointer; }
+.primary:hover:not(:disabled) { background: var(--brand-dark); }
+.secondary { border-color: var(--border); background: #fff; color: var(--brand); }
+.secondary:hover { background: #eaf0f8; }
+.primary:disabled { cursor: not-allowed; opacity: .5; }
+.textLink { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+.footnote { margin: 23px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.actions { display: grid; gap: 12px; margin-top: 22px; }
+.roleFieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.roleFieldset legend { margin-bottom: 10px; font-size: 13px; }
+.roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.roleChoice { position: relative; min-width: 0; cursor: pointer; }
+.roleChoice input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.roleChoice span { display: block; padding: 12px 8px; border: 1px solid var(--border); border-radius: 10px; color: var(--brand); text-align: center; font-size: 13px; font-weight: 600; }
+.roleChoice input:checked + span { border-color: var(--brand); background: #eaf0f8; color: var(--brand-dark); }
+.roleChoice input:focus-visible + span { outline: 2px solid var(--brand); outline-offset: 3px; }
+.consent { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.consent input { width: 16px; height: 16px; margin-top: 4px; flex-shrink: 0; accent-color: var(--brand); }
+.icon { display: flex; width: 40px; height: 40px; align-items: center; justify-content: center; margin-bottom: 24px; border-radius: 11px; background: #eaf0f8; color: var(--brand); }
+@media (max-width: 600px) {
+  .content { padding: 26px 18px 34px; }
+  .card { padding: 22px; }
+  .field input { font-size: 16px; }
+}
+@media (max-width: 380px) {
+  .content { padding-inline: 14px; }
+  .card { padding: 18px; }
+  .roles { gap: 10px; }
+}
