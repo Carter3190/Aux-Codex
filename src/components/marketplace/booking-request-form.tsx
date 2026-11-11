@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField, SelectField, TimeField } from "@/components/ui/fields";
 import Link from "next/link";
 import { useActionState } from "react";
 import { CURRENT_TERMS_VERSION } from "@/lib/legal/agreements";
@@ -40,7 +41,7 @@ export function BookingRequestForm({
       <input type="hidden" name="providerId" value={providerId} />
       <label className="block text-sm font-semibold text-foreground">
         Service
-        <select name="serviceId" required className={inputClass} defaultValue="">
+        <SelectField name="serviceId" required className={inputClass} defaultValue="">
           <option value="" disabled>
             Choose a service
           </option>
@@ -49,16 +50,15 @@ export function BookingRequestForm({
               {service.name} — {formatPrice(service.pricingType, service.priceCents)}
             </option>
           ))}
-        </select>
+        </SelectField>
         <FieldError message={state.fieldErrors?.serviceId?.[0]} />
       </label>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-5">
         <label className="text-sm font-semibold text-foreground">
           Requested date
-          <input
+          <DateField
             name="requestedDate"
-            type="date"
             min={minimumDate}
             required
             className={inputClass}
@@ -67,9 +67,8 @@ export function BookingRequestForm({
         </label>
         <label className="text-sm font-semibold text-foreground">
           Preferred start time
-          <input
+          <TimeField
             name="requestedTime"
-            type="time"
             required
             className={inputClass}
           />

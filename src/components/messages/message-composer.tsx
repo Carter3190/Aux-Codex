@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { sendBookingMessage } from "@/lib/marketplace/actions";
 import { initialMarketplaceActionState } from "@/lib/marketplace/types";
+import styles from "./messages.module.css";
 
 export function MessageComposer({ bookingId }: { bookingId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -18,10 +19,10 @@ export function MessageComposer({ bookingId }: { bookingId: string }) {
   }, [state]);
 
   return (
-    <form ref={formRef} action={action} className="border-t border-border bg-white p-4 sm:p-5">
+    <form ref={formRef} action={action} className={styles.composer}>
       <input type="hidden" name="bookingId" value={bookingId} />
-      <label className="sr-only" htmlFor="message-body">
-        Message
+      <label htmlFor="message-body">
+        Your message
       </label>
       <textarea
         id="message-body"
@@ -38,30 +39,25 @@ export function MessageComposer({ bookingId }: { bookingId: string }) {
             event.currentTarget.form?.requestSubmit();
           }
         }}
-        className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10"
         placeholder="Write a message…"
       />
       {state.fieldErrors?.body?.[0] && (
-        <p className="mt-2 text-sm text-red-700">{state.fieldErrors.body[0]}</p>
+        <p className={styles.fieldError}>{state.fieldErrors.body[0]}</p>
       )}
       {state.message && (
         <p
           role={state.status === "error" ? "alert" : "status"}
-          className={`mt-3 rounded-xl border px-4 py-3 text-sm ${
-            state.status === "error"
-              ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
-          }`}
+          className={`${styles.feedback} ${state.status === "error" ? styles.feedbackError : ""}`}
         >
           {state.message}
         </p>
       )}
-      <div className="mt-3 flex items-center justify-between gap-4">
-        <p className="hidden text-xs text-muted sm:block">Press ⌘ + Enter to send</p>
+      <div className={styles.composeActions}>
+        <p>Press ⌘ + Enter to send</p>
         <button
           type="submit"
           disabled={pending}
-          className="ml-auto rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+          className={styles.primaryButton}
         >
           {pending ? "Sending…" : "Send message"}
         </button>

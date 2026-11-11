@@ -1,5 +1,6 @@
 "use client";
 
+import navigation from "@/components/navigation-actions.module.css";
 import Link from "next/link";
 import { createContext, useContext, useState } from "react";
 import styles from "./legal-pages.module.css";
@@ -8,7 +9,7 @@ export const LegalReviewContext = createContext({ reviewMode: false, acceptanceP
 
 export function PolicyReviewReturnLink() {
   const { reviewMode, acceptancePath } = useContext(LegalReviewContext);
-  return reviewMode ? <Link className={styles.backLink} href={acceptancePath}>← Agreement review</Link> : null;
+  return reviewMode ? <Link className={navigation.backAction} href={acceptancePath}>← Agreement review</Link> : null;
 }
 
 export function PolicyContents({ sections }: { sections: { id: string; title: string }[] }) {

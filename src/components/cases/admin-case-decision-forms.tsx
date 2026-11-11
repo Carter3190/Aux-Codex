@@ -1,5 +1,6 @@
 "use client";
 
+import { NumberField } from "@/components/ui/fields";
 import { useActionState } from "react";
 import { denyBookingCase, refundBookingCase } from "@/lib/cases/actions";
 import { initialCaseActionState } from "@/lib/cases/types";
@@ -43,9 +44,8 @@ export function AdminCaseDecisionForms({
         </div>
         <label className="block text-sm font-semibold text-foreground">
           Refund amount (USD)
-          <input
+          <NumberField
             name="amount"
-            type="number"
             min="1"
             max={dollars(remainingRefundCents)}
             step="0.01"

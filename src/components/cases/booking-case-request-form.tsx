@@ -1,5 +1,6 @@
 "use client";
 
+import { NumberField, SelectField } from "@/components/ui/fields";
 import { useActionState } from "react";
 import { openBookingCase } from "@/lib/cases/actions";
 import { initialCaseActionState } from "@/lib/cases/types";
@@ -37,7 +38,7 @@ export function BookingCaseRequestForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-semibold text-foreground">
           Request type
-          <select
+          <SelectField
             name="category"
             defaultValue="service_issue"
             className="mt-2 block w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
@@ -46,13 +47,12 @@ export function BookingCaseRequestForm({
             <option value="service_issue">Service issue</option>
             <option value="duplicate_charge">Possible duplicate charge</option>
             <option value="other">Other payment issue</option>
-          </select>
+          </SelectField>
         </label>
         <label className="block text-sm font-semibold text-foreground">
           Requested refund
-          <input
+          <NumberField
             name="amount"
-            type="number"
             min="1"
             max={dollars(remainingRefundCents)}
             step="0.01"

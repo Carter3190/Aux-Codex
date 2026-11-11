@@ -1,3 +1,4 @@
+import navigation from "@/components/navigation-actions.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "@/components/admin/admin-pages.module.css";
@@ -58,7 +59,7 @@ export default async function AdminCasesPage({
       title={selectedCaseId ? "Service issue review" : "Resolution center"}
       description="Review the booking, both parties’ statements, and the payment record together."
     >
-      {selectedCaseId && <Link className={styles.back} href="/dashboard/admin/cases">← Resolution center</Link>}
+      {selectedCaseId && <Link className={navigation.backAction} href="/dashboard/admin/cases">← Resolution center</Link>}
       {!selectedCaseId && <>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-5">

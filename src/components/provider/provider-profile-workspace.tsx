@@ -7,6 +7,7 @@ import { ProviderServiceForm } from "@/components/provider/provider-service-form
 import { ProviderSubmitCard } from "@/components/provider/provider-submit-card";
 import { ProviderUploadManager } from "@/components/provider/provider-upload-manager";
 import styles from "@/components/provider/provider-profile-workspace.module.css";
+import formStyles from "@/components/provider/provider-forms.module.css";
 import type { ProviderWorkspace } from "@/lib/providers/types";
 
 const sections = [
@@ -24,6 +25,15 @@ export function ProviderProfileWorkspace({ workspace, section }: {
   const { profile, details, services, photos, credentials, availability, completion } = workspace;
   const selected = sections.find(([key]) => key === section);
   const reviewing = section === "review";
+  const sectionTitle = selected?.[0] === "introduction" ? "Your introduction" : selected?.[0] === "services" ? "Your services" : selected?.[0] === "photos" ? "Profile photos" : selected?.[0] === "credentials" ? "Your credentials" : selected?.[0] === "availability" ? "Your availability" : reviewing ? "Review your application" : "Your provider profile";
+  const sectionDescription = selected?.[0] === "services" ? "Manage your services and pricing." : selected?.[0] === "photos" ? "Add a clear profile photo or examples of your completed work." : selected?.[0] === "credentials" ? "Documents and expiration dates stay private between you and Auxilium." : selected?.[0] === "availability" ? "Choose the days and times you normally accept service requests." : reviewing ? "Check your information before sending it to Auxilium." : undefined;
+  const reviewRows = [
+    ["introduction", "Introduction", details.businessName || profile.fullName],
+    ["services", "Services", `${services.length} ${services.length === 1 ? "service" : "services"} added`],
+    ["photos", "Photos", `${photos.length} ${photos.length === 1 ? "photo" : "photos"} added`],
+    ["credentials", "Credentials", `${credentials.length} ${credentials.length === 1 ? "document" : "documents"} submitted`],
+    ["availability", "Availability", `${availability.filter((day) => day.isAvailable).length} days available`],
+  ];
   const progress = `${completion.completedCount} of ${completion.totalCount} sections complete`;
   const status = profile.providerStatus === "approved" ? "Application approved"
     : profile.providerStatus === "rejected" ? "Application needs changes"
@@ -36,7 +46,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
     : "Your draft saves section by section. Complete the required information, then submit it for review.";
 
   return (
-    <DashboardShell profile={profile} title={selected?.[1] ?? (reviewing ? "Review your application." : "Your provider profile.")}>
+    <DashboardShell profile={profile} title={sectionTitle} description={sectionDescription}>
       <nav className={styles.navigation} aria-label="Profile sections">
         <Link href="/dashboard/provider/onboarding" aria-current={!selected && !reviewing ? "page" : undefined}>Profile overview</Link>
         {sections.map(([key, title]) => <Link key={key} href={`/dashboard/provider/onboarding?section=${key}`} aria-current={selected?.[0] === key ? "page" : undefined}>{title}</Link>)}
@@ -58,11 +68,15 @@ export function ProviderProfileWorkspace({ workspace, section }: {
       ) : reviewing ? (
         <div className={styles.review}>
           {workspace.reviewEvents[0]?.decision === "rejected" && workspace.reviewEvents[0].notes && <section className={styles.status}><div><h2>Latest review feedback</h2><p>{workspace.reviewEvents[0].notes}</p></div></section>}
-          <ProviderSubmitCard completion={completion} submittedAt={details.submittedAt} providerStatus={profile.providerStatus} />
+          <div className={formStyles.columns}>
+            <section className={formStyles.panel} aria-label="Application sections">
+              {reviewRows.map(([key, title, summary]) => <div key={key} className={formStyles.reviewRow}><div><h2>{title}</h2><p>{summary}</p></div><Link href={`/dashboard/provider/onboarding?section=${key}`}>Edit {title.toLowerCase()}</Link></div>)}
+            </section>
+            <ProviderSubmitCard completion={completion} submittedAt={details.submittedAt} providerStatus={profile.providerStatus} />
+          </div>
         </div>
       ) : selected ? (
-        <section className={styles.panel}>
-          <p className={styles.description}>{selected[2]}</p>
+        <section className={styles.sectionContent} aria-label={sectionTitle}>
           {selected[0] === "introduction" && <ProviderProfileForm details={details} />}
           {selected[0] === "services" && <ProviderServiceForm services={services} />}
           {(selected[0] === "photos" || selected[0] === "credentials") && <ProviderUploadManager section={selected[0]} providerId={profile.id} photos={photos} credentials={credentials.map((credential) => ({ id: credential.id, credentialType: credential.credentialType, title: credential.title, issuer: credential.issuer, expiresOn: credential.expiresOn, reviewStatus: credential.reviewStatus, reviewNotes: credential.reviewNotes }))} />}

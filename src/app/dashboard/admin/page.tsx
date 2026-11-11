@@ -1,3 +1,4 @@
+import navigation from "@/components/navigation-actions.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProviderCredentialReviewForm } from "@/components/admin/provider-credential-review-form";
@@ -50,7 +51,7 @@ export default async function AdminDashboardPage({
       title={selectedApplication ? selectedApplication.details.businessName || selectedApplication.profile.fullName : "Provider review queue"}
       description={selectedId ? "Review the profile, service requirements, and private evidence before making a decision." : "Review each application and its service requirements before making a decision."}
     >
-      {selectedId && <Link href="/dashboard/admin" className={styles.back}>← Review queue</Link>}
+      {selectedId && <Link href="/dashboard/admin" className={navigation.backAction}>← Review queue</Link>}
       {!selectedId && <>
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-white p-5">

@@ -1,0 +1,29 @@
+.backAction {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  border: 1px solid #cedbed;
+  border-radius: 10px;
+  background: #eaf0f8;
+  color: #345f94;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.backAction:hover {
+  border-color: #9fb7d5;
+  background: #dfe9f6;
+  color: #254468;
+  text-decoration: none;
+}
+.backAction:focus-visible { outline: 3px solid #345f94; outline-offset: 3px; }
+.backAction svg { width: 16px; height: 16px; flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .backAction { transition: none; } }

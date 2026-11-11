@@ -10,6 +10,7 @@ import {
   type ProviderStatus,
 } from "@/lib/providers/types";
 import { FormFeedback } from "./form-feedback";
+import styles from "./provider-forms.module.css";
 
 export function ProviderSubmitCard({
   completion,
@@ -26,14 +27,14 @@ export function ProviderSubmitCard({
   );
 
   return (
-    <form action={action} className="rounded-3xl border border-brand/20 bg-[#f2f2f2] p-6 sm:p-8">
-      <p className="text-sm font-bold uppercase tracking-[0.16em] text-brand">
+    <form action={action} className={styles.submit}>
+      <p className={styles.kicker}>
         Final step
       </p>
-      <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
+      <h2>
         {providerStatus === "approved" ? "Application approved" : providerStatus === "suspended" ? "Account assistance needed" : providerStatus === "rejected" ? "Your application needs changes" : submittedAt ? "Application submitted" : "Submit for Auxilium review"}
       </h2>
-      <p className="mt-3 max-w-2xl leading-7 text-muted">
+      <p className={styles.description}>
         {providerStatus === "approved"
           ? "Your application was approved. Profile and credential changes may require another review."
           : providerStatus === "suspended"
@@ -46,19 +47,18 @@ export function ProviderSubmitCard({
             ? "Every required section is complete. Submit your information for an administrator to review."
             : `Complete all ${completion.totalCount} required sections first. You have finished ${completion.completedCount} of ${completion.totalCount}.`}
       </p>
-      <div className="mt-5">
+      <div className={styles.stack}>
         <FormFeedback state={state} />
       </div>
       {!submittedAt && providerStatus !== "approved" && providerStatus !== "suspended" && (
-        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-white p-4">
+        <label className={styles.check}>
           <input
             type="checkbox"
             name="providerLegalConfirmation"
             value="accepted"
             required
-            className="mt-1 h-4 w-4 shrink-0 accent-black"
           />
-          <span className="text-sm leading-6 text-muted">
+          <span>
             I have reviewed and agree to the current{" "}
             <Link
               href="/provider-agreement"
@@ -86,12 +86,12 @@ export function ProviderSubmitCard({
       <button
         type="submit"
         disabled={pending || !completion.isComplete || Boolean(submittedAt) || providerStatus === "approved" || providerStatus === "suspended"}
-        className="mt-5 rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
+        className={styles.primary}
       >
         {pending ? "Submitting…" : providerStatus === "approved" ? "Approved" : providerStatus === "suspended" ? "Submission unavailable" : providerStatus === "rejected" ? "Resubmit application" : submittedAt ? "Under review" : "Submit application"}
       </button>
-      {providerStatus === "suspended" && <Link href="/support" className="ml-4 inline-flex text-sm font-semibold text-brand underline underline-offset-4">Contact support</Link>}
-      {providerStatus === "rejected" && <Link href="/dashboard/provider/onboarding" className="ml-4 inline-flex text-sm font-semibold text-brand underline underline-offset-4">Update profile</Link>}
+      {providerStatus === "suspended" && <Link href="/support" className={styles.secondary}>Contact support</Link>}
+      {providerStatus === "rejected" && <Link href="/dashboard/provider/onboarding" className={styles.secondary}>Update profile</Link>}
     </form>
   );
 }

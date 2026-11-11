@@ -1,3 +1,4 @@
+import navigation from "@/components/navigation-actions.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -89,7 +90,7 @@ export default async function ProviderProfilePage({
 
       <section className={styles.heroBand}>
         <div className={styles.heroInner}>
-          <Link href="/providers" className={styles.backLink}>
+          <Link href="/providers" className={navigation.backAction}>
             ← Back to providers
           </Link>
           <div className={styles.heroGrid}>

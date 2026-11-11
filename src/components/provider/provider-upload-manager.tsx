@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { DateField, SelectField } from "@/components/ui/fields";
+import styles from "./provider-forms.module.css";
 import { useState, type FormEvent } from "react";
 import {
   registerProviderCredential,
@@ -27,8 +30,7 @@ type CredentialSummary = Pick<
   | "reviewNotes"
 >;
 
-const inputClass =
-  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10";
+
 
 const extensions: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -39,18 +41,7 @@ const extensions: Record<string, string> = {
 
 function UploadMessage({ state }: { state: ProviderActionState }) {
   if (!state.message) return null;
-  return (
-    <p
-      role={state.status === "error" ? "alert" : "status"}
-      className={`mt-3 rounded-xl border px-4 py-3 text-sm ${
-        state.status === "error"
-          ? "border-red-200 bg-red-50 text-red-800"
-          : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
-      }`}
-    >
-      {state.message}
-    </p>
-  );
+  return <p role={state.status === "error" ? "alert" : "status"} className={`${styles.feedback} ${state.status === "error" ? styles.feedbackError : ""}`}>{state.message}</p>;
 }
 
 export function ProviderUploadManager({
@@ -176,197 +167,97 @@ export function ProviderUploadManager({
   }
 
   return (
-    <div className={section ? "space-y-8" : "grid gap-8 xl:grid-cols-2"}>
-      {section !== "credentials" && <div>
-        {!section && <h3 className="text-lg font-semibold text-brand-dark">Profile photos</h3>}
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Add a clear headshot or examples of completed work. JPG, PNG, or WebP;
-          5 MB maximum.
-        </p>
-        {photos.length > 0 && (
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {photos.map((photo) => (
-              <div key={photo.id} className="overflow-hidden rounded-2xl border border-border bg-white">
-                <div
-                  className="aspect-[4/3] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${photo.publicUrl})` }}
-                  role="img"
-                  aria-label={photo.caption || "Provider photo"}
-                />
-                <div className="flex items-center justify-between gap-2 p-3">
-                  <p className="truncate text-xs text-muted">
-                    {photo.caption || "Provider photo"}
-                  </p>
-                  <form action={removeProviderUpload}>
-                    <input type="hidden" name="uploadId" value={photo.id} />
-                    <input type="hidden" name="kind" value="photo" />
-                    <button type="submit" className="text-xs font-semibold text-red-700">
-                      Remove
-                    </button>
-                  </form>
-                </div>
+    <div className={styles.stack}>
+      {section !== "credentials" && <div className={styles.columns}>
+        <section className={styles.panel} aria-label="Your photo gallery">
+          <h2>Your photos</h2>
+          {photos.length > 0 ? <div className={styles.gallery}>
+            {photos.map((photo) => <article key={photo.id} className={styles.photo}>
+              <div className={styles.photoImage} style={{ backgroundImage: `url(${photo.publicUrl})` }} role="img" aria-label={photo.caption || "Provider photo"} />
+              <div className={styles.photoDetails}>
+                <p>{photo.caption || "Provider photo"}</p>
+                <form action={removeProviderUpload}>
+                  <input type="hidden" name="uploadId" value={photo.id} /><input type="hidden" name="kind" value="photo" />
+                  <button type="submit" className={styles.remove}>Remove</button>
+                </form>
               </div>
-            ))}
-          </div>
-        )}
-        <form onSubmit={handlePhoto} className="mt-4 space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
-          <label className="block text-sm font-semibold text-foreground">
-            Photo
-            <input
-              name="photo"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              required
-              className={`${inputClass} file:mr-4 file:rounded-full file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`}
-            />
+            </article>)}
+          </div> : <p className={styles.empty}>Your profile photos and examples of completed work will appear here.</p>}
+        </section>
+        <form onSubmit={handlePhoto} className={styles.panel}>
+          <h2>Add a photo</h2>
+          <p className={styles.description}>JPG, PNG, or WebP · up to 5 MB per photo. You can add more than one photo.</p>
+          <label className={styles.field}>Photo
+            <input name="photo" type="file" accept="image/jpeg,image/png,image/webp" required className={`${styles.input} ${styles.file}`} />
           </label>
-          <label className="block text-sm font-semibold text-foreground">
-            Caption
-            <input
-              name="caption"
-              maxLength={160}
-              className={inputClass}
-              placeholder="Custom built-in shelving"
-            />
+          <label className={styles.field}>Caption
+            <input name="caption" maxLength={160} className={styles.input} placeholder="Describe the photo" />
           </label>
           <UploadMessage state={photoState} />
-          <button
-            type="submit"
-            disabled={uploading !== null}
-            className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {uploading === "photo" ? "Uploading…" : "Add photo"}
-          </button>
+          <div className={styles.actions}>
+            <button type="submit" disabled={uploading !== null} className={styles.primary}>{uploading === "photo" ? "Uploading…" : "Add photo"}</button>
+            <Link href="/dashboard/provider/onboarding?section=credentials" className={styles.secondary}>Continue to credentials</Link>
+          </div>
         </form>
       </div>}
-
-      {section !== "photos" && <div>
-        {!section && <h3 className="text-lg font-semibold text-brand-dark">Credentials</h3>}
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Credential files are private and visible only to you and Auxilium admins.{" "}
-          Add the licenses, insurance, or other documents that apply to your services.
-          Auxilium reviews what each service requires in your service area and checks
-          any required documents before that service can take bookings. Submit renewals
-          before required documents expire.
-        </p>
-        {credentials.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {credentials.map((credential) => (
-              <div key={credential.id} className="rounded-2xl border border-border bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-brand-dark">{credential.title}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {labelFromSnakeCase(credential.credentialType)}
-                      {credential.issuer ? ` · ${credential.issuer}` : ""}
-                      {credential.expiresOn ? ` · Expires ${credential.expiresOn}` : ""}
-                    </p>
-                    <span className="mt-2 inline-flex rounded-full bg-[#f4f0e7] px-2.5 py-1 text-xs font-semibold capitalize text-[#76531c]">
-                      {credential.reviewStatus}
-                    </span>
-                    {credential.reviewNotes && (
-                      <p className="mt-2 text-xs leading-5 text-red-700">
-                        {credential.reviewNotes}
-                      </p>
-                    )}
-                  </div>
-                  <form action={removeProviderUpload}>
-                    <input type="hidden" name="uploadId" value={credential.id} />
-                    <input type="hidden" name="kind" value="credential" />
-                    <button type="submit" className="text-xs font-semibold text-red-700">
-                      Remove
-                    </button>
-                  </form>
-                </div>
+      {section !== "photos" && <>
+        <p className={styles.description}>Auxilium checks the requirements for each service and service area. Keep required documents current and submit renewals before they expire.</p>
+        {credentials.length > 0 && <section className={styles.stack} aria-label="Submitted credentials">
+          {credentials.map((credential) => <article key={credential.id} className={styles.credential}>
+            <div className={styles.credentialTop}>
+              <div>
+                <h3>{credential.title}</h3>
+                <p>{labelFromSnakeCase(credential.credentialType)}{credential.issuer ? ` · ${credential.issuer}` : ""}{credential.expiresOn ? ` · Expires ${credential.expiresOn}` : ""}</p>
+                <span className={styles.badge}>{labelFromSnakeCase(credential.reviewStatus)}</span>
+                {credential.reviewNotes && <p className={styles.reviewNote}>{credential.reviewNotes}</p>}
               </div>
-            ))}
-          </div>
-        )}
-        <form onSubmit={handleCredential} className="mt-4 space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-foreground">
-              Credential type
-              <select
-                name="credentialType"
-                className={inputClass}
-                value={credentialType}
-                onChange={(event) =>
-                  setCredentialType(event.target.value as CredentialType)
-                }
-              >
-                <option value="license">License</option>
-                <option value="insurance">Insurance</option>
-                <option value="certification">Certification</option>
-                <option value="identity">Identity document</option>
-                <option value="background_check">Background check</option>
-                <option value="other">Other</option>
-              </select>
+              <form action={removeProviderUpload}>
+                <input type="hidden" name="uploadId" value={credential.id} /><input type="hidden" name="kind" value="credential" />
+                <button type="submit" className={styles.remove}>Remove</button>
+              </form>
+            </div>
+          </article>)}
+        </section>}
+        <form onSubmit={handleCredential} className={styles.panel}>
+          <h2>Add a credential</h2>
+          <div className={styles.columns}>
+            <label className={styles.field}>Credential type
+              <SelectField name="credentialType" value={credentialType} aria-label="Credential type" onChange={(event) => setCredentialType(event.target.value as CredentialType)}>
+                <option value="license">License</option><option value="insurance">Insurance</option><option value="certification">Certification</option><option value="identity">Identity document</option><option value="background_check">Background check</option><option value="other">Other</option>
+              </SelectField>
             </label>
-            <label className="text-sm font-semibold text-foreground">
-              Title
-              <input name="title" required maxLength={120} className={inputClass} />
+            <label className={styles.field}>Title
+              <input name="title" required maxLength={120} className={styles.input} placeholder="Name of this credential" />
             </label>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-foreground">
-              Issuer or carrier{" "}
-              {credentialType !== "insurance" && (
-                <span className="font-normal text-muted">(optional)</span>
-              )}
-              <input
-                name="issuer"
-                required={credentialType === "insurance"}
-                maxLength={120}
-                className={inputClass}
-              />
-              {credentialState.fieldErrors?.issuer?.[0] && (
-                <span className="mt-2 block font-normal text-red-700">
-                  {credentialState.fieldErrors.issuer[0]}
-                </span>
-              )}
+          <div className={styles.columns}>
+            <label className={styles.field}>Issuer or carrier {credentialType !== "insurance" && <span>(optional)</span>}
+              <input name="issuer" required={credentialType === "insurance"} maxLength={120} className={styles.input} placeholder="Organization that issued the document" />
+              {credentialState.fieldErrors?.issuer?.[0] && <span className={styles.error}>{credentialState.fieldErrors.issuer[0]}</span>}
+              {credentialType === "insurance" && <span className={styles.hint}>Required for insurance.</span>}
             </label>
-            <label className="text-sm font-semibold text-foreground">
-              Credential number <span className="font-normal text-muted">(optional)</span>
-              <input name="credentialNumber" maxLength={120} className={inputClass} />
+            <label className={styles.field}>Credential number <span>(optional)</span>
+              <input name="credentialNumber" maxLength={120} className={styles.input} placeholder="Enter the credential number" />
             </label>
           </div>
-          <label className="block text-sm font-semibold text-foreground">
-            Expiration date{" "}
-            {credentialType !== "insurance" && (
-              <span className="font-normal text-muted">(optional)</span>
-            )}
-            <input
-              name="expiresOn"
-              type="date"
-              required={credentialType === "insurance"}
-              className={inputClass}
-            />
-            {credentialState.fieldErrors?.expiresOn?.[0] && (
-              <span className="mt-2 block font-normal text-red-700">
-                {credentialState.fieldErrors.expiresOn[0]}
-              </span>
-            )}
-          </label>
-          <label className="block text-sm font-semibold text-foreground">
-            Document
-            <input
-              name="document"
-              type="file"
-              accept="application/pdf,image/jpeg,image/png,image/webp"
-              required
-              className={`${inputClass} file:mr-4 file:rounded-full file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`}
-            />
-          </label>
+          <div className={styles.columns}>
+            <label className={styles.field}>Expiration date {credentialType !== "insurance" && <span>(optional)</span>}
+              <DateField name="expiresOn" required={credentialType === "insurance"} aria-label="Credential expiration date" />
+              {credentialState.fieldErrors?.expiresOn?.[0] && <span className={styles.error}>{credentialState.fieldErrors.expiresOn[0]}</span>}
+              {credentialType === "insurance" && <span className={styles.hint}>Required for insurance.</span>}
+            </label>
+            <label className={styles.field}>Document
+              <input name="document" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required className={`${styles.input} ${styles.file}`} />
+              <span className={styles.hint}>PDF, JPG, PNG, or WebP · up to 10 MB.</span>
+            </label>
+          </div>
           <UploadMessage state={credentialState} />
-          <button
-            type="submit"
-            disabled={uploading !== null}
-            className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {uploading === "credential" ? "Uploading…" : "Add credential"}
-          </button>
+          <div className={styles.actions}>
+            <button type="submit" disabled={uploading !== null} className={styles.primary}>{uploading === "credential" ? "Uploading…" : "Add credential"}</button>
+            <Link href="/dashboard/provider/onboarding?section=availability" className={styles.secondary}>Continue to availability</Link>
+          </div>
         </form>
-      </div>}
+      </>}
     </div>
   );
 }

@@ -3,154 +3,76 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import { ConversationLiveUpdates } from "@/components/messages/conversation-live-updates";
 import { MessageComposer } from "@/components/messages/message-composer";
 import { getBookingConversation } from "@/lib/marketplace/data";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
+import styles from "@/components/messages/messages.module.css";
 
-export const metadata: Metadata = {
-  title: "Conversation",
-};
+export const metadata: Metadata = { title: "Conversation" };
 
 function formatMessageTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
-function formatBookingDate(date: string, time: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(`${date}T${time}:00`));
-}
-
-export default async function ConversationPage({
-  params,
-}: {
-  params: Promise<{ bookingId: string }>;
-}) {
+export default async function ConversationPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const { bookingId } = await params;
   const parsedId = z.uuid().safeParse(bookingId);
   if (!parsedId.success) notFound();
-
   const conversation = await getBookingConversation(parsedId.data);
   if (!conversation) notFound();
-  const { profile, booking, messages, counterpartName, canSend } = conversation;
+  const { profile, booking, messages, counterpartName, canSend, perspective } = conversation;
+  const requested = new Date(`${booking.requestedDate}T${booking.requestedStartTime.length === 5 ? `${booking.requestedStartTime}:00` : booking.requestedStartTime}`);
+  const requestedDate = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(requested);
+  const requestedTime = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(requested);
+  const bookingHref = `/dashboard/${perspective}/bookings/${booking.id}`;
 
   return (
-    <DashboardShell
-      profile={profile}
-      eyebrow="Booking conversation"
-      title={counterpartName}
-    >
-      <Link
-        href="/dashboard/messages"
-        className="inline-flex text-sm font-semibold text-brand hover:text-brand-dark"
-      >
-        ← All conversations
-      </Link>
-
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
-        <section className="overflow-hidden rounded-3xl border border-border bg-white">
-          <div className="border-b border-border bg-[#f7f7f7] px-6 py-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.13em] text-brand">
-                  {booking.serviceName}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {formatBookingDate(booking.requestedDate, booking.requestedStartTime)}
-                </p>
-              </div>
-              <span className="rounded-full border border-border bg-white px-3 py-1.5 text-xs font-bold text-brand-dark">
-                {labelFromSnakeCase(booking.status)}
-              </span>
+    <DashboardShell profile={profile} eyebrow="Messages" title={counterpartName} description={booking.serviceName}>
+      <div className={styles.page}>
+        <Link href="/dashboard/messages" className={styles.backButton}><CustomerIcon name="back" />Back to messages</Link>
+        <div className={styles.threadGrid}>
+          <section className={styles.thread} aria-labelledby="conversation-heading">
+            <div className={styles.threadHeading}>
+              <h2 id="conversation-heading">Conversation</h2>
+              <span className={`${styles.badge} ${styles[booking.status] ?? ""}`}>{labelFromSnakeCase(booking.status)}</span>
             </div>
-          </div>
-
-          <div className="max-h-[600px] min-h-[360px] space-y-5 overflow-y-auto bg-[#fafafa] p-5 sm:p-7">
-            {messages.length === 0 ? (
-              <div className="flex min-h-72 items-center justify-center text-center">
-                <div>
-                  <h2 className="text-xl font-semibold text-brand-dark">Start the conversation</h2>
-                  <p className="mx-auto mt-2 max-w-md leading-7 text-muted">
-                    Ask a question or coordinate the next step for this booking.
-                  </p>
+            <div className={styles.messageList} role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions">
+              {messages.length === 0 ? (
+                <div className={styles.threadEmpty}>
+                  <h2>Start the conversation</h2>
+                  <p>Ask a question or coordinate the next step for this booking.</p>
                 </div>
-              </div>
-            ) : (
-              messages.map((message) => {
+              ) : messages.map((message) => {
                 const isOwn = message.senderId === profile.id;
-                const senderName = isOwn
-                  ? "You"
-                  : message.senderId === booking.customerId
-                    ? booking.customerName
-                    : booking.providerName;
+                const senderName = message.senderId === booking.customerId ? booking.customerName : booking.providerName;
                 return (
-                  <article
-                    key={message.id}
-                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[85%] sm:max-w-[70%] ${isOwn ? "text-right" : "text-left"}`}>
-                      <p className="mb-1 text-xs font-semibold text-muted">
-                        {senderName} · {formatMessageTime(message.createdAt)}
-                      </p>
-                      <p
-                        className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-left leading-7 ${
-                          isOwn
-                            ? "rounded-br-md bg-brand text-white"
-                            : "rounded-bl-md border border-border bg-white text-foreground"
-                        }`}
-                      >
-                        {message.body}
-                      </p>
-                    </div>
+                  <article key={message.id} className={`${styles.message} ${isOwn ? styles.own : ""}`} aria-label={isOwn ? "Sent message" : `Message from ${senderName}`}>
+                    {!isOwn && <p className={styles.sender}>{senderName}</p>}
+                    <p className={styles.messageBody}>{message.body}</p>
+                    <time dateTime={message.createdAt} className={styles.messageTime}>{formatMessageTime(message.createdAt)}</time>
                   </article>
                 );
-              })
-            )}
-            <ConversationLiveUpdates messageCount={messages.length} />
-          </div>
-
-          {canSend ? (
-            <MessageComposer bookingId={booking.id} />
-          ) : (
-            <div className="border-t border-border bg-[#f4f4f4] p-5 text-sm leading-6 text-muted">
-              This conversation is read-only because the booking is {booking.status}.
+              })}
+              <ConversationLiveUpdates messageCount={messages.length} />
             </div>
-          )}
-        </section>
-
-        <aside className="h-fit rounded-3xl border border-border bg-white p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Booking details</p>
-          <dl className="mt-5 space-y-5">
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Service</dt>
-              <dd className="mt-1 font-semibold text-foreground">{booking.serviceName}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Requested time</dt>
-              <dd className="mt-1 font-semibold leading-6 text-foreground">
-                {formatBookingDate(booking.requestedDate, booking.requestedStartTime)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Location</dt>
-              <dd className="mt-1 font-semibold leading-6 text-foreground">{booking.serviceLocation}</dd>
-            </div>
-          </dl>
-          <p className="mt-6 rounded-2xl bg-background p-4 text-xs leading-5 text-muted">
-            Keep sensitive payment or identity information out of messages. Auxilium never asks for passwords here.
-          </p>
-        </aside>
+            {canSend ? <MessageComposer bookingId={booking.id} /> : <p className={styles.readOnly}>This conversation is read-only because the booking is {booking.status}.</p>}
+          </section>
+          <aside className={styles.details} aria-labelledby="conversation-booking-details">
+            <h2 id="conversation-booking-details">Booking details</h2>
+            <dl className={styles.facts}>
+              <div className={styles.fullFact}><dt>Service</dt><dd>{booking.serviceName}</dd></div>
+              <div className={styles.fullFact}><dt>Date</dt><dd>{requestedDate}</dd></div>
+              <div><dt>Time</dt><dd>{requestedTime}</dd></div>
+              <div><dt>Status</dt><dd>{labelFromSnakeCase(booking.status)}</dd></div>
+              <div className={styles.fullFact}><dt>Location</dt><dd>{booking.serviceLocation}</dd></div>
+              <div className={styles.fullFact}><dt>Booking reference</dt><dd>{booking.id}</dd></div>
+            </dl>
+            <Link href={bookingHref} className={styles.secondaryButton}>View booking <CustomerIcon name="arrow" /></Link>
+            <p className={styles.privacy}>Keep sensitive payment or identity information out of messages. Auxilium never asks for passwords here.</p>
+          </aside>
+        </div>
       </div>
     </DashboardShell>
   );
