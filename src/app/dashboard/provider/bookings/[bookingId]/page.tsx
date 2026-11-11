@@ -1,3 +1,4 @@
+import navigation from "@/components/navigation-actions.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -22,6 +23,6 @@ export default async function ProviderBookingDetails({ params }: { params: Promi
   const earnings = await getProviderEarnings([booking]);
   const canMessage = ["pending", "accepted", "completed"].includes(booking.status);
   return <DashboardShell profile={profile} title={booking.serviceName} description={booking.customerName} actions={<Link className={styles.secondaryButton} href={`/dashboard/messages/${booking.id}`}><CustomerIcon name="messages" />{canMessage ? "Message customer" : "View conversation"}</Link>}>
-    <div className={styles.page}><Link className={`${styles.textLink} ${styles.backLink}`} href="/dashboard/provider/bookings"><CustomerIcon name="back" />Back to your bookings</Link><div className={styles.detailContent}><BookingCard booking={booking} perspective="provider" providerEarnings={earnings[booking.id]} /></div></div>
+    <div className={styles.page}><Link className={navigation.backAction} href="/dashboard/provider/bookings"><CustomerIcon name="back" />Back to your bookings</Link><div className={styles.detailContent}><BookingCard booking={booking} perspective="provider" providerEarnings={earnings[booking.id]} /></div></div>
   </DashboardShell>;
 }

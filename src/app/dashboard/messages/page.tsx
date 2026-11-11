@@ -1,98 +1,63 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import { getConversationInbox } from "@/lib/marketplace/data";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
+import styles from "@/components/messages/messages.module.css";
 
-export const metadata: Metadata = {
-  title: "Messages",
-};
-
-const statusTone = {
-  pending: "bg-[#fff8e9] text-[#76531c]",
-  accepted: "bg-[#f2f2f2] text-brand-dark",
-  declined: "bg-red-50 text-red-800",
-  cancelled: "bg-[#f4f4f4] text-muted",
-  completed: "bg-[#f1f6fb] text-[#244f78]",
-} as const;
+export const metadata: Metadata = { title: "Messages" };
 
 function formatActivityDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
   }).format(new Date(value));
+}
+
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] ?? "").join("").toUpperCase();
 }
 
 export default async function MessagesPage() {
   const { profile, conversations } = await getConversationInbox();
-
   return (
-    <DashboardShell
-      profile={profile}
-      eyebrow="Messages"
-      title="Your booking conversations"
-    >
-      <p className="-mt-5 mb-8 max-w-2xl leading-7 text-muted">
-        Keep service details and next steps connected to the original booking request.
-      </p>
-
-      {conversations.length > 0 ? (
-        <div className="overflow-hidden rounded-3xl border border-border bg-white">
-          {conversations.map((conversation, index) => (
-            <Link
-              key={conversation.booking.id}
-              href={`/dashboard/messages/${conversation.booking.id}`}
-              className={`grid gap-4 p-6 transition hover:bg-[#f7f7f7] sm:grid-cols-[1fr_auto] sm:items-center ${
-                index > 0 ? "border-t border-border" : ""
-              }`}
-            >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="truncate text-xl font-semibold text-brand-dark">
-                    {conversation.counterpartName}
-                  </h2>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusTone[conversation.booking.status]}`}>
-                    {labelFromSnakeCase(conversation.booking.status)}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm font-semibold text-brand">
-                  {conversation.booking.serviceName}
-                </p>
-                <p className="mt-3 truncate text-muted">
-                  {conversation.lastMessage
-                    ? `${conversation.lastMessage.senderId === profile.id ? "You: " : ""}${conversation.lastMessage.body}`
-                    : "No messages yet. Open the conversation to say hello."}
-                </p>
-              </div>
-              <div className="text-left sm:text-right">
-                <p className="text-xs text-muted">
-                  {formatActivityDate(
-                    conversation.lastMessage?.createdAt ?? conversation.booking.createdAt,
-                  )}
-                </p>
-                <p className="mt-2 text-sm font-semibold text-brand">Open conversation →</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <section className="rounded-3xl border border-dashed border-border bg-white p-9 text-center">
-          <h2 className="text-2xl font-semibold text-brand-dark">No conversations yet</h2>
-          <p className="mx-auto mt-3 max-w-xl leading-7 text-muted">
-            A conversation becomes available when a customer sends a booking request.
-          </p>
-          {profile.role === "customer" && (
-            <Link
-              href="/providers"
-              className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark"
-            >
-              Browse providers
-            </Link>
-          )}
-        </section>
-      )}
+    <DashboardShell profile={profile} eyebrow="Messages" title="Messages">
+      <div className={styles.page}>
+        {conversations.length > 0 ? (
+          <section className={styles.inbox} aria-labelledby="conversation-heading">
+            <div className={styles.inboxHeading}>
+              <h2 id="conversation-heading">Your conversations</h2>
+              <span>{conversations.length} {conversations.length === 1 ? "conversation" : "conversations"}</span>
+            </div>
+            {conversations.map((conversation) => {
+              const activity = conversation.lastMessage?.createdAt ?? conversation.booking.createdAt;
+              return (
+                <Link key={conversation.booking.id} href={`/dashboard/messages/${conversation.booking.id}`} className={styles.inboxRow}>
+                  <span className={styles.initials} aria-hidden="true">{initials(conversation.counterpartName)}</span>
+                  <div className={styles.inboxCopy}>
+                    <div className={styles.inboxTitle}>
+                      <h3>{conversation.counterpartName}</h3>
+                      <span className={`${styles.badge} ${styles[conversation.booking.status] ?? ""}`}>{labelFromSnakeCase(conversation.booking.status)}</span>
+                    </div>
+                    <p className={styles.service}>{conversation.booking.serviceName}</p>
+                    <p className={styles.lastMessage}>{conversation.lastMessage?.body ?? "No messages yet. Open the conversation to say hello."}</p>
+                  </div>
+                  <div className={styles.inboxAction}>
+                    <time dateTime={activity}>{formatActivityDate(activity)}</time>
+                    <span className={styles.openConversation}>Open conversation <CustomerIcon name="arrow" /></span>
+                  </div>
+                </Link>
+              );
+            })}
+          </section>
+        ) : (
+          <section className={styles.empty}>
+            <h2>No conversations yet</h2>
+            <p>A conversation becomes available when a customer sends a booking request.</p>
+            {profile.role === "customer" && <Link href="/providers" className={styles.primaryButton}>Browse providers <CustomerIcon name="arrow" /></Link>}
+          </section>
+        )}
+      </div>
     </DashboardShell>
   );
 }

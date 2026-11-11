@@ -1,5 +1,6 @@
 "use client";
 
+import { NumberField } from "@/components/ui/fields";
 import { useActionState } from "react";
 import { setBookingPrice } from "@/lib/payments/actions";
 import { initialPaymentActionState } from "@/lib/payments/types";
@@ -23,16 +24,13 @@ export function BookingPriceForm({
     <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f4f4f4] p-4">
       <input type="hidden" name="bookingId" value={bookingId} />
       <label className="block text-sm font-semibold text-foreground">
-        Agreed booking price
+        Agreed booking price (USD)
         <span className="mt-1 block text-xs font-normal leading-5 text-muted">
           Save the full total agreed with your customer. You can update it again
           before checkout starts. Auxilium’s 5% commission is calculated automatically.
         </span>
-        <span className="mt-2 flex items-center rounded-xl border border-border bg-white focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
-          <span className="pl-4 text-muted">$</span>
-          <input
+          <NumberField
             name="amount"
-            type="number"
             min="1"
             max="1000000"
             step="0.01"
@@ -42,10 +40,9 @@ export function BookingPriceForm({
                 ? undefined
                 : (defaultAmountCents / 100).toFixed(2)
             }
-            className="w-full rounded-xl bg-transparent px-2 py-3 outline-none"
+            aria-label="Agreed booking price in US dollars"
             placeholder="0.00"
           />
-        </span>
       </label>
       {state.fieldErrors?.amount?.[0] && (
         <p className="text-sm text-red-700">{state.fieldErrors.amount[0]}</p>

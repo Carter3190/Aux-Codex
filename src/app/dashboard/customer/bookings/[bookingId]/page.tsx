@@ -1,3 +1,4 @@
+import navigation from "@/components/navigation-actions.module.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -25,7 +26,7 @@ export default async function CustomerBookingDetails({ params }: {
       description="Your request, provider response, payment, and next steps."
       actions={<Link className={styles.secondaryButton} href={`/dashboard/messages/${booking.id}`}><CustomerIcon name="messages" />{canMessage ? "Message provider" : "View conversation"}</Link>}>
       <div className={styles.page}>
-        <Link className={`${styles.textLink} ${styles.backLink}`} href="/dashboard/customer/bookings"><CustomerIcon name="back" />Back to your bookings</Link>
+        <Link className={navigation.backAction} href="/dashboard/customer/bookings"><CustomerIcon name="back" />Back to your bookings</Link>
         <div className={styles.detailContent}><BookingCard booking={booking} perspective="customer" /></div>
       </div>
     </DashboardShell>

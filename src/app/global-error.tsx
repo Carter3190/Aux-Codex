@@ -1,54 +1,25 @@
 "use client";
 
-const buttonStyle = {
-  border: 0,
-  borderRadius: "999px",
-  background: "#080808",
-  color: "white",
-  cursor: "pointer",
-  fontSize: "16px",
-  fontWeight: 700,
-  padding: "13px 24px",
-};
+import { CustomerIcon } from "@/components/dashboard/customer-icon";
+import styles from "@/components/recovery/recovery-pages.module.css";
 
 export default function GlobalError({ retry }: { retry: () => void }) {
   return (
     <html lang="en">
-      <body
-        style={{
-          alignItems: "center",
-          background: "#f7f7f2",
-          color: "#17241f",
-          display: "flex",
-          fontFamily: "Arial, sans-serif",
-          justifyContent: "center",
-          margin: 0,
-          minHeight: "100vh",
-          padding: "24px",
-        }}
-      >
-        <main style={{ maxWidth: "620px", textAlign: "center" }}>
+      <body className={styles.globalBody}>
+        <main className={styles.page}>
           <title>Something went wrong | Auxilium</title>
-          <p
-            style={{
-              color: "#080808",
-              fontSize: "14px",
-              fontWeight: 700,
-              letterSpacing: "3px",
-              textTransform: "uppercase",
-            }}
-          >
-            Auxilium
-          </p>
-          <h1 style={{ color: "#080808", fontSize: "42px", margin: "20px 0" }}>
-            We hit an unexpected problem.
-          </h1>
-          <p style={{ color: "#64746d", fontSize: "18px", lineHeight: 1.7 }}>
-            Your information is still safe. Please try loading Auxilium again.
-          </p>
-          <button type="button" onClick={() => retry()} style={buttonStyle}>
-            Try again
-          </button>
+          <div className={styles.narrow}>
+            <p className={styles.brand}>Auxilium</p>
+            <section className={styles.panel}>
+              <span className={styles.icon}><CustomerIcon name="help" /></span>
+              <p className={styles.eyebrow}>Let’s try again</p>
+              <h1>We couldn’t open Auxilium</h1>
+              <p className={styles.description}>Please try loading Auxilium again. If the problem continues, contact support.</p>
+              <div className={styles.actions}><button type="button" onClick={() => retry()} className={styles.primary}>Try again</button></div>
+              <p className={styles.support}><a href="/support">Contact support</a></p>
+            </section>
+          </div>
         </main>
       </body>
     </html>

@@ -16,6 +16,8 @@
 .panel { max-width: 980px; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 28px; }
 .panel > h2 { font-size: 20px; font-weight: 600; margin: 0 0 10px; }
 .description { color: var(--muted); font-size: 13px; line-height: 1.8; margin-bottom: 24px; }
-.review { max-width: 980px; }
+.review { min-width:0; }
 .privacy { margin-top: 24px; color: var(--muted); font-size: 12px; line-height: 1.8; }
 @media(max-width: 650px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 14px; } .tile { padding: 21px; } .panel { padding: 20px; } .navigation a { padding: 8px 10px; font-size: 12px; } }
+
+.sectionContent { min-width:0; }

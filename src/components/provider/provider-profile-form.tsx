@@ -1,143 +1,62 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
+import { NumberField } from "@/components/ui/fields";
 import { saveProviderDetails } from "@/lib/providers/actions";
-import {
-  initialProviderActionState,
-  type ProviderDetails,
-} from "@/lib/providers/types";
+import { initialProviderActionState, type ProviderDetails } from "@/lib/providers/types";
 import { FormFeedback } from "./form-feedback";
-
-const inputClass =
-  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-[#8f8f8f] focus:border-brand focus:ring-4 focus:ring-brand/10";
+import styles from "./provider-forms.module.css";
 
 export function ProviderProfileForm({ details }: { details: ProviderDetails }) {
-  const [state, action, pending] = useActionState(
-    saveProviderDetails,
-    initialProviderActionState,
-  );
+  const [state, action, pending] = useActionState(saveProviderDetails, initialProviderActionState);
+  const fieldError = (name: string) => state.fieldErrors?.[name]?.[0]
+    ? <span className={styles.error}>{state.fieldErrors[name]![0]}</span> : null;
 
   return (
-    <form action={action} className="space-y-5">
-      <div className="grid gap-5 md:grid-cols-2">
-        <label className="text-sm font-semibold text-foreground">
-          Business name <span className="font-normal text-muted">(optional)</span>
-          <input
-            name="businessName"
-            defaultValue={details.businessName}
-            maxLength={100}
-            className={inputClass}
-            placeholder="Dylan’s Home Services"
-          />
-          {state.fieldErrors?.businessName?.[0] && (
-            <span className="mt-2 block font-normal text-red-700">
-              {state.fieldErrors.businessName[0]}
-            </span>
-          )}
-        </label>
-        <label className="text-sm font-semibold text-foreground">
-          Years of experience
-          <input
-            name="yearsExperience"
-            type="number"
-            min="0"
-            max="80"
-            defaultValue={details.yearsExperience ?? ""}
-            className={inputClass}
-            placeholder="5"
-          />
-          {state.fieldErrors?.yearsExperience?.[0] && (
-            <span className="mt-2 block font-normal text-red-700">
-              {state.fieldErrors.yearsExperience[0]}
-            </span>
-          )}
-        </label>
+    <form action={action} className={styles.form}>
+      <div className={styles.columns}>
+        <section className={styles.panel} aria-labelledby="provider-business-details">
+          <h2 id="provider-business-details">Business details</h2>
+          <label className={styles.field}>
+            Business name <span>(optional)</span>
+            <input name="businessName" defaultValue={details.businessName} maxLength={100} className={styles.input} placeholder="Your business name" />
+            {fieldError("businessName")}
+          </label>
+          <div className={styles.field}>
+            <NumberField label="Years of experience" name="yearsExperience" min="0" max="80" defaultValue={details.yearsExperience ?? ""} range unit="years" aria-label="Years of experience" placeholder="Years" />
+            {fieldError("yearsExperience")}
+          </div>
+          <label className={styles.field}>
+            Primary service area
+            <input name="serviceArea" required maxLength={160} defaultValue={details.serviceArea} className={styles.input} placeholder="City or area you serve" />
+            {fieldError("serviceArea")}
+          </label>
+          <div className={styles.field}>
+            <NumberField label="Travel radius (miles)" name="travelRadiusMiles" min="0" max="250" defaultValue={details.travelRadiusMiles ?? ""} range unit="miles" aria-label="Travel radius in miles" placeholder="Miles" />
+            {fieldError("travelRadiusMiles")}
+          </div>
+        </section>
+        <section className={styles.panel} aria-labelledby="provider-about-work">
+          <h2 id="provider-about-work">About your work</h2>
+          <label className={styles.field}>
+            Professional headline
+            <input name="headline" required minLength={10} maxLength={120} defaultValue={details.headline} className={styles.input} placeholder="A short description of your work and approach" />
+            {fieldError("headline")}
+          </label>
+          <label className={styles.field}>
+            Introduction
+            <textarea name="bio" required minLength={80} maxLength={2000} rows={8} defaultValue={details.bio} className={styles.input} placeholder="Describe your experience, the work you offer, and how you approach each job." />
+            <span className={styles.hint}>At least 80 characters. Keep sensitive personal information out of your public introduction.</span>
+            {fieldError("bio")}
+          </label>
+        </section>
       </div>
-
-      <label className="block text-sm font-semibold text-foreground">
-        Professional headline
-        <input
-          name="headline"
-          required
-          minLength={10}
-          maxLength={120}
-          defaultValue={details.headline}
-          className={inputClass}
-          placeholder="Dependable home repairs and seasonal maintenance"
-        />
-        {state.fieldErrors?.headline?.[0] && (
-          <span className="mt-2 block font-normal text-red-700">
-            {state.fieldErrors.headline[0]}
-          </span>
-        )}
-      </label>
-
-      <label className="block text-sm font-semibold text-foreground">
-        About your work
-        <textarea
-          name="bio"
-          required
-          minLength={80}
-          maxLength={2000}
-          rows={7}
-          defaultValue={details.bio}
-          className={inputClass}
-          placeholder="Describe your experience, how you work, and what customers can expect."
-        />
-        <span className="mt-2 block font-normal text-muted">
-          Minimum 80 characters. Do not include sensitive personal information.
-        </span>
-        {state.fieldErrors?.bio?.[0] && (
-          <span className="mt-2 block font-normal text-red-700">
-            {state.fieldErrors.bio[0]}
-          </span>
-        )}
-      </label>
-
-      <div className="grid gap-5 md:grid-cols-[1fr_220px]">
-        <label className="text-sm font-semibold text-foreground">
-          Primary service area
-          <input
-            name="serviceArea"
-            required
-            maxLength={160}
-            defaultValue={details.serviceArea}
-            className={inputClass}
-            placeholder="Detroit and nearby communities"
-          />
-          {state.fieldErrors?.serviceArea?.[0] && (
-            <span className="mt-2 block font-normal text-red-700">
-              {state.fieldErrors.serviceArea[0]}
-            </span>
-          )}
-        </label>
-        <label className="text-sm font-semibold text-foreground">
-          Travel radius (miles)
-          <input
-            name="travelRadiusMiles"
-            type="number"
-            min="0"
-            max="250"
-            defaultValue={details.travelRadiusMiles ?? ""}
-            className={inputClass}
-            placeholder="20"
-          />
-          {state.fieldErrors?.travelRadiusMiles?.[0] && (
-            <span className="mt-2 block font-normal text-red-700">
-              {state.fieldErrors.travelRadiusMiles[0]}
-            </span>
-          )}
-        </label>
-      </div>
-
       <FormFeedback state={state} />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? "Saving…" : "Save introduction"}
-      </button>
+      <div className={styles.actions}>
+        <button type="submit" disabled={pending} className={styles.primary}>{pending ? "Saving…" : "Save introduction"}</button>
+        <Link href="/dashboard/provider/onboarding?section=services" className={styles.secondary}>Continue to services</Link>
+      </div>
     </form>
   );
 }

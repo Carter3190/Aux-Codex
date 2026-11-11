@@ -1,5 +1,6 @@
 "use client";
 
+import { SelectField } from "@/components/ui/fields";
 import { useActionState } from "react";
 import { submitBookingReview } from "@/lib/marketplace/actions";
 import { initialMarketplaceActionState } from "@/lib/marketplace/types";
@@ -21,7 +22,7 @@ export function BookingReviewForm({ bookingId }: { bookingId: string }) {
       </div>
       <label className="block text-sm font-semibold text-foreground">
         Rating
-        <select
+        <SelectField
           name="rating"
           defaultValue="5"
           className="mt-2 block w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
@@ -31,7 +32,7 @@ export function BookingReviewForm({ bookingId }: { bookingId: string }) {
           <option value="3">★★★☆☆ — Okay</option>
           <option value="2">★★☆☆☆ — Poor</option>
           <option value="1">★☆☆☆☆ — Very poor</option>
-        </select>
+        </SelectField>
       </label>
       {state.fieldErrors?.rating?.[0] && (
         <p className="text-sm text-red-700">{state.fieldErrors.rating[0]}</p>
