@@ -6,6 +6,7 @@ import { ProviderStripeSetupCard } from "@/components/payments/provider-stripe-s
 import type { ProviderWorkspace } from "@/lib/providers/types";
 import type { BookingRequest } from "@/lib/marketplace/types";
 import type { ProviderPaymentSetup } from "@/lib/payments/types";
+import { providerStripeStatus } from "@/lib/payments/stripe-setup-status";
 import { customerCalendarDay, formatCustomerBookingDate } from "@/lib/marketplace/customer-dashboard";
 import { providerBookingGroups, providerBookingPath } from "@/lib/marketplace/provider-dashboard";
 import styles from "./provider-dashboard.module.css";
@@ -33,7 +34,8 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
   const underReview = !approved && !suspended && !rejected && Boolean(details.submittedAt);
   const applicationAction = !approved && !suspended && !underReview;
   const serviceReviewAction = approved && serviceReviewNeeded;
-  const stripeAction = approved && !paymentSetup.ready;
+  const stripeStatus = providerStripeStatus(paymentSetup);
+  const stripeAction = approved && ["not_started", "incomplete", "action_required", "unknown", "unavailable"].includes(stripeStatus);
   const priceNeeded = approved ? groups.priceNeeded : [];
   const cases = groups.caseResponses;
   const needsAttention = Boolean(groups.requests.length || priceNeeded.length || cases.length || applicationAction || serviceReviewAction || stripeAction);
@@ -64,10 +66,11 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
             <p className={styles.heroTime}><CustomerIcon name="clock" />{formatCustomerBookingDate(next)}</p>
             <div className={styles.heroActions}><Link className={styles.heroButton} href={providerBookingPath(next.id)}>View booking<CustomerIcon name="arrow" /></Link><Link className={styles.heroLink} href={`/dashboard/messages/${next.id}`}><CustomerIcon name="messages" />Message customer</Link></div>
           </article> : <section className={`${styles.emptyState} ${styles.emptyFeatured}`}>
-            <span className={styles.serviceIcon}><CustomerIcon name="calendar" /></span><h2>No upcoming visits</h2><p>Your next accepted, paid visit will appear here. Open requests and earlier bookings are available in Bookings.</p>
+            <span className={styles.serviceIcon}><CustomerIcon name="calendar" /></span><h2>No upcoming visits</h2><p>Your next accepted visit will appear here. Open requests and earlier bookings are available in Bookings.</p>
             <Link href="/dashboard/provider/bookings" className={styles.heroButton}>View bookings<CustomerIcon name="arrow" /></Link>
           </section>}
           {groups.pastOpen.length > 0 && <p className={styles.subtleNotice}><CustomerIcon name="clock" /><span>{groups.pastOpen.length === 1 ? "One earlier booking remains" : `${groups.pastOpen.length} earlier bookings remain`} open. <Link href="/dashboard/provider/bookings">Review booking status</Link></span></p>}
+          {groups.awaitingPayment.length > 0 && <p className={styles.subtleNotice}><CustomerIcon name="payments" /><span>{groups.awaitingPayment.length === 1 ? "One finished visit is" : `${groups.awaitingPayment.length} finished visits are`} awaiting payment. <Link href="/dashboard/provider/bookings?filter=awaitingPayment">View payment status</Link></span></p>}
           {(details.businessName || profile.fullName) && <p className={styles.workspaceName}>{details.businessName || profile.fullName}</p>}
         </section>
         <div>
@@ -79,7 +82,7 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
             </ActionCard>}
             {serviceReviewAction && <ActionCard icon="help" title="Service review needed" href="/dashboard/provider/onboarding?section=credentials" action="Review credentials">One or more services need an Auxilium review before they can take bookings. Keep any required documents current.</ActionCard>}
             {groups.requests.length > 0 && <ActionCard icon="calendar" title={groups.requests.length === 1 ? "1 new request" : `${groups.requests.length} new requests`} href="/dashboard/provider/bookings?filter=requests" action="Review requests">Review the job details and respond to your customers.</ActionCard>}
-            {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id)} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. The customer can pay once you confirm the price.</ActionCard>}
+            {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id)} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. Confirm the price before marking the work complete.</ActionCard>}
             {cases.length > 0 && <ActionCard icon="help" title={cases.length === 1 ? "Respond to a resolution request" : `${cases.length} resolution requests`} href={providerBookingPath(cases[0].id)} action="Review request">{cases[0].serviceName} · {cases[0].customerName}. Review the customer’s concern and add your response.</ActionCard>}
             {stripeAction && <div className={styles.stripeSetup}><ProviderStripeSetupCard setup={paymentSetup} /></div>}
             {!needsAttention && <article className={styles.actionCard}><span className={styles.serviceIcon}><CustomerIcon name="check" /></span><div><h3>No booking actions waiting</h3><p>Your bookings, conversations, and profile are available in the tabs above.</p></div></article>}
@@ -87,7 +90,7 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
         </section>
         </div>
       </div>
-      {approved && paymentSetup.ready && paymentSetup.message && <p className={styles.statusNote}>{paymentSetup.message} <Link href="/dashboard/provider/payments">View payments</Link></p>}
+      {(approved || paymentSetup.hasAccount) && !stripeAction && <div className={styles.stripeStatus}><ProviderStripeSetupCard setup={paymentSetup} /></div>}
     </div>
   </DashboardShell>;
 }

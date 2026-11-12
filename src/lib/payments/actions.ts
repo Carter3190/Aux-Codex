@@ -70,6 +70,7 @@ function paymentDatabaseMessage(message?: string) {
     "price cannot change",
     "only customer accounts",
     "only accepted bookings",
+    "only completed bookings",
     "provider must set a final price",
     "provider must finish stripe",
     "already has a payment",
@@ -122,7 +123,7 @@ export async function setBookingPrice(
       eventKey: `booking_price_set_${parsed.data.bookingId}_${amountCents}`,
       subject: "Your Auxilium booking price is ready",
       heading: "Your provider set the final price",
-      message: `The final price is $${(amountCents / 100).toFixed(2)}. Review it before opening secure Stripe Checkout.`,
+      message: `The final price is $${(amountCents / 100).toFixed(2)}. Review it with your provider. Payment is due after the work is finished.`,
     });
 
     revalidatePath("/dashboard/provider", "layout");
@@ -329,6 +330,15 @@ export async function startBookingCheckout(
       return failure("Booking request not found.");
     }
 
+    // Enforce the same rule as prepare_booking_payment. This also fails closed
+    // if application and database updates are briefly deployed out of order.
+    if (bookingResult.data.status !== "completed") {
+      return failure("Payment is available after your provider marks the work complete.");
+    }
+    if (bookingResult.data.agreed_price_cents === null) {
+      return failure("The provider must set a final price before checkout.");
+    }
+
     const admin = createAdminClient();
     const accountResult = await admin
       .from("provider_payment_accounts")
@@ -370,12 +380,19 @@ export async function startBookingCheckout(
         const legacySession = await stripe.checkout.sessions.retrieve(
           prepared.stripe_checkout_session_id,
         );
+        if (legacySession.status === "complete" || legacySession.payment_status !== "unpaid") {
+          return failure("This checkout is complete or processing. Refresh the dashboard to see the payment status.");
+        }
         if (legacySession.status === "open") {
           await stripe.checkout.sessions.expire(legacySession.id);
+        } else if (legacySession.status !== "expired") {
+          return failure("Unable to confirm the previous checkout status. Please try again.");
         }
+      } else {
+        return failure("This previous checkout needs reconciliation. Contact Auxilium support.");
       }
 
-      const { error: expireError } = await admin
+      const { data: expiredPayment, error: expireError } = await admin
         .from("booking_payments")
         .update({
           status: "expired",
@@ -383,8 +400,12 @@ export async function startBookingCheckout(
         })
         .eq("id", prepared.payment_id)
         .eq("status", "checkout_pending")
-        .is("stripe_account_id", null);
-      if (expireError) {
+        .eq("checkout_attempt", prepared.checkout_attempt)
+        .eq("stripe_checkout_session_id", prepared.stripe_checkout_session_id)
+        .is("stripe_account_id", null)
+        .select("id")
+        .maybeSingle();
+      if (expireError || !expiredPayment) {
         return failure(
           "Unable to upgrade this checkout safely. Please try again.",
         );
@@ -402,12 +423,30 @@ export async function startBookingCheckout(
         {},
         { stripeAccount: connectedAccountId },
       );
-      if (existingSession.status === "open" && existingSession.url) {
-        checkoutUrl = existingSession.url;
-      } else if (existingSession.status === "complete") {
+      if (existingSession.status === "complete" || existingSession.payment_status !== "unpaid") {
         return failure(
-          "This checkout is already complete. Refresh the dashboard to see the payment status.",
+          "This checkout is complete or processing. Refresh the dashboard to see the payment status.",
         );
+      } else if (existingSession.status === "open" && existingSession.url) {
+        checkoutUrl = existingSession.url;
+      } else if (existingSession.status === "expired") {
+        // A missed expiry webhook must not strand a booking. Use Stripe's actual
+        // session state, never the locally saved clock, and preserve the IDs.
+        const { data: expiredPayment, error: expireError } = await admin
+          .from("booking_payments")
+          .update({ status: "expired" })
+          .eq("id", prepared.payment_id)
+          .eq("checkout_attempt", prepared.checkout_attempt)
+          .eq("stripe_checkout_session_id", existingSession.id)
+          .eq("status", "checkout_pending")
+          .select("id")
+          .maybeSingle();
+        if (expireError || !expiredPayment) {
+          return failure("Unable to reconcile that checkout. Refresh the dashboard and try again.");
+        }
+        return failure("Your previous checkout expired. Select Pay securely again to open a new link.");
+      } else {
+        return failure("Unable to confirm the checkout status. Please try again.");
       }
     }
 
@@ -417,7 +456,7 @@ export async function startBookingCheckout(
         {
           mode: "payment",
           payment_method_types: ["card"],
-          submit_type: "book",
+          submit_type: "pay",
           client_reference_id: bookingId.data,
           customer_email:
             typeof claimsResult.data?.claims?.email === "string"
@@ -431,7 +470,7 @@ export async function startBookingCheckout(
                 unit_amount: prepared.amount_cents,
                 product_data: {
                   name: `${bookingResult.data.service_name} with ${bookingResult.data.provider_name}`,
-                  description: "Auxilium booking payment",
+                  description: "Payment for a completed Auxilium service",
                 },
               },
             },
@@ -467,7 +506,7 @@ export async function startBookingCheckout(
         return failure("Stripe did not return a secure checkout link.");
       }
 
-      const { error: saveError } = await admin
+      const { data: savedPayment, error: saveError } = await admin
         .from("booking_payments")
         .update({
           stripe_account_id: connectedAccountId,
@@ -476,8 +515,10 @@ export async function startBookingCheckout(
         })
         .eq("id", prepared.payment_id)
         .eq("checkout_attempt", prepared.checkout_attempt)
-        .eq("status", "checkout_pending");
-      if (saveError) {
+        .eq("status", "checkout_pending")
+        .select("id")
+        .maybeSingle();
+      if (saveError || !savedPayment) {
         await stripe.checkout.sessions.expire(
           session.id,
           {},

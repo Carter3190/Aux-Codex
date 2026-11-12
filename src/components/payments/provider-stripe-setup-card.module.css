@@ -1,0 +1,19 @@
+.card { margin-top: 24px; padding: 26px; border: 1px solid var(--border, #d9e3ef); border-radius: 18px; background: var(--surface, #fff); color: var(--brand-dark, #203246); }
+.heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.eyebrow { margin: 0 0 7px; color: var(--brand, #356196); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.heading h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.4; }
+.badge { display: inline-flex; align-items: center; flex-shrink: 0; gap: 7px; padding: 7px 11px; border-radius: 9px; background: #eaf0f8; color: #315d91; font-size: 12px; font-weight: 600; line-height: 1.4; }
+.badge::before { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge[data-status="ready"] { background: #eaf4ec; color: #326348; }
+.badge[data-status="action_required"] { background: #fff5e7; color: #825b24; }
+.badge[data-status="unknown"], .badge[data-status="unavailable"] { background: #edf0f4; color: #586879; }
+.description { margin-top: 16px; max-width: 72ch; color: var(--muted, #52667e); font-size: 14px; line-height: 1.8; }
+.note { margin-top: 12px; color: var(--muted, #52667e); font-size: 13px; line-height: 1.75; }
+.actions { margin-top: 20px; display: flex; align-items: flex-start; flex-direction: column; gap: 12px; }
+.primary, .secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 19px; border: 1px solid var(--brand, #356196); border-radius: 11px; background: var(--brand, #356196); color: #fff; font-size: 14px; font-weight: 600; line-height: 1.4; text-decoration: none; cursor: pointer; }
+.primary:hover { background: var(--brand-dark, #203246); border-color: var(--brand-dark, #203246); }
+.primary:disabled { cursor: wait; opacity: .6; }
+.secondary { margin-top: 20px; color: var(--brand, #356196); border-color: var(--border, #d9e3ef); background: #fff; }
+.secondary:hover { background: #f2f5f9; }
+.primary:focus-visible, .secondary:focus-visible { outline: 3px solid #8aadd5; outline-offset: 3px; }
+@media(max-width: 600px) { .card { padding: 21px; } .heading { gap: 12px; } .heading h2 { font-size: 18px; } }

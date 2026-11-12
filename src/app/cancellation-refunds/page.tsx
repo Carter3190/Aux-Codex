@@ -14,18 +14,29 @@ export default function CancellationRefundsPage() {
       eyebrow="Booking policy"
       title="Cancellations, refunds, and disputes"
       summary="This policy explains what happens when plans change, a service problem occurs, or a payment needs review."
-      updated="October 26, 2026"
+      updated="November 11, 2026"
     >
-      <PolicySection title="Before a booking is paid">
+      <PolicySection title="Before the work is finished">
         <p>
           A customer may cancel a pending or accepted request from the dashboard
-          while no successful payment is attached. A provider may decline a
-          request. Because no payment has been completed, there is no Auxilium
-          refund to issue at this stage.
+          before the provider marks the work complete, provided payment has not
+          started. A provider may decline a pending request. When no payment has
+          been completed, there is no Auxilium refund to issue.
         </p>
         <p>
           Customers should review the provider’s final price, requested time,
           service description, and location before entering Stripe Checkout.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="Finished work awaiting payment">
+        <p>
+          Payment becomes due when the provider marks the finished work complete.
+          A completed booking cannot be cancelled from the dashboard to remove
+          an unpaid amount. If the work is unfinished, the price is incorrect,
+          or there is a service problem, contact the provider in booking messages
+          or use the <Link href="/support">Support Center</Link> for assistance.
+          No refund is issued when no payment was taken.
         </p>
       </PolicySection>
 

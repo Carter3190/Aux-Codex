@@ -33,11 +33,11 @@ export function CustomerOverview({ profile, bookings, payment }: {
                 <article className={styles.attention} key={booking.id}>
                   <div className={styles.attentionTitle}>
                     <CustomerIcon name="payments" />
-                    <h3>{booking.payment?.status === "failed" ? "Your payment didn’t go through" : "Your booking price is ready"}</h3>
+                    <h3>{booking.payment?.status === "failed" ? "Your payment didn’t go through" : "Payment is due"}</h3>
                   </div>
                   <p>{booking.providerName} · {booking.serviceName}. {booking.payment?.status === "failed"
                     ? `Review the booking and try again when you’re ready. The final price is ${formatCustomerMoney(booking.agreedPriceCents!)}.`
-                    : `Review the final price of ${formatCustomerMoney(booking.agreedPriceCents!)} before paying to confirm your visit.`}</p>
+                    : `Review the final price of ${formatCustomerMoney(booking.agreedPriceCents!)} for your completed visit, then pay securely.`}</p>
                   <Link className={styles.textLink} href={customerBookingPath(booking.id)}>{booking.payment?.status === "failed" ? "Review payment" : "Review & pay"}<CustomerIcon name="arrow" /></Link>
                 </article>
               ))}

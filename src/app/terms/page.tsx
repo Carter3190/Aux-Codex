@@ -15,7 +15,7 @@ export default function TermsPage() {
       eyebrow="Legal"
       title="Terms of service"
       summary="These terms govern customer, provider, and visitor use of Auxilium’s marketplace, booking, communication, payment, and resolution services."
-      updated="October 26, 2026"
+      updated="November 11, 2026"
     >
       <PolicySection title="1. Agreement and eligibility">
         <p>
@@ -95,10 +95,14 @@ export default function TermsPage() {
           A booking request is not a confirmed service agreement until the
           provider accepts it. The resulting service agreement is directly
           between the customer and the identified provider. The provider may
-          then set a final booking price. Customers must review that price before
-          completing Stripe Checkout. Payment is processed by Stripe under its
-          own terms and privacy policy; Auxilium does not store full payment-card
-          details.
+          then set an agreed final booking price. Customers and providers should
+          confirm the scope, price, and any changes in booking messages before
+          the work is performed. The provider must mark the service complete
+          only once the work is finished. Payment then becomes due, and the
+          customer must review the price and complete Stripe Checkout. Marking
+          work complete does not automatically charge the customer’s card.
+          Payment is processed by Stripe under its own terms and privacy policy;
+          Auxilium does not store full payment-card details.
         </p>
         <p>
           Providers authorize Stripe to process customer payments directly on
@@ -106,6 +110,12 @@ export default function TermsPage() {
           collect the disclosed platform fee, currently 5% of the booking price.
           Stripe processing, payout, refund, reserve, and dispute rules may also
           apply.
+        </p>
+        <p>
+          Bank deposits are separate from service completion and customer
+          payment. Stripe pays out available earnings according to the connected
+          account’s payout schedule and eligibility. Service completion alone
+          does not guarantee customer payment or an immediate bank deposit.
         </p>
       </PolicySection>
 
