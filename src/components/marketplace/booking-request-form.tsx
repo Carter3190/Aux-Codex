@@ -9,9 +9,10 @@ import {
   type MarketplaceService,
 } from "@/lib/marketplace/types";
 import { formatPrice } from "@/lib/providers/presentation";
+import { BookingRequestConfirmation } from "./booking-request-confirmation";
+import styles from "./booking-request.module.css";
 
-const inputClass =
-  "mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10";
+const inputClass = styles.input;
 
 function FieldError({ message }: { message?: string }) {
   return message ? (
@@ -35,10 +36,12 @@ export function BookingRequestForm({
     initialMarketplaceActionState,
   );
 
+  if (state.status === "success") return <BookingRequestConfirmation focusOnMount />;
+
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className={styles.form}>
       <input type="hidden" name="providerId" value={providerId} />
-      <label className="block text-sm font-semibold text-foreground">
+      <label className={styles.field}>
         Service
         <SelectField name="serviceId" required className={inputClass} defaultValue="">
           <option value="" disabled>
@@ -53,8 +56,8 @@ export function BookingRequestForm({
         <FieldError message={state.fieldErrors?.serviceId?.[0]} />
       </label>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,170px),1fr))] gap-5">
-        <label className="text-sm font-semibold text-foreground">
+      <div className={styles.timing}>
+        <label className={styles.field}>
           Requested date
           <DateField
             name="requestedDate"
@@ -64,7 +67,7 @@ export function BookingRequestForm({
           />
           <FieldError message={state.fieldErrors?.requestedDate?.[0]} />
         </label>
-        <label className="text-sm font-semibold text-foreground">
+        <label className={styles.field}>
           Preferred start time
           <TimeField
             name="requestedTime"
@@ -75,7 +78,7 @@ export function BookingRequestForm({
         </label>
       </div>
 
-      <label className="block text-sm font-semibold text-foreground">
+      <label className={styles.field}>
         Service location
         <input
           name="serviceLocation"
@@ -87,14 +90,14 @@ export function BookingRequestForm({
           className={inputClass}
           placeholder="Address or location where the work is needed"
         />
-        <span className="mt-2 block text-xs font-normal leading-5 text-muted">
+        <span className={styles.hint}>
           This stays private and is shown only to you, the provider, and Auxilium admins.
         </span>
         <FieldError message={state.fieldErrors?.serviceLocation?.[0]} />
       </label>
 
-      <label className="block text-sm font-semibold text-foreground">
-        What do you need help with? <span className="font-normal text-muted">(optional)</span>
+      <label className={styles.field}>
+        What do you need help with? <span className={styles.optional}>(optional)</span>
         <textarea
           name="notes"
           rows={5}
@@ -105,13 +108,15 @@ export function BookingRequestForm({
         <FieldError message={state.fieldErrors?.notes?.[0]} />
       </label>
 
-      <label className="flex items-start gap-3 rounded-xl border border-border bg-[#f7f7f7] p-4 text-sm leading-6 text-foreground">
+      <section className={styles.acknowledgement} aria-label="Before sending your request">
+        <h3>Before sending your request</h3>
+        <p className={styles.provider}>{providerName}</p>
+        <label className={styles.check}>
         <input
           type="checkbox"
           name="providerResponsibilityAcknowledged"
           value="accepted"
           required
-          className="mt-1 h-4 w-4 shrink-0 accent-brand"
         />
         <span>
           I understand that {providerName}, not Auxilium, will perform and be
@@ -131,16 +136,13 @@ export function BookingRequestForm({
             message={state.fieldErrors?.providerResponsibilityAcknowledged?.[0]}
           />
         </span>
-      </label>
+        </label>
+      </section>
 
       {state.message && (
         <p
           role={state.status === "error" ? "alert" : "status"}
-          className={`rounded-xl border px-4 py-3 text-sm ${
-            state.status === "error"
-              ? "border-red-200 bg-red-50 text-red-800"
-              : "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark"
-          }`}
+          className={styles.error}
         >
           {state.message}
         </p>
@@ -149,7 +151,7 @@ export function BookingRequestForm({
       <button
         type="submit"
         disabled={pending || services.length === 0}
-        className="w-full rounded-full bg-brand px-6 py-3.5 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+        className={styles.primary}
       >
         {pending ? "Sending request…" : "Agree and send booking request"}
       </button>
