@@ -18,6 +18,7 @@ export default async function CustomerBookingsPage({ searchParams }: {
     { key: "all", label: "All bookings", items: groups.all },
     { key: "upcoming", label: "Upcoming", items: groups.upcoming },
     { key: "requests", label: "Requests", items: groups.requests },
+    { key: "awaitingPayment", label: "Awaiting payment", items: groups.awaitingPayment },
     { key: "history", label: "History", items: groups.history },
   ];
   const active = tabs.find((tab) => tab.key === filter) ?? tabs[0];

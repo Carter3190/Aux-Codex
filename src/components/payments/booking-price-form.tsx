@@ -21,7 +21,7 @@ export function BookingPriceForm({
   );
 
   return (
-    <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f4f4f4] p-4">
+    <form action={action} className="mt-5 space-y-3 rounded-2xl bg-[#f2f5f9] p-4">
       <input type="hidden" name="bookingId" value={bookingId} />
       <label className="block text-sm font-semibold text-foreground">
         Agreed booking price (USD)

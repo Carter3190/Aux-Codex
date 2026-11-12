@@ -154,8 +154,9 @@ Then repeat the proven test-mode flow on the deployed application:
 3. Connect the provider's Stripe test account.
 4. Request and accept a booking.
 5. Send messages in both directions.
-6. Set a price and complete test Checkout.
-7. Complete the booking and publish a review.
+6. Agree a price, confirm Checkout is blocked before completion, then mark the
+   finished work complete on or after its service date.
+7. Complete test Checkout, confirm the signed payment event, and publish a review.
 8. Open a resolution request and issue a small test refund.
 9. Confirm the expected transaction emails arrive.
 
@@ -186,3 +187,41 @@ Update the Squarespace calls to action to point to:
 - Sign in: `https://app.theauxillium.com/login`
 
 After this final check, the marketing site and marketplace can launch together.
+
+## Payment-after-service rollout (November 11, 2026)
+
+This release changes the order to finished work, payment due, explicit customer
+Checkout, then Stripe payout of available funds. It does not store a card, charge
+off-session, initiate a bank payout, alter an existing payout schedule, or change
+the 5% application fee. Existing successful payments and refunds remain valid.
+
+1. Build and test the candidate, including the isolated PostgreSQL financial
+   transition tests. No live transaction is part of automated verification.
+2. Run `supabase/maintenance/post_service_payment_preflight.sql` read-only in the
+   correct production project. Preserve the payment totals for comparison.
+3. Reconcile every pending Checkout attempt with Stripe, including ones with
+   elapsed expiry times. A session might have completed before expiry while its
+   signed event is delayed. Never clear a session ID or change a payment to
+   expired merely to pass this check. The migration aborts on any pending attempt.
+   A signed expiration event or authoritative Stripe response must establish
+   that a previous session cannot still be paid before it can be replaced. If
+   the check reports a processing payment, retain it and let its signed event
+   resolve it normally.
+4. Apply `20261111000000_payment_after_service.sql`. Its transaction and table
+   locks repeat the session check at the actual cutover. The database blocks
+   premature payment even if an old application request arrives during rollout.
+5. Apply `20261111010000_post_service_policy_versions.sql` and deploy the exact
+   tested page source promptly. The changed Terms and Provider Agreement require
+   a fresh review; earlier acceptance records stay intact. During a version
+   mismatch the app refuses new agreement acceptance instead of accepting the
+   wrong document. Do not roll back to old page source against new policy versions.
+6. Verify production is on the expected commit, compare payment totals, inspect
+   the installed RPC guards and legal source hashes, and check `/api/health`.
+   Test unpaid/paid UI states with local fixtures. A controlled live customer
+   payment requires separate participant authorization and is not implied by
+   deploying this release.
+
+The Stripe review badge comes from the retrieved account requirements, not the
+return URL. The 3–5 business-day message is guidance for submitted document review,
+not a guaranteed approval deadline. A failed refresh is labelled unavailable
+rather than freshly approved.

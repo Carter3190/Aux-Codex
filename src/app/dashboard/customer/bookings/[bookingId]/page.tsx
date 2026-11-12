@@ -6,6 +6,7 @@ import { z } from "zod";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import styles from "@/components/dashboard/customer-dashboard.module.css";
+import { bookingConversationWritable } from "@/lib/marketplace/booking-messaging";
 import { BookingCard } from "@/components/marketplace/booking-card";
 import { getCustomerBookings } from "@/lib/marketplace/data";
 
@@ -20,7 +21,7 @@ export default async function CustomerBookingDetails({ params }: {
   const { customer: profile, bookings } = await getCustomerBookings();
   const booking = bookings.find((item) => item.id === parsed.data);
   if (!booking) notFound();
-  const canMessage = ["pending", "accepted", "completed"].includes(booking.status);
+  const canMessage = bookingConversationWritable(booking);
   return (
     <DashboardShell profile={profile} eyebrow="Booking details" title={booking.serviceName}
       description="Your request, provider response, payment, and next steps."

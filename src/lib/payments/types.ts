@@ -28,6 +28,9 @@ export type ProviderPaymentSetup = {
   paymentsEnabled: boolean;
   requirementsDueCount: number;
   ready: boolean;
+  status?: StripeSetupStatus;
+  statusFresh?: boolean;
+  pendingVerificationCount?: number;
   message?: string;
 };
 
@@ -38,3 +41,5 @@ export type PaymentActionState = {
 };
 
 export const initialPaymentActionState: PaymentActionState = {};
+import type { StripeSetupStatus } from "./stripe-setup-status";
+

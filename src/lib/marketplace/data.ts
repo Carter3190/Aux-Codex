@@ -1,3 +1,4 @@
+import { bookingConversationWritable } from "./booking-messaging";
 import "server-only";
 
 import { redirect } from "next/navigation";
@@ -609,10 +610,13 @@ export async function getBookingConversation(
   }
   if (!bookingResult.data) return null;
 
-  const booking = mapBooking(bookingResult.data as BookingRow);
-  const isCustomer = booking.customerId === profile.id;
-  const isProvider = booking.providerId === profile.id;
+  const row = bookingResult.data as BookingRow;
+  const isCustomer = row.customer_id === profile.id;
+  const isProvider = row.provider_id === profile.id;
   if (!isCustomer && !isProvider) return null;
+  // The payment state is required for the completed-but-unpaid message window.
+  // A bare mapBooking(row) would default payment to null and keep paid threads open.
+  const [booking] = await attachBookingDetails(supabase, [row]);
 
   const messagesResult = await supabase
     .from("booking_messages")
@@ -634,15 +638,7 @@ export async function getBookingConversation(
     messages: (messagesResult.data as MessageRow[]).map(mapMessage),
     perspective: isCustomer ? "customer" : "provider",
     counterpartName: isCustomer ? booking.providerName : booking.customerName,
-    canSend:
-      booking.status === "pending" ||
-      booking.status === "accepted" ||
-      (booking.status === "completed" &&
-        Boolean(
-          booking.completedAt &&
-            new Date(booking.completedAt).getTime() >
-              Date.now() - 30 * 24 * 60 * 60 * 1000,
-        )),
+    canSend: bookingConversationWritable(booking),
   };
 }
 

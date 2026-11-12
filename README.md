@@ -247,10 +247,13 @@ account being reviewed.
 1. Sign in as an approved provider and select **Connect with Stripe** on the
    provider dashboard.
 2. Complete Stripe's test onboarding and return to Auxilium. The provider
-   dashboard must show **Stripe payouts are connected**.
+   dashboard must show **Payments ready** from Stripe’s actual account status.
 3. Open an accepted booking, enter the full final price, and save it.
-4. Sign in as that booking's customer and select **Pay securely with Stripe**.
-5. Complete Checkout with Stripe's test card `4242 4242 4242 4242`, any future
+4. Before the work is complete, confirm the customer cannot start Checkout.
+   On or after the service date, sign in as the provider and mark the finished
+   service complete. Confirm payment is now due and the unpaid visit remains visible.
+5. Sign in as that booking's customer and pay through Stripe. Complete Checkout
+   with Stripe's test card `4242 4242 4242 4242`, any future
    expiry, any three-digit CVC, and any postal code.
 6. Confirm the customer and provider dashboards both show **Paid**. In Stripe,
    verify the direct charge belongs to the provider's connected account and
@@ -263,16 +266,17 @@ Stripe's applicable fees.
 
 ## Testing completed bookings and reviews
 
-1. Complete the Stripe payment test above with a service date that is today or
-   earlier.
-2. Sign in as the provider and select **Mark service complete** on the paid
-   booking.
+1. Complete the service and Stripe payment test above with a service date that
+   is today or earlier.
+2. Confirm the booking is **Complete** and **Paid**. An unpaid completed booking
+   must not allow a verified review yet.
 3. Sign in as that booking's customer and publish a 1–5 star review with at
    least 10 characters.
 4. Confirm the review is labeled **Verified booking** on the provider's public
    profile and the aggregate rating appears in provider search.
 5. Confirm a second review cannot be submitted for the same booking. Completed
-   booking conversations remain open for 30 days for follow-up.
+   booking conversations remain open while payment is outstanding and for the
+   existing 30-day completion follow-up window once paid or refunded.
 
 ## Testing the resolution center
 

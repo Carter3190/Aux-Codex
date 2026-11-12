@@ -18,7 +18,7 @@ export const LEGAL_AGREEMENTS = {
   terms: {
     key: "terms",
     title: "Terms of Service",
-    version: "2026-10-26",
+    version: "2026-11-11",
     href: "/terms",
     audience: "all",
   },
@@ -32,7 +32,7 @@ export const LEGAL_AGREEMENTS = {
   providerAgreement: {
     key: "provider_agreement",
     title: "Provider Agreement",
-    version: "2026-11-05",
+    version: "2026-11-11",
     href: "/provider-agreement",
     audience: "provider",
   },

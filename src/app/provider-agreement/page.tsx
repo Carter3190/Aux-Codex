@@ -14,7 +14,7 @@ export default function ProviderAgreementPage() {
       eyebrow="For providers"
       title="Provider agreement"
       summary="This agreement supplements the Terms of Service for every person or business that applies to offer services through Auxilium."
-      updated="November 5, 2026"
+      updated="November 11, 2026"
     >
       <PolicySection title="1. Independent provider relationship and personnel">
         <p>
@@ -104,9 +104,14 @@ export default function ProviderAgreementPage() {
           commitments or promptly communicate a necessary change. By accepting a
           request, the provider agrees that it is entering a direct service
           agreement with the customer and has the authority, personnel,
-          credentials, and insurance needed to perform it. Final booking prices
-          must be accurate and approved by the customer through Stripe Checkout
-          before paid work is treated as an Auxilium transaction.
+          credentials, and insurance needed to perform it. Agree the scope and
+          final price with the customer and explain any changes in booking
+          messages before performing the work. Mark the service complete only
+          once the work is finished; payment then becomes due. The customer
+          reviews the final price and explicitly pays through Stripe Checkout.
+          Marking work complete does not automatically charge the customer or
+          guarantee payment. Auxilium does not guarantee collection of unpaid
+          bookings.
         </p>
         <p>
           Material scope, scheduling, and resolution communication should remain

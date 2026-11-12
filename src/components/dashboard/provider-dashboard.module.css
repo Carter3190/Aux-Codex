@@ -36,6 +36,7 @@
 .actionCard h3 { margin: 0; font-size: 14px; line-height: 1.5; font-weight: 600; }
 .actionCard p { color: var(--muted); font-size: 13px; line-height: 1.75; margin-top: 6px; overflow-wrap: anywhere; }
 .actionCard .textLink { margin-top: 12px; }
+.stripeStatus { margin-top: 26px; }
 .stripeSetup > section { margin: 0; padding: 21px; border-radius: 18px; background: var(--surface); border-color: var(--border); }
 .stripeSetup h2 { font-size: 17px; line-height: 1.4; }
 .stripeSetup p { font-size: 13px; line-height: 1.75; }

@@ -13,9 +13,11 @@ function dollars(cents: number) {
 export function BookingCaseRequestForm({
   bookingId,
   remainingRefundCents,
+  allowCancellation = false,
 }: {
   bookingId: string;
   remainingRefundCents: number;
+  allowCancellation?: boolean;
 }) {
   const [state, action, pending] = useActionState(
     openBookingCase,
@@ -25,7 +27,7 @@ export function BookingCaseRequestForm({
   return (
     <form
       action={action}
-      className="mt-5 space-y-4 rounded-2xl border border-[#ead6ad] bg-[#fffaf0] p-5"
+      className="mt-5 space-y-4 border-t border-border pt-5"
     >
       <input type="hidden" name="bookingId" value={bookingId} />
       <div>
@@ -43,7 +45,7 @@ export function BookingCaseRequestForm({
             defaultValue="service_issue"
             className="mt-2 block w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
           >
-            <option value="cancellation">Cancellation request</option>
+            {allowCancellation && <option value="cancellation">Cancellation request</option>}
             <option value="service_issue">Service issue</option>
             <option value="duplicate_charge">Possible duplicate charge</option>
             <option value="other">Other payment issue</option>

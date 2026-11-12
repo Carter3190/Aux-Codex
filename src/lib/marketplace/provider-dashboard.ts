@@ -5,7 +5,7 @@ export function providerBookingPath(bookingId: string) {
 }
 
 export function providerNeedsPrice(booking: BookingRequest) {
-  return booking.status === "accepted" && booking.agreedPriceCents === null &&
+  return ["accepted", "completed"].includes(booking.status) && booking.agreedPriceCents === null &&
     (!booking.payment || ["failed", "expired"].includes(booking.payment.status));
 }
 
@@ -22,19 +22,21 @@ export function providerPaymentLabel(booking: BookingRequest) {
     };
     return labels[status];
   }
-  if (booking.status === "accepted") return booking.agreedPriceCents === null ? "Price needed" : "Awaiting customer payment";
+  if (booking.status === "accepted") return booking.agreedPriceCents === null ? "Price needed" : "Pay after service";
+  if (booking.status === "completed") return booking.agreedPriceCents === null ? "Price needed" : "Awaiting customer payment";
   return "Not paid";
 }
 
 // Presentation only: a past appointment date never completes a booking.
 export function providerBookingGroups(bookings: BookingRequest[], today: string) {
-  const settled = (booking: BookingRequest) => booking.payment?.status === "paid" || booking.payment?.status === "partially_refunded";
+  const settled = (booking: BookingRequest) => booking.payment?.status === "paid" || booking.payment?.status === "partially_refunded" || booking.payment?.status === "refunded";
   const byAppointment = (a: BookingRequest, b: BookingRequest) => `${a.requestedDate}T${a.requestedStartTime}`.localeCompare(`${b.requestedDate}T${b.requestedStartTime}`);
   return {
     all: bookings,
     requests: bookings.filter((booking) => booking.status === "pending"),
-    upcoming: bookings.filter((booking) => booking.status === "accepted" && settled(booking) && booking.requestedDate >= today).sort(byAppointment),
-    history: bookings.filter((booking) => ["completed", "declined", "cancelled"].includes(booking.status)),
+    upcoming: bookings.filter((booking) => booking.status === "accepted" && booking.requestedDate >= today).sort(byAppointment),
+    awaitingPayment: bookings.filter((booking) => booking.status === "completed" && !settled(booking)),
+    history: bookings.filter((booking) => ["declined", "cancelled"].includes(booking.status) || (booking.status === "completed" && settled(booking))),
     pastOpen: bookings.filter((booking) => booking.status === "accepted" && booking.requestedDate < today),
     priceNeeded: bookings.filter(providerNeedsPrice),
     caseResponses: bookings.filter(providerCaseNeedsResponse),

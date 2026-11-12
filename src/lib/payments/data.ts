@@ -5,6 +5,7 @@ import { isSupabaseAdminConfigured } from "@/lib/supabase/admin-config";
 import { isStripeServerConfigured } from "@/lib/stripe/config";
 import { getStripe } from "@/lib/stripe/server";
 import type { ProviderPaymentSetup } from "./types";
+import { stripeSetupStatus } from "./stripe-setup-status";
 
 type PaymentAccountRow = {
   provider_id: string;
@@ -15,10 +16,6 @@ type PaymentAccountRow = {
   requirements_due_count: number;
 };
 
-function requirementsDueCount(currentlyDue?: Array<string> | null) {
-  return new Set(currentlyDue ?? []).size;
-}
-
 export async function syncProviderPaymentAccount(
   providerId: string,
   stripeAccountId: string,
@@ -27,7 +24,7 @@ export async function syncProviderPaymentAccount(
   const account = await stripe.accounts.retrieve(stripeAccountId);
 
   const admin = createAdminClient();
-  const dueCount = requirementsDueCount(account.requirements?.currently_due);
+  const status = stripeSetupStatus(account);
   const detailsSubmitted = account.details_submitted;
   const payoutsEnabled = account.payouts_enabled;
   const paymentsEnabled = account.charges_enabled;
@@ -38,7 +35,7 @@ export async function syncProviderPaymentAccount(
       payouts_enabled: payoutsEnabled,
       // This legacy column now records whether direct charges are enabled.
       transfers_active: paymentsEnabled,
-      requirements_due_count: dueCount,
+      requirements_due_count: status.requirementsDueCount,
       last_synced_at: new Date().toISOString(),
     })
     .eq("provider_id", providerId)
@@ -50,11 +47,10 @@ export async function syncProviderPaymentAccount(
 
   return {
     account,
-    ready: detailsSubmitted && payoutsEnabled && paymentsEnabled,
+    ...status,
     detailsSubmitted,
     payoutsEnabled,
     paymentsEnabled,
-    requirementsDueCount: dueCount,
   };
 }
 
@@ -71,6 +67,8 @@ export async function getProviderPaymentSetup(
       paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
+      status: "unavailable",
+      statusFresh: false,
     };
   }
 
@@ -94,6 +92,8 @@ export async function getProviderPaymentSetup(
       paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
+      status: "unavailable",
+      statusFresh: false,
       message: migrationMissing
         ? "Install the Stripe payments migration to continue."
         : "Unable to load Stripe payout setup.",
@@ -110,6 +110,8 @@ export async function getProviderPaymentSetup(
       paymentsEnabled: false,
       requirementsDueCount: 0,
       ready: false,
+      status: "not_started",
+      statusFresh: true,
     };
   }
 
@@ -128,6 +130,9 @@ export async function getProviderPaymentSetup(
       paymentsEnabled: status.paymentsEnabled,
       requirementsDueCount: status.requirementsDueCount,
       ready: status.ready,
+      status: status.status,
+      statusFresh: true,
+      pendingVerificationCount: status.pendingVerificationCount,
     };
   } catch {
     return {
@@ -142,6 +147,8 @@ export async function getProviderPaymentSetup(
         row.details_submitted &&
         row.payouts_enabled &&
         row.transfers_active,
+      status: "unknown",
+      statusFresh: false,
       message: "Stripe could not be reached. The last saved status is shown.",
     };
   }

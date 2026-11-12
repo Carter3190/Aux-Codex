@@ -3,7 +3,6 @@
 import { DateField, SelectField, TimeField } from "@/components/ui/fields";
 import Link from "next/link";
 import { useActionState } from "react";
-import { CURRENT_TERMS_VERSION } from "@/lib/legal/agreements";
 import { requestBooking } from "@/lib/marketplace/actions";
 import {
   initialMarketplaceActionState,
@@ -116,18 +115,18 @@ export function BookingRequestForm({
         />
         <span>
           I understand that {providerName}, not Auxilium, will perform and be
-          responsible for the requested service; if the provider accepts, any
-          resulting service agreement will be directly with that provider; and I
-          agree to Auxilium’s{" "}
+          responsible for the requested service. If the provider accepts, any
+          resulting service agreement will be directly with that provider. I
+          agree to Auxilium’s current{" "}
           <Link
             href="/terms"
             target="_blank"
             rel="noreferrer"
             className="font-semibold underline underline-offset-4"
           >
-            current Terms of Service
+            Terms of Service
           </Link>
-          {` (version ${CURRENT_TERMS_VERSION}).`}
+          .
           <FieldError
             message={state.fieldErrors?.providerResponsibilityAcknowledged?.[0]}
           />

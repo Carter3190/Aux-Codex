@@ -4,19 +4,19 @@ import { useActionState } from "react";
 import { completeBooking } from "@/lib/marketplace/actions";
 import { initialMarketplaceActionState } from "@/lib/marketplace/types";
 
-export function BookingCompletionForm({ bookingId }: { bookingId: string }) {
+export function BookingCompletionForm({ bookingId, paymentReceived = false }: { bookingId: string; paymentReceived?: boolean }) {
   const [state, action, pending] = useActionState(
     completeBooking,
     initialMarketplaceActionState,
   );
 
   return (
-    <form action={action} className="mt-5 space-y-3 rounded-2xl border border-[#d0d0d0] bg-[#f7f7f7] p-4">
+    <form action={action} className="space-y-3">
       <input type="hidden" name="bookingId" value={bookingId} />
       <div>
-        <p className="font-semibold text-brand-dark">Has the service been completed?</p>
+        <p className="font-semibold text-brand-dark">Mark the service complete once the work is finished.</p>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Marking it complete closes the active booking and lets the customer leave a verified review.
+          {paymentReceived ? "Payment is already confirmed for this visit." : "The agreed price becomes due. The customer pays from their booking; marking complete does not charge them automatically."}
         </p>
       </div>
       {state.message && (
@@ -36,7 +36,7 @@ export function BookingCompletionForm({ bookingId }: { bookingId: string }) {
         disabled={pending}
         className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
       >
-        {pending ? "Saving completion…" : "Mark service complete"}
+        {pending ? "Saving completion…" : "Mark complete"}
       </button>
     </form>
   );

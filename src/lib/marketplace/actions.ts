@@ -98,6 +98,9 @@ function databaseMessage(message?: string) {
     "only accepted bookings can be marked complete",
     "future booking cannot be marked complete",
     "successfully paid booking is required",
+    "set the agreed final price before marking",
+    "wait for the existing checkout payment",
+    "fully refunded booking",
     "provider must mark this booking complete",
     "only successfully paid bookings can be reviewed",
     "already reviewed this booking",
@@ -269,19 +272,27 @@ export async function completeBooking(
     });
     if (error) return failure(databaseMessage(error.message));
 
+    const { data: payment } = await supabase
+      .from("booking_payments")
+      .select("status")
+      .eq("booking_id", bookingId.data)
+      .maybeSingle();
+    const paid = payment && ["paid", "partially_refunded"].includes(payment.status);
+
     await notifyBookingParticipants({
       bookingId: bookingId.data,
       recipients: ["customer"],
       eventKey: `booking_completed_${bookingId.data}`,
       subject: "Your Auxilium service was marked complete",
       heading: "Your service is complete",
-      message:
-        "You can now share a verified rating and review from your customer dashboard.",
+      message: paid
+        ? "This visit is complete. You can share a verified rating and review from your customer dashboard."
+        : "This visit is complete. Open the booking to review the final price and payment status. If payment is due, you can pay from your customer dashboard.",
     });
 
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/customer", "layout");
-    return success("Service marked complete. The customer can now leave a review.");
+    return success("This visit is complete. Its payment status is shown in the booking.");
   } catch (error) {
     return failure(
       error instanceof Error ? error.message : "Unable to complete the booking.",

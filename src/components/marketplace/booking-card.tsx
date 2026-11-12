@@ -1,326 +1,117 @@
+import Link from "next/link";
 import { BookingCancelForm } from "./booking-cancel-form";
 import { BookingCompletionForm } from "./booking-completion-form";
 import { BookingReviewForm } from "./booking-review-form";
 import { BookingResponseForm } from "./booking-response-form";
-import Link from "next/link";
+import { BookingDetailTabs } from "./booking-detail-tabs";
 import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
 import { BookingPriceForm } from "@/components/payments/booking-price-form";
 import { ProviderEarningsSummary } from "@/components/payments/provider-earnings-summary";
-import type { ProviderEarnings } from "@/lib/payments/provider-earnings-types";
 import { BookingCaseRequestForm } from "@/components/cases/booking-case-request-form";
 import { ProviderCaseResponseForm } from "@/components/cases/provider-case-response-form";
+import { CustomerIcon } from "@/components/dashboard/customer-icon";
+import type { ProviderEarnings } from "@/lib/payments/provider-earnings-types";
 import type { BookingRequest } from "@/lib/marketplace/types";
-import type { PaymentStatus } from "@/lib/payments/types";
+import { customerCalendarDay, customerPaymentDue, customerPaymentLabel, formatCustomerMoney, formatCustomerBookingDate } from "@/lib/marketplace/customer-dashboard";
+import { providerPaymentLabel } from "@/lib/marketplace/provider-dashboard";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
+import { bookingConversationWritable } from "@/lib/marketplace/booking-messaging";
+import styles from "./booking-detail.module.css";
 
-const statusTone = {
-  pending: "border-[#ead6ad] bg-[#fff8e9] text-[#76531c]",
-  accepted: "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark",
-  declined: "border-red-200 bg-red-50 text-red-800",
-  cancelled: "border-border bg-[#f4f4f4] text-muted",
-  completed: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
-} as const;
+const activeCaseStatuses = new Set(["open", "provider_responded", "under_review"]);
 
-const paymentTone: Record<PaymentStatus, string> = {
-  checkout_pending: "border-[#ead6ad] bg-[#fff8e9] text-[#76531c]",
-  processing: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
-  paid: "border-[#d0d0d0] bg-[#f2f2f2] text-brand-dark",
-  failed: "border-red-200 bg-red-50 text-red-800",
-  expired: "border-border bg-[#f4f4f4] text-muted",
-  partially_refunded: "border-[#cbd9e7] bg-[#f1f6fb] text-[#244f78]",
-  refunded: "border-border bg-[#f4f4f4] text-muted",
-};
-
-const paymentLabel: Record<PaymentStatus, string> = {
-  checkout_pending: "Checkout started",
-  processing: "Payment processing",
-  paid: "Paid",
-  failed: "Payment failed",
-  expired: "Checkout expired",
-  partially_refunded: "Partially refunded",
-  refunded: "Refunded",
-};
-
-function formatMoney(cents: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(cents / 100);
-}
-
-function formatBookingDate(date: string, time: string) {
-  const value = new Date(`${date}T${time}:00`);
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(value);
-}
-
-function formatReviewDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
-const activeCaseStatuses = new Set([
-  "open",
-  "provider_responded",
-  "under_review",
-]);
-
-export function BookingCard({
-  booking,
-  perspective,
-  providerEarnings,
-}: {
-  booking: BookingRequest;
-  perspective: "customer" | "provider";
-  providerEarnings?: ProviderEarnings;
+export function BookingCard({ booking, perspective, providerEarnings }: {
+  booking: BookingRequest; perspective: "customer" | "provider"; providerEarnings?: ProviderEarnings;
 }) {
-  const canCancel =
-    !booking.payment ||
-    booking.payment.status === "failed" ||
-    booking.payment.status === "expired";
-  const paymentFinal =
-    booking.payment?.status === "paid" ||
-    booking.payment?.status === "processing" ||
-    booking.payment?.status === "partially_refunded" ||
-    booking.payment?.status === "refunded";
-  const canSetPrice =
-    booking.status === "accepted" &&
-    (!booking.payment ||
-      booking.payment.status === "failed" ||
-      booking.payment.status === "expired");
-  const paymentSupportsCompletion =
-    booking.payment?.status === "paid" ||
-    booking.payment?.status === "partially_refunded";
-  const canMessage =
-    booking.status === "pending" ||
-    booking.status === "accepted" ||
-    booking.status === "completed";
-  const remainingRefundCents = booking.payment
-    ? booking.payment.amountCents - booking.payment.refundedAmountCents
-    : 0;
-  const activeCase = booking.supportCase
-    ? activeCaseStatuses.has(booking.supportCase.status)
-    : false;
+  const paymentStatus = booking.payment?.status;
+  const paid = paymentStatus === "paid" || paymentStatus === "partially_refunded";
+  const terminalPayment = paid || paymentStatus === "refunded";
+  const paymentEditable = !paymentStatus || paymentStatus === "failed" || paymentStatus === "expired";
+  const canSetPrice = ["accepted", "completed"].includes(booking.status) && paymentEditable;
+  const canComplete = booking.status === "accepted" && booking.agreedPriceCents !== null &&
+    booking.requestedDate <= customerCalendarDay() && (paymentEditable || paid);
+  const paymentDue = customerPaymentDue(booking);
+  const completedUnpaid = booking.status === "completed" && !terminalPayment;
+  const canMessage = bookingConversationWritable(booking);
+  const canCancel = ["pending", "accepted"].includes(booking.status) && paymentEditable;
+  const remainingRefundCents = booking.payment ? booking.payment.amountCents - booking.payment.refundedAmountCents : 0;
+  const activeCase = Boolean(booking.supportCase && activeCaseStatuses.has(booking.supportCase.status));
+  const counterpart = perspective === "customer" ? booking.providerName : booking.customerName;
+  const initials = counterpart.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+  const paymentTone = paid ? styles.paid : paymentStatus === "failed" ? styles.error :
+    paymentStatus === "refunded" ? styles.neutral : paymentDue ? styles.warning : "";
+  const displayedPaymentLabel = perspective === "provider" ? providerPaymentLabel(booking) : customerPaymentLabel(booking);
+  const statusText = booking.status === "completed" ? "This visit is complete." :
+    booking.status === "accepted" ? paid ? "Payment is confirmed." :
+      booking.agreedPriceCents === null ? "Confirm the agreed price before marking the work complete." : "The agreed price is ready." :
+    booking.status === "pending" ? "Review the request and respond to your customer." :
+    booking.status === "cancelled" ? "This booking has been cancelled." : "This request was declined.";
+  const customerStatusText = booking.status === "completed" ? "This visit is complete." :
+    booking.status === "accepted" ? paid ? "Your visit is accepted and payment is confirmed." : "Your visit is accepted. Payment is due after the work is finished." :
+    booking.status === "pending" ? "Your provider will review your request and respond here." :
+    booking.status === "cancelled" ? "This booking has been cancelled." : "The provider declined this request.";
 
-  return (
-    <article className="rounded-3xl border border-border bg-white p-6 sm:p-7">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-            {booking.serviceName}
-          </p>
-          <h3 className="mt-2 text-2xl font-semibold text-brand-dark">
-            {perspective === "customer" ? booking.providerName : booking.customerName}
-          </h3>
-          <p className="mt-2 text-sm text-muted">
-            {formatPrice(booking.pricingType, booking.priceCents)}
-          </p>
-          {booking.agreedPriceCents !== null && (
-            <p className="mt-2 text-lg font-semibold text-brand-dark">
-              {perspective === "provider" ? "Agreed booking price" : "Final price"}: {formatMoney(booking.agreedPriceCents)}
-            </p>
-          )}
-        </div>
-        <span
-          className={`w-fit rounded-full border px-3 py-1.5 text-xs font-bold ${statusTone[booking.status]}`}
-        >
-          {labelFromSnakeCase(booking.status)}
-        </span>
-      </div>
+  const overview = <div className={styles.overviewGrid}>
+    <div className={styles.stack}>
+      <section className={styles.panel} aria-label="Visit details">
+        <h3>Visit details</h3>
+        <dl className={styles.facts}>
+          <div><dt>Requested time</dt><dd>{formatCustomerBookingDate(booking)}</dd></div>
+          <div><dt>Service location</dt><dd>{booking.serviceLocation}</dd></div>
+          <div><dt>Listed pricing</dt><dd>{formatPrice(booking.pricingType, booking.priceCents)}</dd></div>
+          {booking.agreedPriceCents !== null && <div><dt>Agreed booking price</dt><dd>{formatCustomerMoney(booking.agreedPriceCents)}</dd></div>}
+        </dl>
+      </section>
+      {(booking.customerNotes || booking.providerResponse) && <section className={styles.panel} aria-label="Booking notes">
+        <h3>Booking notes</h3>
+        {booking.customerNotes && <div className={styles.caseNotes}><h4>Customer note</h4><p className={styles.preserve}>{booking.customerNotes}</p></div>}
+        {booking.providerResponse && <div className={styles.caseNotes}><h4>Provider response</h4><p className={styles.preserve}>{booking.providerResponse}</p></div>}
+      </section>}
+    </div>
+    <section className={styles.panel} aria-label={perspective === "customer" ? "Your provider" : "Your customer"}>
+      <div className={styles.person}><span className={styles.avatar} aria-hidden="true">{initials}</span><div><h3>{counterpart}</h3><p>Your {perspective === "customer" ? "provider" : "customer"}</p></div></div>
+      <p className={styles.statusText}>{perspective === "provider" ? statusText : customerStatusText}</p>
+      {completedUnpaid && <p>{paymentStatus === "processing" ? "Payment is processing. Stripe will confirm the payment status here." : booking.agreedPriceCents === null ? "The final price still needs to be confirmed." : perspective === "provider" ? "Customer payment is still outstanding. You can review its status in Payment." : "Open Payment to review the agreed price and pay for your visit."}</p>}
+      <Link href={`/dashboard/messages/${booking.id}`} className={styles.secondary}><CustomerIcon name="messages" />{canMessage ? `Message ${perspective === "customer" ? "provider" : "customer"}` : "View conversation"}</Link>
+      {perspective === "provider" && booking.status === "pending" && <BookingResponseForm bookingId={booking.id} />}
+      {perspective === "provider" && canComplete && <div className={styles.completion}><BookingCompletionForm bookingId={booking.id} paymentReceived={paid} /></div>}
+      {perspective === "provider" && booking.status === "accepted" && !canComplete && <p className={styles.note}>{booking.agreedPriceCents === null ? "Set the agreed price in Payment before marking this visit complete." : booking.requestedDate > customerCalendarDay() ? "Mark the service complete after the work is finished, on or after the scheduled visit date." : paymentStatus === "checkout_pending" || paymentStatus === "processing" ? "An earlier payment attempt must finish or expire before this visit can be marked complete." : "Contact support if this booking’s payment status needs review."}</p>}
+    </section>
+  </div>;
 
-      <dl className="mt-6 grid gap-4 rounded-2xl bg-background p-5 sm:grid-cols-2">
-        <div>
-          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Requested time</dt>
-          <dd className="mt-1 font-semibold text-foreground">
-            {formatBookingDate(booking.requestedDate, booking.requestedStartTime)}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Service location</dt>
-          <dd className="mt-1 font-semibold text-foreground">{booking.serviceLocation}</dd>
-        </div>
-      </dl>
+  const payment = <section className={styles.panel}>
+    <div className={styles.paymentHeading}><div><h3>Payment details</h3><span className={styles.paymentAmount}>{booking.agreedPriceCents === null ? "Price not set" : formatCustomerMoney(booking.agreedPriceCents)}</span></div><span className={`${styles.badge} ${paymentTone}`}>{displayedPaymentLabel}</span></div>
+    {booking.agreedPriceCents === null ? <p>{perspective === "provider" ? "Save the full price agreed with your customer." : "Waiting for the provider to confirm the final price."}</p> :
+      booking.status === "accepted" && !terminalPayment ? <p>The agreed price is ready. Payment becomes due once the work is finished and the visit is marked complete.</p> :
+      completedUnpaid ? <p>{paymentStatus === "processing" ? "Stripe is confirming this payment. No additional payment is needed while it processes." : perspective === "provider" ? "The work is complete and payment is due from the customer." : "The work is complete. Review the agreed price before paying."}</p> : null}
+    {perspective === "provider" && <ProviderEarningsSummary booking={booking} earnings={providerEarnings} />}
+    {perspective === "customer" && booking.payment && booking.payment.refundedAmountCents > 0 && <p>Refunded: {formatCustomerMoney(booking.payment.refundedAmountCents)} of {formatCustomerMoney(booking.payment.amountCents)}</p>}
+    {perspective === "customer" && paymentDue && <BookingCheckoutForm bookingId={booking.id} paymentStatus={paymentStatus ?? null} />}
+    {perspective === "provider" && canSetPrice && <BookingPriceForm bookingId={booking.id} defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents} hasAgreedPrice={booking.agreedPriceCents !== null} />}
+    {perspective === "provider" && <p className={styles.note}>Auxilium’s platform commission is 5%. Stripe confirms its processing fee after payment. Available earnings are deposited according to your Stripe payout schedule.</p>}
+  </section>;
 
-      {booking.customerNotes && (
-        <div className="mt-5">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Customer note</p>
-          <p className="mt-2 whitespace-pre-wrap leading-7 text-foreground">{booking.customerNotes}</p>
-        </div>
-      )}
+  const help = <div className={styles.stack}>
+    {booking.supportCase && <section className={styles.panel}>
+      <div className={styles.caseHeading}><div><h3>Resolution request</h3><p>{labelFromSnakeCase(booking.supportCase.category)} · {formatCustomerMoney(booking.supportCase.requestedRefundCents)} requested</p></div><span className={`${styles.badge} ${styles.warning}`}>{labelFromSnakeCase(booking.supportCase.status)}</span></div>
+      <p className={styles.preserve}>{booking.supportCase.customerDetails}</p>
+      {booking.supportCase.providerResponse && <div className={styles.caseNotes}><h4>Provider response</h4><p className={styles.preserve}>{booking.supportCase.providerResponse}</p></div>}
+      {booking.supportCase.adminNotes && <div className={styles.caseNotes}><h4>Auxilium decision notes</h4><p className={styles.preserve}>{booking.supportCase.adminNotes}</p></div>}
+      {perspective === "provider" && activeCase && booking.supportCase.status !== "under_review" && <ProviderCaseResponseForm caseId={booking.supportCase.id} />}
+    </section>}
+    {perspective === "customer" && paid && !activeCase && remainingRefundCents >= 100 && <section className={styles.panel}><h3>Request a resolution</h3><p>Ask for help with a paid booking or request a refund.</p><BookingCaseRequestForm bookingId={booking.id} remainingRefundCents={remainingRefundCents} allowCancellation={booking.status === "accepted"} /></section>}
+    {perspective === "customer" && canCancel && <section className={styles.panel}><h3>Cancel this request</h3><p>No successful payment has been collected. Cancelling an unpaid request does not require a refund.</p><BookingCancelForm bookingId={booking.id} /></section>}
+    <section className={styles.panel}><h3>Need help with this visit?</h3><p>{completedUnpaid ? "Contact your provider to discuss the completed work or agreed price. Contact Auxilium support if you need help resolving a concern." : "Use your booking conversation to coordinate with the other party. Auxilium support can help with account or booking issues."}</p><Link href="/support" className={styles.secondary}>Contact support<CustomerIcon name="arrow" /></Link></section>
+  </div>;
 
-      {booking.providerResponse && (
-        <div className="mt-5 rounded-2xl border border-border p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">Provider response</p>
-          <p className="mt-2 whitespace-pre-wrap leading-7 text-foreground">{booking.providerResponse}</p>
-        </div>
-      )}
+  const review = <section className={styles.panel}>
+    {booking.review ? <><h3>{perspective === "customer" ? "Your verified review" : "Verified customer review"}</h3><p className={styles.reviewRating} aria-label={`${booking.review.rating} out of 5 stars`}>{"★".repeat(booking.review.rating)}{"☆".repeat(5 - booking.review.rating)}</p><p className={styles.preserve}>{booking.review.body}</p><div className={styles.reviewDate}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(booking.review.createdAt))}</div></> :
+      perspective === "customer" && booking.status === "completed" && paid ? <><h3>How did your visit go?</h3><BookingReviewForm bookingId={booking.id} /></> :
+      <><h3>No review yet</h3><p>{perspective === "customer" ? "You can leave a verified review after the visit is complete and payment is confirmed." : "Your customer can leave a verified review after the visit is complete and payment is confirmed."}</p></>}
+  </section>;
 
-      {(booking.status === "accepted" || booking.status === "completed" || (perspective === "provider" && booking.payment)) && (
-        <section className="mt-5 rounded-2xl border border-border bg-[#fafafa] p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
-                Payment
-              </p>
-              <p className="mt-1 text-sm leading-6 text-foreground">
-                {booking.agreedPriceCents === null
-                  ? perspective === "provider"
-                    ? "Set the agreed booking price so the customer can pay."
-                    : "Waiting for the provider to confirm the final price."
-                  : perspective === "provider"
-                    ? providerEarnings?.status === "test"
-                      ? "Stripe sandbox payment"
-                      : "Auxilium’s commission and Stripe processing fees are shown below."
-                    : `Secure total: ${formatMoney(booking.agreedPriceCents)}`}
-              </p>
-            </div>
-            {booking.payment && (
-              <span
-                className={`rounded-full border px-3 py-1.5 text-xs font-bold ${paymentTone[booking.payment.status]}`}
-              >
-                {paymentLabel[booking.payment.status]}
-              </span>
-            )}
-          </div>
-
-          {perspective === "provider" && <ProviderEarningsSummary booking={booking} earnings={providerEarnings} />}
-
-          {perspective === "customer" && booking.payment && booking.payment.refundedAmountCents > 0 && (
-            <p className="mt-3 text-sm font-semibold text-brand-dark">
-              Refunded: {formatMoney(booking.payment.refundedAmountCents)} of {formatMoney(booking.payment.amountCents)}
-            </p>
-          )}
-
-          {perspective === "customer" &&
-            booking.agreedPriceCents !== null &&
-            !paymentFinal && (
-              <BookingCheckoutForm
-                bookingId={booking.id}
-                paymentStatus={booking.payment?.status ?? null}
-              />
-            )}
-        </section>
-      )}
-
-      <Link
-        href={`/dashboard/messages/${booking.id}`}
-        className="mt-5 inline-flex rounded-full border border-brand/25 bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition hover:border-brand hover:bg-[#f4f4f4]"
-      >
-        {canMessage
-          ? `Message ${perspective === "customer" ? "provider" : "customer"}`
-          : "View conversation"}
-      </Link>
-
-      {perspective === "provider" && booking.status === "pending" && (
-        <BookingResponseForm bookingId={booking.id} />
-      )}
-      {perspective === "provider" && canSetPrice && (
-        <BookingPriceForm
-          bookingId={booking.id}
-          defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents}
-          hasAgreedPrice={booking.agreedPriceCents !== null}
-        />
-      )}
-      {perspective === "provider" &&
-        booking.status === "accepted" &&
-        paymentSupportsCompletion && (
-          <BookingCompletionForm bookingId={booking.id} />
-        )}
-      {booking.review && (
-        <section className="mt-5 rounded-2xl border border-[#d9d9d9] bg-white p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand">
-                {perspective === "customer" ? "Your verified review" : "Verified customer review"}
-              </p>
-              <p className="mt-2 text-lg tracking-[0.08em] text-[#080808]" aria-label={`${booking.review.rating} out of 5 stars`}>
-                {"★".repeat(booking.review.rating)}
-                <span className="text-[#d9d9d9]">{"★".repeat(5 - booking.review.rating)}</span>
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-muted">
-              {formatReviewDate(booking.review.createdAt)}
-            </span>
-          </div>
-          <p className="mt-3 whitespace-pre-wrap leading-7 text-foreground">
-            {booking.review.body}
-          </p>
-        </section>
-      )}
-      {booking.supportCase && (
-        <section className="mt-5 rounded-2xl border border-[#ead6ad] bg-[#fffaf0] p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#76531c]">
-                Resolution request
-              </p>
-              <p className="mt-2 font-semibold text-brand-dark">
-                {labelFromSnakeCase(booking.supportCase.category)} · {formatMoney(booking.supportCase.requestedRefundCents)} requested
-              </p>
-            </div>
-            <span className="rounded-full border border-[#ead6ad] bg-white px-3 py-1.5 text-xs font-bold text-[#76531c]">
-              {labelFromSnakeCase(booking.supportCase.status)}
-            </span>
-          </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground">
-            {booking.supportCase.customerDetails}
-          </p>
-          {booking.supportCase.providerResponse && (
-            <div className="mt-4 rounded-xl border border-border bg-white p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-                Provider response
-              </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
-                {booking.supportCase.providerResponse}
-              </p>
-            </div>
-          )}
-          {booking.supportCase.adminNotes && (
-            <div className="mt-4 rounded-xl border border-border bg-white p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-                Auxilium decision notes
-              </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
-                {booking.supportCase.adminNotes}
-              </p>
-            </div>
-          )}
-          {perspective === "provider" &&
-            activeCase &&
-            booking.supportCase.status !== "under_review" && (
-              <ProviderCaseResponseForm caseId={booking.supportCase.id} />
-            )}
-        </section>
-      )}
-      {perspective === "customer" &&
-        booking.payment &&
-        (booking.payment.status === "paid" ||
-          booking.payment.status === "partially_refunded") &&
-        !activeCase &&
-        remainingRefundCents >= 100 && (
-          <BookingCaseRequestForm
-            bookingId={booking.id}
-            remainingRefundCents={remainingRefundCents}
-          />
-        )}
-      {perspective === "customer" &&
-        booking.status === "completed" &&
-        paymentSupportsCompletion &&
-        !booking.review && <BookingReviewForm bookingId={booking.id} />}
-      {perspective === "customer" &&
-        (booking.status === "pending" || booking.status === "accepted") &&
-        canCancel && (
-          <BookingCancelForm bookingId={booking.id} />
-        )}
-    </article>
-  );
+  return <article className={styles.detail}>
+    <header className={styles.header}><div><p className={styles.eyebrow}>Booking details</p><h2>{booking.serviceName}</h2><p>{counterpart}</p></div><div className={styles.badges}><span className={`${styles.badge} ${booking.status === "pending" ? styles.warning : styles.neutral}`}>{booking.status === "completed" ? "Complete" : labelFromSnakeCase(booking.status)}</span><span className={`${styles.badge} ${paymentTone}`}>{displayedPaymentLabel}</span></div></header>
+    <BookingDetailTabs overview={overview} payment={payment} help={help} review={review} paymentDue={perspective === "customer" && paymentDue} />
+  </article>;
 }
