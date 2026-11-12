@@ -8,7 +8,7 @@ import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form
 import { BookingPriceForm } from "@/components/payments/booking-price-form";
 import { ProviderEarningsSummary } from "@/components/payments/provider-earnings-summary";
 import { BookingCaseRequestForm } from "@/components/cases/booking-case-request-form";
-import { ProviderCaseResponseForm } from "@/components/cases/provider-case-response-form";
+import { BookingResolutionPanel } from "@/components/cases/booking-resolution-panel";
 import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import type { ProviderEarnings } from "@/lib/payments/provider-earnings-types";
 import type { BookingRequest } from "@/lib/marketplace/types";
@@ -92,14 +92,15 @@ export function BookingCard({ booking, perspective, providerEarnings }: {
   </section>;
 
   const help = <div className={styles.stack}>
-    {booking.supportCase && <section className={styles.panel}>
-      <div className={styles.caseHeading}><div><h3>Resolution request</h3><p>{labelFromSnakeCase(booking.supportCase.category)} · {formatCustomerMoney(booking.supportCase.requestedRefundCents)} requested</p></div><span className={`${styles.badge} ${styles.warning}`}>{labelFromSnakeCase(booking.supportCase.status)}</span></div>
-      <p className={styles.preserve}>{booking.supportCase.customerDetails}</p>
-      {booking.supportCase.providerResponse && <div className={styles.caseNotes}><h4>Provider response</h4><p className={styles.preserve}>{booking.supportCase.providerResponse}</p></div>}
-      {booking.supportCase.adminNotes && <div className={styles.caseNotes}><h4>Auxilium decision notes</h4><p className={styles.preserve}>{booking.supportCase.adminNotes}</p></div>}
-      {perspective === "provider" && activeCase && booking.supportCase.status !== "under_review" && <ProviderCaseResponseForm caseId={booking.supportCase.id} />}
-    </section>}
-    {perspective === "customer" && paid && !activeCase && remainingRefundCents >= 100 && <section className={styles.panel}><h3>Request a resolution</h3><p>Ask for help with a paid booking or request a refund.</p><BookingCaseRequestForm bookingId={booking.id} remainingRefundCents={remainingRefundCents} allowCancellation={booking.status === "accepted"} /></section>}
+    <BookingResolutionPanel booking={booking} perspective={perspective} />
+    {perspective === "customer" && paid && !activeCase && remainingRefundCents >= 100 && <BookingCaseRequestForm
+      bookingId={booking.id}
+      remainingRefundCents={remainingRefundCents}
+      allowCancellation={booking.status === "accepted"}
+      bookingContext={{ serviceName: booking.serviceName, providerName: booking.providerName,
+        paidAmountCents: booking.payment!.amountCents,
+        paymentLabel: paymentStatus === "partially_refunded" ? "Partially refunded" : "Paid" }}
+    />}
     {perspective === "customer" && canCancel && <section className={styles.panel}><h3>Cancel this request</h3><p>No successful payment has been collected. Cancelling an unpaid request does not require a refund.</p><BookingCancelForm bookingId={booking.id} /></section>}
     <section className={styles.panel}><h3>Need help with this visit?</h3><p>{completedUnpaid ? "Contact your provider to discuss the completed work or agreed price. Contact Auxilium support if you need help resolving a concern." : "Use your booking conversation to coordinate with the other party. Auxilium support can help with account or booking issues."}</p><Link href="/support" className={styles.secondary}>Contact support<CustomerIcon name="arrow" /></Link></section>
   </div>;

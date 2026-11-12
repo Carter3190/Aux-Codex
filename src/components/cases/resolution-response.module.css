@@ -1,0 +1,37 @@
+.workspace { min-width: 0; color: var(--foreground, #203246); }
+.heading { margin-bottom: 22px; }
+.eyebrow { margin: 0 0 8px; color: var(--brand, #356196); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.heading h3 { margin: 0; color: var(--foreground, #203246); font-size: 23px; font-weight: 600; letter-spacing: -.035em; line-height: 1.4; }
+.heading > p:last-child:not(.eyebrow) { margin-top: 9px; color: var(--muted, #52667e); font-size: 14px; line-height: 1.8; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.single { min-width: 0; }
+.card { min-width: 0; padding: 25px; border: 1px solid var(--border, #d9e3ef); border-radius: 17px; background: var(--surface, #fff); }
+.cardHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.cardTitle { margin: 0; color: var(--foreground, #203246); font-size: 18px; font-weight: 600; line-height: 1.5; letter-spacing: -.025em; }
+.badge { display: inline-flex; max-width: 100%; width: fit-content; align-items: center; padding: 6px 9px; border-radius: 7px; background: #eaf0f8; color: #345f94; font-size: 12px; font-weight: 600; line-height: 1.5; }
+.responseNeeded { background: #fff4dd; color: #795223; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 22px; margin: 24px 0; }
+.facts div { min-width: 0; }
+.facts dt { margin-bottom: 5px; color: var(--muted, #52667e); font-size: 12px; line-height: 1.6; }
+.facts dd { margin: 0; color: var(--foreground, #203246); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.facts .reference { font-size: 12px; font-variant-numeric: tabular-nums; }
+.statement { margin: 0; padding-left: 16px; border-left: 3px solid #d9e3ef; }
+.statement p { margin: 0; color: var(--foreground, #203246); font-size: 14px; line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note { margin-top: 20px; padding: 16px; border: 1px solid var(--border, #d9e3ef); border-radius: 11px; background: #f5f8fc; }
+.note h4 { margin: 0; color: var(--foreground, #203246); font-size: 13px; font-weight: 600; line-height: 1.6; }
+.note p { margin: 6px 0 0; color: var(--muted, #52667e); font-size: 13px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.caption { margin: 20px 0 0; color: var(--muted, #52667e); font-size: 12px; line-height: 1.8; }
+.form { display: flex; flex-direction: column; align-items: stretch; gap: 20px; }
+.field { display: block; color: var(--foreground, #203246); font-size: 13px; font-weight: 600; line-height: 1.6; }
+.textarea { display: block; width: 100%; min-height: 194px; margin-top: 9px; padding: 14px 16px; border: 1px solid #bfd0e5; border-radius: 11px; background: #fff; color: var(--foreground, #203246); font-size: 14px; font-weight: 400; line-height: 1.8; outline: none; resize: vertical; transition: border-color .15s, box-shadow .15s; }
+.textarea::placeholder { color: #77889b; opacity: 1; }
+.textarea:focus { border-color: var(--brand, #356196); box-shadow: 0 0 0 3px #e5edf8; }
+.textarea[aria-invalid="true"] { border-color: #bc5656; }
+.error { margin: -9px 0 0; color: #b42323; font-size: 13px; line-height: 1.7; }
+.primary { display: inline-flex; align-self: flex-start; justify-content: center; align-items: center; min-height: 46px; max-width: 100%; padding: 12px 20px; border: 1px solid var(--brand, #356196); border-radius: 11px; background: var(--brand, #356196); color: #fff; font-size: 14px; font-weight: 600; line-height: 1.5; cursor: pointer; transition: background .15s, border-color .15s; }
+.primary:hover { border-color: var(--brand-dark, #203246); background: var(--brand-dark, #203246); }
+.primary:focus-visible { outline: 3px solid #8aadd5; outline-offset: 3px; }
+.primary:disabled { cursor: wait; opacity: .6; }
+@media (max-width: 750px) { .columns { grid-template-columns: minmax(0, 1fr); } .card { padding: 21px; } .heading h3 { font-size: 21px; } }
+@media (max-width: 420px) { .facts { grid-template-columns: minmax(0, 1fr); gap: 16px; } .primary { width: 100%; align-self: stretch; } }
+@media (prefers-reduced-motion: reduce) { .textarea, .primary { transition: none; } }
