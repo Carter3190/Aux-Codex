@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { notifyBookingParticipants } from "@/lib/email/notifications";
+import { notifyBookingParticipants, notifyBookingCompletion } from "@/lib/email/notifications";
 import { CURRENT_TERMS_VERSION } from "@/lib/legal/agreements";
 import { createClient } from "@/lib/supabase/server";
 import { requireMarketplaceActionRole } from "./data";
 import type { MarketplaceActionState } from "./types";
+import { completeBookingWithPhotos } from "./completion-photos";
 
 const bookingSchema = z.object({
   providerId: z.uuid("Invalid provider."),
@@ -267,32 +268,14 @@ export async function completeBooking(
 
   try {
     const { supabase } = await requireMarketplaceActionRole("provider");
-    const { error } = await supabase.rpc("complete_booking", {
-      requested_booking_id: bookingId.data,
-    });
-    if (error) return failure(databaseMessage(error.message));
-
-    const { data: payment } = await supabase
-      .from("booking_payments")
-      .select("status")
-      .eq("booking_id", bookingId.data)
-      .maybeSingle();
-    const paid = payment && ["paid", "partially_refunded"].includes(payment.status);
-
-    await notifyBookingParticipants({
-      bookingId: bookingId.data,
-      recipients: ["customer"],
-      eventKey: `booking_completed_${bookingId.data}`,
-      subject: "Your Auxilium service was marked complete",
-      heading: "Your service is complete",
-      message: paid
-        ? "This visit is complete. You can share a verified rating and review from your customer dashboard."
-        : "This visit is complete. Open the booking to review the final price and payment status. If payment is due, you can pay from your customer dashboard.",
-    });
+    const completedNow = await completeBookingWithPhotos(supabase, bookingId.data, formData.getAll("completionPhotoPaths"));
+    const notification = completedNow ? await notifyBookingCompletion({ bookingId: bookingId.data }) : null;
 
     revalidatePath("/dashboard/provider", "layout");
     revalidatePath("/dashboard/customer", "layout");
-    return success("This visit is complete. Its payment status is shown in the booking.");
+    return success(notification?.status === "failed"
+      ? "This visit is complete. The customer email could not be sent; please ask the customer to open their booking."
+      : "This visit is complete. Its payment status is shown in the booking.");
   } catch (error) {
     return failure(
       error instanceof Error ? error.message : "Unable to complete the booking.",

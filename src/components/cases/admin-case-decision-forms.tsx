@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { denyBookingCase, refundBookingCase } from "@/lib/cases/actions";
 import { initialCaseActionState } from "@/lib/cases/types";
 import { CaseFeedback } from "./case-feedback";
+import styles from "@/components/marketplace/booking-forms.module.css";
 
 function dollars(cents: number) {
   return (cents / 100).toFixed(2);
@@ -29,20 +30,20 @@ export function AdminCaseDecisionForms({
   );
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className={styles.decisionGrid}>
       <form
         action={refundAction}
-        className="space-y-4 rounded-2xl border border-[#d0d0d0] bg-[#f7f7f7] p-5"
+        className={`${styles.form} ${styles.section}`}
       >
         <input type="hidden" name="caseId" value={caseId} />
         <div>
-          <p className="font-semibold text-brand-dark">Approve a Stripe refund</p>
-          <p className="mt-1 text-xs leading-5 text-muted">
+          <h3 className={styles.heading}>Approve a Stripe refund</h3>
+          <p className={styles.description}>
             This refunds the provider’s Stripe charge and proportionally refunds
             Auxilium’s application fee.
           </p>
         </div>
-        <label className="block text-sm font-semibold text-foreground">
+        <label className={styles.field}>
           Refund amount (USD)
           <NumberField
             name="amount"
@@ -53,13 +54,13 @@ export function AdminCaseDecisionForms({
               Math.min(requestedRefundCents, remainingRefundCents),
             )}
             required
-            className="mt-2 block w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+            className={styles.control}
           />
-          <span className="mt-1 block font-normal text-muted">
+          <span className={styles.hint}>
             {dollars(remainingRefundCents)} USD remains refundable.
           </span>
         </label>
-        <label className="block text-sm font-semibold text-foreground">
+        <label className={styles.field}>
           Decision notes
           <textarea
             name="notes"
@@ -67,24 +68,23 @@ export function AdminCaseDecisionForms({
             minLength={10}
             maxLength={4000}
             required
-            className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+            className={styles.control}
             placeholder="Explain why this amount is being refunded."
           />
         </label>
-        <label className="flex items-start gap-3 rounded-xl border border-[#d0d0d0] bg-white p-3 text-sm leading-6 text-foreground">
+        <label className={styles.check}>
           <input
             type="checkbox"
             name="confirmation"
             value="confirmed"
             required
-            className="mt-1 h-4 w-4 accent-[#080808]"
           />
           <span>
             I confirm this immediately creates a Stripe refund for the amount shown.
           </span>
         </label>
         {Object.values(refundState.fieldErrors ?? {}).flat()[0] && (
-          <p className="text-sm text-red-700">
+          <p className={styles.fieldError}>
             {Object.values(refundState.fieldErrors ?? {}).flat()[0]}
           </p>
         )}
@@ -92,7 +92,7 @@ export function AdminCaseDecisionForms({
         <button
           type="submit"
           disabled={refundPending || remainingRefundCents < 100}
-          className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
+          className={styles.primary}
         >
           {refundPending ? "Issuing refund…" : "Confirm and issue refund"}
         </button>
@@ -100,17 +100,17 @@ export function AdminCaseDecisionForms({
 
       <form
         action={denyAction}
-        className="space-y-4 rounded-2xl border border-border bg-[#f7f7f7] p-5"
+        className={`${styles.form} ${styles.section}`}
       >
         <input type="hidden" name="caseId" value={caseId} />
         <div>
-          <p className="font-semibold text-brand-dark">Deny the request</p>
-          <p className="mt-1 text-xs leading-5 text-muted">
+          <h3 className={styles.heading}>Deny the request</h3>
+          <p className={styles.description}>
             This closes the request without moving money. The note is visible to
             the customer and provider.
           </p>
         </div>
-        <label className="block text-sm font-semibold text-foreground">
+        <label className={styles.field}>
           Decision notes
           <textarea
             name="notes"
@@ -118,18 +118,18 @@ export function AdminCaseDecisionForms({
             minLength={10}
             maxLength={4000}
             required
-            className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+            className={styles.control}
             placeholder="Explain why no refund is being issued."
           />
         </label>
         {denyState.fieldErrors?.notes?.[0] && (
-          <p className="text-sm text-red-700">{denyState.fieldErrors.notes[0]}</p>
+          <p className={styles.fieldError}>{denyState.fieldErrors.notes[0]}</p>
         )}
-        <CaseFeedback state={denyState} />
+        <CaseFeedback state={denyState} tone="info" />
         <button
           type="submit"
           disabled={denyPending}
-          className="rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+          className={`${styles.secondary} ${styles.danger}`}
         >
           {denyPending ? "Saving decision…" : "Deny with notes"}
         </button>

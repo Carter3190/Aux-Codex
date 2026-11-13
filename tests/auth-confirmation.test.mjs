@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import ts from "typescript";
 import { z } from "zod";
+import { safeDashboardReturnPath } from "../src/lib/auth/return-path.ts";
 
 const source = readFileSync(new URL("../src/lib/auth/actions.ts", import.meta.url), "utf8");
 const compiled = ts.transpileModule(source, {
@@ -18,6 +19,7 @@ function loadAction({ configured = true, send = async () => ({ error: null }) } 
     "@/lib/supabase/config": { isSupabaseConfigured: () => configured },
     "@/lib/supabase/server": { createClient: async () => ({ auth: { resend: async (input) => { calls.push(input); return send(input); } } }) },
     "@/lib/legal/agreements": {},
+    "./return-path": { safeDashboardReturnPath },
   };
   const actionModule = { exports: {} };
   new Function("require", "module", "exports", compiled)((name) => {

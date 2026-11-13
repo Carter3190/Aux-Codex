@@ -225,3 +225,14 @@ The Stripe review badge comes from the retrieved account requirements, not the
 return URL. The 3–5 business-day message is guidance for submitted document review,
 not a guaranteed approval deadline. A failed refresh is labelled unavailable
 rather than freshly approved.
+# Completion photos and completion-email release (2026-11-13)
+
+Apply `supabase/migrations/20261113000000_booking_completion_photos.sql` before deploying this release. It creates a private `booking-completion-photos` bucket and authenticated booking-photo metadata. Both the public metadata table and the internal verification table have Row Level Security enabled. Existing completion, checkout, price, payment, fee, and payout functions remain unchanged.
+
+Providers can optionally select up to five JPG, PNG, or WebP images, each no larger than 5 MB, before marking accepted work complete. Browser uploads go directly to authenticated Supabase Storage, so this does not increase Next.js action-body limits or route files through Vercel's request-body limit. The server checks actual image bytes before the new atomic RPC associates the photos with the completed booking. Attached photos cannot be replaced or deleted by booking participants. Customers, the provider, and authorized administrators can view them; public profiles cannot.
+
+The existing Resend configuration sends the completion email. The new completion RPC returns whether this request performed the transition; an already-completed retry does not generate another email. The email links to the booking's Overview tab, where any photos are shown. Signed-out customers return to that destination after signing in and satisfying any existing agreement review. Emails contain no image attachments or signed image URLs. Delivery failures do not undo completed work and are reported in provider action feedback.
+
+Marking complete still does not charge the customer, create a bank payout, or add a one-hour time lock. The existing scheduled-date and agreed-price checks remain. Customer payment stays an explicit action after completion; the 5% fee and Stripe payout schedule are unchanged.
+
+Verify the bucket is private, the two new tables have RLS, authenticated users cannot attest image verification, and existing payment totals/function hashes match the preflight. Run the full test suite, lint, type check, and production build before publishing. No new environment variables or paid-plan upgrade are required for this release.

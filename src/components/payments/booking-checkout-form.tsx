@@ -7,6 +7,7 @@ import {
   type PaymentStatus,
 } from "@/lib/payments/types";
 import { PaymentFeedback } from "./payment-feedback";
+import styles from "@/components/marketplace/booking-forms.module.css";
 
 export function BookingCheckoutForm({
   bookingId,
@@ -21,13 +22,13 @@ export function BookingCheckoutForm({
   );
 
   return (
-    <form action={action} className="mt-5 space-y-3">
+    <form action={action} className={`${styles.form} ${styles.inline}`}>
       <input type="hidden" name="bookingId" value={bookingId} />
       <PaymentFeedback state={state} />
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
+        className={styles.primary}
       >
         {pending
           ? "Opening secure checkout…"
@@ -35,7 +36,7 @@ export function BookingCheckoutForm({
             ? "Continue secure checkout"
             : "Pay securely with Stripe"}
       </button>
-      <p className="text-xs leading-5 text-muted">
+      <p className={styles.hint}>
         Payment details are entered on Stripe and are never stored by Auxilium.
       </p>
     </form>

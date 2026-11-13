@@ -5,6 +5,8 @@ import styles from "@/components/admin/admin-pages.module.css";
 import { AdminCaseDecisionForms } from "@/components/cases/admin-case-decision-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getAdminResolutionWorkspace } from "@/lib/cases/data";
+import { getBookingCompletionPhotos } from "@/lib/marketplace/completion-photos";
+import { BookingCompletionGallery } from "@/components/marketplace/booking-completion-gallery";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 
 export const metadata: Metadata = {
@@ -46,6 +48,7 @@ export default async function AdminCasesPage({
   const view = !selectedCaseId && (query.view === "history" || query.view === "disputes") ? query.view : "open";
   const { admin, cases, disputes } = await getAdminResolutionWorkspace();
   const selectedCase = selectedCaseId ? cases.find((item) => item.id === selectedCaseId) : undefined;
+  const completion = selectedCase?.bookingStatus === "completed" ? await getBookingCompletionPhotos(selectedCase.bookingId) : null;
   const filteredCases = cases.filter((item) => view === "history" ? !activeStatuses.has(item.status) : activeStatuses.has(item.status));
   const activeCases = cases.filter((item) => activeStatuses.has(item.status));
   const activeDisputes = disputes.filter((item) =>
@@ -184,6 +187,8 @@ export default async function AdminCasesPage({
                     </div>
 
                     </div>
+
+                    {completion && <BookingCompletionGallery photos={completion.photos} error={completion.error} perspective="admin" />}
 
                     {item.adminNotes && !isActive && (
                       <div className="rounded-2xl border border-border bg-[#f7f7f7] p-5">

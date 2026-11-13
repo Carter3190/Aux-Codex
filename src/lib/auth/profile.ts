@@ -1,7 +1,9 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { safeDashboardReturnPath } from "./return-path";
 
 export type UserRole = "customer" | "provider" | "admin";
 export type ProviderStatus =
@@ -39,7 +41,10 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
   const claims = claimsData?.claims;
 
   if (claimsError || !claims?.sub) {
-    redirect("/login");
+    const returnPath = safeDashboardReturnPath(
+      (await headers()).get("x-auxilium-request-path"),
+    );
+    redirect(returnPath ? `/login?next=${encodeURIComponent(returnPath)}` : "/login");
   }
 
   const { data, error } = await supabase
