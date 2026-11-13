@@ -44,6 +44,7 @@ async function database(){
   await db.exec(credentialRules.slice(credentialRules.indexOf('drop policy if exists "Providers delete their own credential files"'),credentialRules.indexOf("-- No existing provider status or booking history is changed.")));
   await db.query("insert into profiles(id,role,provider_status) values ($1,'customer',null),($2,'customer',null),($3,'provider','approved'),($4,'provider','approved'),($5,'admin',null)",[customer,otherCustomer,provider,otherProvider,admin]);
   await db.exec(await migration("20261113000000_booking_completion_photos.sql"));
+  await db.exec(await migration("20261113010000_completion_photo_snapshot.sql"));
   return db;
 }
 async function as(db,id,action,role="authenticated"){
@@ -61,6 +62,10 @@ async function photo(db,bookingId,who=provider,{size=100,type="image/png",fileId
 }
 async function verify(db,bookingId,object,who=provider){
   return as(db,who,()=>db.query("select record_booking_completion_photo_verification($1,$2,$3,$4,$5,$6,$7)",[bookingId,who,object.name,object.id,object.updated_at,object.metadata.mimetype,object.metadata.size]),"service_role");
+}
+async function snapshot(db,bookingId,object,who=provider,role="service_role"){
+  const result=await as(db,who,()=>db.query("select get_booking_completion_photo_snapshot($1,$2,$3,$4) as snapshot",[bookingId,who,object.name,object.id]),role);
+  return result.rows[0].snapshot;
 }
 const complete=(db,id,paths=[],who=provider)=>as(db,who,()=>db.query("select complete_booking_with_photos($1,$2)",[id,paths]));
 const saved=(db,id)=>db.query("select * from booking_completion_photos where booking_id=$1 order by position",[id]);
@@ -153,6 +158,49 @@ test("private completion images preserve payment flow and enforce RPC/storage ow
       const normal=await photo(db,id);
       await assert.rejects(as(db,provider,()=>db.query("select record_booking_completion_photo_verification($1,$2,$3,$4,$5,'image/jpeg',100)",[id,provider,normal.name,normal.id,normal.updated_at]),"service_role"),/could not be verified/);
     });
+    await t.test("exact snapshot preserves database microseconds lost by Storage's JavaScript timestamp",async()=>{
+      const id=await booking(db);const original=await photo(db,id);
+      await db.query("update storage.objects set updated_at='2026-11-13T21:00:00.123456Z' where id=$1",[original.id]);
+      const object=(await db.query("select * from storage.objects where id=$1",[original.id])).rows[0];
+      assert.equal(object.updated_at.toISOString(),"2026-11-13T21:00:00.123Z");
+      await assert.rejects(verify(db,id,object),/could not be verified/);
+      const exact=await snapshot(db,id,object);
+      assert.equal(exact.id,object.id);assert.equal(exact.updated_at,"2026-11-13 21:00:00.123456+00");
+      assert.equal(exact.content_type,"image/png");assert.equal(exact.byte_size,100);
+      await verify(db,id,{...object,updated_at:exact.updated_at});
+      assert.equal((await db.query("select object_updated_at::text as exact from private.booking_completion_photo_verifications where storage_object_id=$1",[object.id])).rows[0].exact,exact.updated_at);
+      assert.equal((await complete(db,id,[object.name])).rows[0].complete_booking_with_photos,true);
+      assert.equal((await saved(db,id)).rows.length,1);
+      assert.equal((await db.query("select count(*)::integer n from booking_payments where booking_id=$1",[id])).rows[0].n,0);
+    });
+    await t.test("exact snapshot remains service-only and rejects mismatched ownership, booking, and object",async()=>{
+      const id=await booking(db);const object=await photo(db,id);
+      for(const role of ["anon","authenticated"]){
+        await assert.rejects(snapshot(db,id,object,provider,role),/permission denied/);
+      }
+      await assert.rejects(snapshot(db,id,object,otherProvider),/does not belong/);
+      await assert.rejects(snapshot(db,await booking(db),object),/does not belong/);
+      await assert.rejects(snapshot(db,id,{...object,id:randomUUID()}),/could not be verified/);
+      const foreign=await photo(db,await booking(db),provider);
+      await assert.rejects(snapshot(db,id,{...object,id:foreign.id}),/could not be verified/);
+      await db.query("update booking_requests set status='cancelled' where id=$1",[id]);
+      await assert.rejects(snapshot(db,id,object),/does not belong/);
+    });
+    await t.test("a change of only one microsecond during byte verification or after attestation is still rejected",async()=>{
+      const id=await booking(db);const object=await photo(db,id);
+      await db.query("update storage.objects set updated_at='2026-11-13T21:00:00.123456Z' where id=$1",[object.id]);
+      const beforeDownload=await snapshot(db,id,object);
+      await db.query("update storage.objects set updated_at=updated_at+interval '1 microsecond' where id=$1",[object.id]);
+      await assert.rejects(verify(db,id,{...object,updated_at:beforeDownload.updated_at}),/could not be verified/);
+      assert.equal((await db.query("select count(*)::integer n from private.booking_completion_photo_verifications where storage_object_id=$1",[object.id])).rows[0].n,0);
+      const refreshed=await snapshot(db,id,object);
+      assert.equal(refreshed.updated_at,"2026-11-13 21:00:00.123457+00");
+      await verify(db,id,{...object,updated_at:refreshed.updated_at});
+      await db.query("update storage.objects set updated_at=updated_at+interval '1 microsecond' where id=$1",[object.id]);
+      await assert.rejects(complete(db,id,[object.name]),/must be verified/);
+      assert.equal((await saved(db,id)).rows.length,0);
+      assert.equal((await db.query("select status from booking_requests where id=$1",[id])).rows[0].status,"accepted");
+    });
     await t.test("legacy public-photo and credential policies do not expose completion images",async()=>{
       const legacy=(await as(db,provider,()=>db.query("insert into storage.objects(bucket_id,name,metadata) values('provider-photos',$1,'{}') returning id",[`${provider}/portfolio.png`]))).rows[0];
       assert.equal((await as(db,null,()=>db.query("select id from storage.objects where id=$1",[legacy.id]),"anon")).rows.length,1);
@@ -168,6 +216,7 @@ test("private completion images preserve payment flow and enforce RPC/storage ow
     await t.test("rerunning migration preserves existing completion/photo records",async()=>{
       const before=(await db.query("select * from booking_completion_photos order by id")).rows;
       await db.exec(await migration("20261113000000_booking_completion_photos.sql"));
+      await db.exec(await migration("20261113010000_completion_photo_snapshot.sql"));
       assert.deepEqual((await db.query("select * from booking_completion_photos order by id")).rows,before);
     });
   }finally{await db.close();}

@@ -65,6 +65,20 @@ export async function completeBookingWithPhotos(supabase: SupabaseClient, bookin
       if (!Number.isFinite(declaredSize) || declaredSize < 1 || declaredSize > MAX_COMPLETION_PHOTO_BYTES) {
         throw new Error("Each completion photo must be 5 MB or smaller.");
       }
+      // Storage serializes timestamps through JavaScript Date (milliseconds).
+      // Keep the exact PostgreSQL timestamp as text for strict version checks.
+      const { data: snapshot, error: snapshotError } = await admin.rpc("get_booking_completion_photo_snapshot", {
+        requested_booking_id: bookingId,
+        requested_provider_id: providerId,
+        requested_storage_path: path,
+        requested_object_id: object.id,
+      });
+      if (snapshotError || !snapshot || snapshot.id !== object.id
+        || typeof snapshot.updated_at !== "string" || !snapshot.updated_at
+        || snapshot.content_type !== object.metadata?.mimetype || snapshot.byte_size !== declaredSize) {
+        if (snapshotError) console.error("Completion photo snapshot failed", { code: snapshotError.code });
+        throw new Error("The completion photo upload could not be verified. Upload it again.");
+      }
       // Download with the participant's authenticated client, not the service
       // key: this preserves Storage's owner/accepted-booking access boundary.
       const { data: image, error: downloadError } = await supabase.storage.from(COMPLETION_PHOTO_BUCKET).download(path);
@@ -83,11 +97,14 @@ export async function completeBookingWithPhotos(supabase: SupabaseClient, bookin
         requested_provider_id: providerId,
         requested_storage_path: path,
         requested_object_id: object.id,
-        requested_object_updated_at: object.updated_at,
+        requested_object_updated_at: snapshot.updated_at,
         verified_content_type: contentType,
         verified_byte_size: image.size,
       });
-      if (verificationError) throw new Error("The completion photo upload changed while it was being checked. Please try again.");
+      if (verificationError) {
+        console.error("Completion photo verification failed", { code: verificationError.code });
+        throw new Error("The completion photo could not be verified. Please try again.");
+      }
     }
   }
   const { data: completedNow, error } = await supabase.rpc("complete_booking_with_photos", {
