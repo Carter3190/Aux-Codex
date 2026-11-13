@@ -3,6 +3,9 @@ import { BookingCancelForm } from "./booking-cancel-form";
 import { BookingCompletionForm } from "./booking-completion-form";
 import { BookingReviewForm } from "./booking-review-form";
 import { BookingResponseForm } from "./booking-response-form";
+import { BookingCompletionGallery } from "./booking-completion-gallery";
+import { ActionFeedback } from "./action-feedback";
+import type { BookingCompletionPhoto } from "@/lib/marketplace/completion-photos";
 import { BookingDetailTabs } from "./booking-detail-tabs";
 import { BookingCheckoutForm } from "@/components/payments/booking-checkout-form";
 import { BookingPriceForm } from "@/components/payments/booking-price-form";
@@ -20,8 +23,10 @@ import styles from "./booking-detail.module.css";
 
 const activeCaseStatuses = new Set(["open", "provider_responded", "under_review"]);
 
-export function BookingCard({ booking, perspective, providerEarnings }: {
+export function BookingCard({ booking, perspective, providerEarnings, completionPhotos = [], completionPhotosError, initialTab }: {
   booking: BookingRequest; perspective: "customer" | "provider"; providerEarnings?: ProviderEarnings;
+  completionPhotos?: BookingCompletionPhoto[]; completionPhotosError?: string | null;
+  initialTab?: "overview";
 }) {
   const paymentStatus = booking.payment?.status;
   const paid = paymentStatus === "paid" || paymentStatus === "partially_refunded";
@@ -70,13 +75,15 @@ export function BookingCard({ booking, perspective, providerEarnings }: {
     </div>
     <section className={styles.panel} aria-label={perspective === "customer" ? "Your provider" : "Your customer"}>
       <div className={styles.person}><span className={styles.avatar} aria-hidden="true">{initials}</span><div><h3>{counterpart}</h3><p>Your {perspective === "customer" ? "provider" : "customer"}</p></div></div>
-      <p className={styles.statusText}>{perspective === "provider" ? statusText : customerStatusText}</p>
+      {perspective === "provider" && booking.status === "accepted" && <ActionFeedback state={{ status: "success", message: "Request accepted." }} />}
+      {perspective === "provider" && booking.status === "declined" ? <ActionFeedback tone="declined" state={{ status: "success", message: "Request declined." }} /> : <p className={styles.statusText}>{perspective === "provider" ? statusText : customerStatusText}</p>}
       {completedUnpaid && <p>{paymentStatus === "processing" ? "Payment is processing. Stripe will confirm the payment status here." : booking.agreedPriceCents === null ? "The final price still needs to be confirmed." : perspective === "provider" ? "Customer payment is still outstanding. You can review its status in Payment." : "Open Payment to review the agreed price and pay for your visit."}</p>}
       <Link href={`/dashboard/messages/${booking.id}`} className={styles.secondary}><CustomerIcon name="messages" />{canMessage ? `Message ${perspective === "customer" ? "provider" : "customer"}` : "View conversation"}</Link>
       {perspective === "provider" && booking.status === "pending" && <BookingResponseForm bookingId={booking.id} />}
-      {perspective === "provider" && canComplete && <div className={styles.completion}><BookingCompletionForm bookingId={booking.id} paymentReceived={paid} /></div>}
       {perspective === "provider" && booking.status === "accepted" && !canComplete && <p className={styles.note}>{booking.agreedPriceCents === null ? "Set the agreed price in Payment before marking this visit complete." : booking.requestedDate > customerCalendarDay() ? "Mark the service complete after the work is finished, on or after the scheduled visit date." : paymentStatus === "checkout_pending" || paymentStatus === "processing" ? "An earlier payment attempt must finish or expire before this visit can be marked complete." : "Contact support if this booking’s payment status needs review."}</p>}
     </section>
+    {perspective === "provider" && canComplete && <section className={`${styles.panel} ${styles.fullWidth}`} aria-label="Service progress"><h3>Service progress</h3><BookingCompletionForm bookingId={booking.id} providerId={booking.providerId} paymentReceived={paid} /></section>}
+    {booking.status === "completed" && <BookingCompletionGallery photos={completionPhotos} error={completionPhotosError} perspective={perspective} />}
   </div>;
 
   const payment = <section className={styles.panel}>
@@ -107,12 +114,12 @@ export function BookingCard({ booking, perspective, providerEarnings }: {
 
   const review = <section className={styles.panel}>
     {booking.review ? <><h3>{perspective === "customer" ? "Your verified review" : "Verified customer review"}</h3><p className={styles.reviewRating} aria-label={`${booking.review.rating} out of 5 stars`}>{"★".repeat(booking.review.rating)}{"☆".repeat(5 - booking.review.rating)}</p><p className={styles.preserve}>{booking.review.body}</p><div className={styles.reviewDate}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(booking.review.createdAt))}</div></> :
-      perspective === "customer" && booking.status === "completed" && paid ? <><h3>How did your visit go?</h3><BookingReviewForm bookingId={booking.id} /></> :
+      perspective === "customer" && booking.status === "completed" && paid ? <BookingReviewForm bookingId={booking.id} /> :
       <><h3>No review yet</h3><p>{perspective === "customer" ? "You can leave a verified review after the visit is complete and payment is confirmed." : "Your customer can leave a verified review after the visit is complete and payment is confirmed."}</p></>}
   </section>;
 
   return <article className={styles.detail}>
     <header className={styles.header}><div><p className={styles.eyebrow}>Booking details</p><h2>{booking.serviceName}</h2><p>{counterpart}</p></div><div className={styles.badges}><span className={`${styles.badge} ${booking.status === "pending" ? styles.warning : styles.neutral}`}>{booking.status === "completed" ? "Complete" : labelFromSnakeCase(booking.status)}</span><span className={`${styles.badge} ${paymentTone}`}>{displayedPaymentLabel}</span></div></header>
-    <BookingDetailTabs overview={overview} payment={payment} help={help} review={review} paymentDue={perspective === "customer" && paymentDue} />
+    <BookingDetailTabs key={`${booking.id}:${initialTab ?? "default"}`} overview={overview} payment={payment} help={help} review={review} paymentDue={perspective === "customer" && paymentDue} initialTab={initialTab} />
   </article>;
 }

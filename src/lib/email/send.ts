@@ -5,6 +5,11 @@ import {
   getTransactionalEmailConfig,
   isTransactionalEmailConfigured,
 } from "./config";
+import {
+  createBookingCompletionEmail,
+  renderBookingCompletionEmail,
+  type BookingCompletionEmailInput,
+} from "./booking-completion";
 
 type TransactionalEmail = {
   to: string;
@@ -124,6 +129,50 @@ export async function sendTransactionalEmail(
   } catch (error) {
     console.error("Transactional email delivery failed", {
       notification: input.idempotencyKey,
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
+    return { status: "failed" };
+  }
+}
+
+export async function sendBookingCompletionEmail(
+  input: BookingCompletionEmailInput & { to: string },
+): Promise<TransactionalEmailResult> {
+  if (!isTransactionalEmailConfigured()) return { status: "skipped" };
+
+  const content = createBookingCompletionEmail(input);
+  try {
+    const config = getTransactionalEmailConfig();
+    const actionUrl = new URL(content.actionPath, `${getAppUrl()}/`).toString();
+    const rendered = renderBookingCompletionEmail(content, actionUrl);
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": safeIdempotencyKey(content.idempotencyKey),
+      },
+      body: JSON.stringify({
+        from: config.from,
+        to: [input.to],
+        subject: content.subject,
+        ...rendered,
+        ...(config.replyTo ? { reply_to: config.replyTo } : {}),
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!response.ok) {
+      console.error("Completion email delivery failed", {
+        notification: content.idempotencyKey,
+        status: response.status,
+      });
+      return { status: "failed" };
+    }
+    return { status: "sent" };
+  } catch (error) {
+    console.error("Completion email delivery failed", {
+      notification: content.idempotencyKey,
       name: error instanceof Error ? error.name : "UnknownError",
     });
     return { status: "failed" };

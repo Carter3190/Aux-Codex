@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendTransactionalEmail } from "./send";
+import { sendBookingCompletionEmail, sendTransactionalEmail, type TransactionalEmailResult } from "./send";
 
 type RecipientRole = "customer" | "provider" | "admin";
 
@@ -53,6 +53,52 @@ async function adminProfiles() {
     .eq("role", "admin");
   if (error) return [];
   return (data ?? []) as ProfileRow[];
+}
+
+export async function notifyBookingCompletion(
+  input: { bookingId: string },
+): Promise<TransactionalEmailResult> {
+  try {
+    const admin = createAdminClient();
+    const { data: booking, error: bookingError } = await admin
+      .from("booking_requests")
+      .select("id, customer_id, customer_name, provider_name, service_name, requested_date, requested_start_time, agreed_price_cents, status")
+      .eq("id", input.bookingId)
+      .single();
+    if (bookingError) throw new Error("BookingUnavailable");
+    if (!booking || booking.status !== "completed") return { status: "skipped" };
+
+    const [customerResult, paymentResult] = await Promise.all([
+      admin.from("profiles").select("id, email, full_name")
+        .eq("id", booking.customer_id).single(),
+      admin.from("booking_payments").select("status, amount_cents, refunded_amount_cents")
+        .eq("booking_id", booking.id).maybeSingle(),
+    ]);
+    if (customerResult.error || paymentResult.error) throw new Error("CompletionDetailsUnavailable");
+    const customer = customerResult.data;
+    if (!customer?.email || customer.id !== booking.customer_id) return { status: "skipped" };
+
+    return await sendBookingCompletionEmail({
+      to: customer.email,
+      bookingId: booking.id,
+      customerId: customer.id,
+      recipientName: customer.full_name || booking.customer_name,
+      providerName: booking.provider_name,
+      serviceName: booking.service_name,
+      requestedDate: booking.requested_date,
+      requestedStartTime: booking.requested_start_time,
+      agreedPriceCents: booking.agreed_price_cents,
+      paymentStatus: paymentResult.data?.status ?? null,
+      paymentAmountCents: paymentResult.data?.amount_cents ?? null,
+      refundedAmountCents: paymentResult.data?.refunded_amount_cents ?? null,
+    });
+  } catch (error) {
+    console.error("Completion notification preparation failed", {
+      event: `booking_completed_${input.bookingId}`,
+      name: error instanceof Error ? error.name : "UnknownError",
+    });
+    return { status: "failed" };
+  }
 }
 
 export async function notifyBookingParticipants(

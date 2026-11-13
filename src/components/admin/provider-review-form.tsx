@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { reviewProviderApplication } from "@/lib/providers/actions";
 import {
   initialProviderActionState,
   type ProviderStatus,
 } from "@/lib/providers/types";
 import { FormFeedback } from "@/components/provider/form-feedback";
+import styles from "@/components/marketplace/booking-forms.module.css";
 
 export function ProviderReviewForm({
   providerId,
@@ -25,33 +26,35 @@ export function ProviderReviewForm({
     reviewProviderApplication,
     initialProviderActionState,
   );
+  const [decision, setDecision] = useState("approved");
 
   return (
-    <form action={action} className="space-y-4 rounded-2xl bg-[#f4f4f4] p-5">
+    <form action={action} className={`${styles.form} ${styles.section}`}>
       <input type="hidden" name="providerId" value={providerId} />
-      <label className="block text-sm font-semibold text-foreground">
+      <label className={styles.field}>
         Review notes
         <textarea
           name="notes"
           rows={4}
           maxLength={2000}
-          className="mt-2 w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+          className={styles.control}
           placeholder="Required when rejecting; visible to the provider."
         />
         {state.fieldErrors?.notes?.[0] && (
-          <span className="mt-2 block font-normal text-red-700">
+          <span className={styles.fieldError}>
             {state.fieldErrors.notes[0]}
           </span>
         )}
       </label>
-      <FormFeedback state={state} />
-      <div className="flex flex-wrap gap-3">
+      <FormFeedback state={state} tone={decision === "rejected" ? "info" : "success"} />
+      <div className={styles.actions}>
         <button
           type="submit"
           name="decision"
           value="approved"
           disabled={pending || !canApprove || providerStatus === "approved"}
-          className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={() => setDecision("approved")}
+          className={styles.primary}
         >
           Approve provider
         </button>
@@ -60,19 +63,20 @@ export function ProviderReviewForm({
           name="decision"
           value="rejected"
           disabled={pending || !canReview}
-          className="rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={() => setDecision("rejected")}
+          className={`${styles.secondary} ${styles.danger}`}
         >
           Return with notes
         </button>
       </div>
       {!canReview && (
-        <p className="text-xs leading-5 text-muted">
+        <p className={styles.hint}>
           This application cannot be reviewed until the provider completes every
           section and submits it.
         </p>
       )}
       {canReview && !canApprove && providerStatus !== "approved" && (
-        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-muted">
+        <ul className={styles.requirements}>
           {approvalRequirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
         </ul>
       )}

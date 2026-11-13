@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { reviewProviderCredential } from "@/lib/providers/actions";
 import {
   initialProviderActionState,
   type CredentialReviewStatus,
 } from "@/lib/providers/types";
 import { FormFeedback } from "@/components/provider/form-feedback";
+import styles from "@/components/marketplace/booking-forms.module.css";
 
 export function ProviderCredentialReviewForm({
   credentialId,
@@ -21,34 +22,36 @@ export function ProviderCredentialReviewForm({
     reviewProviderCredential,
     initialProviderActionState,
   );
+  const [decision, setDecision] = useState("approved");
 
   return (
-    <form action={action} className="mt-4 space-y-3 border-t border-border pt-4">
+    <form action={action} className={`${styles.form} ${styles.divided}`}>
       <input type="hidden" name="credentialId" value={credentialId} />
-      <label className="block text-xs font-semibold text-foreground">
+      <label className={styles.field}>
         Credential review notes
         <textarea
           name="notes"
-          rows={2}
+          rows={4}
           maxLength={1000}
           defaultValue={reviewNotes}
-          className="mt-2 w-full rounded-xl border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10"
+          className={styles.control}
           placeholder="Required when returning this document."
         />
         {state.fieldErrors?.notes?.[0] && (
-          <span className="mt-2 block font-normal text-red-700">
+          <span className={styles.fieldError}>
             {state.fieldErrors.notes[0]}
           </span>
         )}
       </label>
-      <FormFeedback state={state} />
-      <div className="flex flex-wrap gap-2">
+      <FormFeedback state={state} tone={decision === "rejected" ? "info" : "success"} />
+      <div className={styles.actions}>
         <button
           type="submit"
           name="decision"
           value="approved"
           disabled={pending}
-          className="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={() => setDecision("approved")}
+          className={styles.primary}
         >
           {reviewStatus === "approved" ? "Confirm approval" : "Approve document"}
         </button>
@@ -57,7 +60,8 @@ export function ProviderCredentialReviewForm({
           name="decision"
           value="rejected"
           disabled={pending || reviewStatus === "rejected"}
-          className="rounded-full border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={() => setDecision("rejected")}
+          className={`${styles.secondary} ${styles.danger}`}
         >
           Return document
         </button>

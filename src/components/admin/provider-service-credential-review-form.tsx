@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { FormFeedback } from "@/components/provider/form-feedback";
+import formStyles from "@/components/marketplace/booking-forms.module.css";
 import { reviewProviderServiceCredentials } from "@/lib/providers/actions";
 import {
   initialProviderActionState,
@@ -153,7 +154,7 @@ export function ProviderServiceCredentialReviewForm({
   );
 
   return (
-    <form action={action} className="mt-4 space-y-4 border-t border-border pt-4">
+    <form action={action} className={`${formStyles.form} ${formStyles.divided}`}>
       <input type="hidden" name="serviceId" value={serviceId} />
       <input type="hidden" name="serviceUpdatedAt" value={serviceUpdatedAt} />
       <input type="hidden" name="profileUpdatedAt" value={profileUpdatedAt} />
@@ -198,7 +199,7 @@ export function ProviderServiceCredentialReviewForm({
       </label>
       {state.fieldErrors?.scopeConfirmed?.[0] && <p className="text-xs text-red-700">{state.fieldErrors.scopeConfirmed[0]}</p>}
       <FormFeedback state={state} />
-      <button type="submit" disabled={pending || !canSave} className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+      <button type="submit" disabled={pending || !canSave} className={formStyles.primary}>
         {pending ? "Saving…" : "Save service credential review"}
       </button>
     </form>

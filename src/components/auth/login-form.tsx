@@ -5,11 +5,12 @@ import { signIn } from "@/lib/auth/actions";
 import { initialAuthState } from "@/lib/auth/types";
 import styles from "./auth.module.css";
 
-export function LoginForm() {
+export function LoginForm({ nextPath }: { nextPath?: string } = {}) {
   const [state, action, pending] = useActionState(signIn, initialAuthState);
 
   return (
     <form action={action} className={styles.form}>
+      {nextPath && <input type="hidden" name="next" value={nextPath} />}
       <label className={styles.field} htmlFor="login-email">
         Email address
         <input id="login-email" name="email" type="email" autoComplete="email" required

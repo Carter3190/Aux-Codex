@@ -1,7 +1,6 @@
 import type { ProviderActionState } from "@/lib/providers/types";
-import styles from "./provider-forms.module.css";
+import { ActionFeedback } from "@/components/marketplace/action-feedback";
 
-export function FormFeedback({ state }: { state: ProviderActionState }) {
-  if (!state.message) return null;
-  return <p role={state.status === "error" ? "alert" : "status"} className={`${styles.feedback} ${state.status === "error" ? styles.feedbackError : ""}`}>{state.message}</p>;
+export function FormFeedback({ state, tone }: { state: ProviderActionState; tone?: "success" | "error" | "info" | "declined" }) {
+  return <ActionFeedback state={state} tone={tone} />;
 }

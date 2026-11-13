@@ -11,10 +11,11 @@ const tabs: Array<{ key: Tab; label: string }> = [
   { key: "review", label: "Review" },
 ];
 
-export function BookingDetailTabs({ overview, payment, help, review, paymentDue = false }: {
+export function BookingDetailTabs({ overview, payment, help, review, paymentDue = false, initialTab }: {
   overview: ReactNode; payment: ReactNode; help: ReactNode; review: ReactNode; paymentDue?: boolean;
+  initialTab?: Tab;
 }) {
-  const [active, setActive] = useState<Tab>(paymentDue ? "payment" : "overview");
+  const [active, setActive] = useState<Tab>(initialTab ?? (paymentDue ? "payment" : "overview"));
   const id = useId();
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
   const panels = { overview, payment, help, review };

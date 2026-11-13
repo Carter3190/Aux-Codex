@@ -52,3 +52,4 @@
   .header h2 { font-size: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { .detail * { scroll-behavior: auto; } }
+.fullWidth { grid-column: 1 / -1; }

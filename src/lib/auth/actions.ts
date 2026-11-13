@@ -7,6 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { getRequiredLegalAgreements } from "@/lib/legal/agreements";
 import type { AuthFormState, ConfirmationFormState } from "./types";
+import { safeDashboardReturnPath } from "./return-path";
 
 const passwordSchema = z
   .string()
@@ -152,7 +153,7 @@ export async function signIn(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(safeDashboardReturnPath(formData.get("next")) ?? "/dashboard");
 }
 
 export async function signOut() {
