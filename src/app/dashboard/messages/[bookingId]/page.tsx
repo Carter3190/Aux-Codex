@@ -70,7 +70,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ b
               <div className={styles.fullFact}><dt>Booking reference</dt><dd>{booking.id}</dd></div>
             </dl>
             <Link href={bookingHref} className={styles.secondaryButton}>View booking <CustomerIcon name="arrow" /></Link>
-            <p className={styles.privacy}>Keep sensitive payment or identity information out of messages. Auxilium never asks for passwords here.</p>
+            <p className={styles.privacy}>Keep sensitive payment or identity information out of messages. Auxillium never asks for passwords here.</p>
           </aside>
         </div>
       </div>

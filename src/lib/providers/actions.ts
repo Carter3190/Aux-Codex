@@ -189,7 +189,7 @@ function databaseMessage(message?: string) {
     normalized.includes("credential decisions for every active service") ||
     normalized.includes("credential review")
   ) {
-    return message ?? "Complete the required sections and try again.";
+    return message?.replaceAll("Auxilium", "Auxillium") ?? "Complete the required sections and try again.";
   }
   if (
     normalized.includes("relation") ||
@@ -661,7 +661,7 @@ export async function reviewProviderApplication(
       providerId: parsed.data.providerId,
       recipients: ["provider"],
       eventKey: `provider_application_${parsed.data.decision}_${parsed.data.providerId}`,
-      subject: `Your Auxilium provider application was ${parsed.data.decision}`,
+      subject: `Your Auxillium provider application was ${parsed.data.decision}`,
       heading:
         parsed.data.decision === "approved"
           ? "Your provider profile is approved"

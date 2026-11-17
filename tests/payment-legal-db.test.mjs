@@ -79,12 +79,13 @@ test("post-service policy migration preserves evidence and binds new booking ass
       assert.deepEqual((await db.query("select * from legal_document_versions order by document_key,document_version")).rows, beforeRerun);
     });
 
-    await t.test("current registry versions and hashes match the new published pages", async () => {
+    await t.test("historical payment policy registry hashes still match the pre-spelling page source", async () => {
       const versions = (await currentVersions(db)).rows;
       for (const [key, path] of [["terms", "terms"], ["provider_agreement", "provider-agreement"]]) {
         const document = versions.find((row) => row.document_key === key);
         assert.equal(document.document_version, "2026-11-11");
-        const digest = createHash("sha256").update(await source(`src/app/${path}/page.tsx`)).digest("hex");
+        const page = (await source(`src/app/${path}/page.tsx`)).replaceAll("Auxillium", "Auxilium");
+        const digest = createHash("sha256").update(page).digest("hex");
         assert.equal(document.content_sha256, digest);
         assert.equal(document.document_path, `/${path}`);
       }

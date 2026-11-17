@@ -44,11 +44,11 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
   return <DashboardShell profile={profile} title={firstName ? `Welcome back, ${firstName}.` : "Welcome back."}>
     <div className={styles.page}>
       {suspended && <section className={`${styles.accountNotice} ${styles.noticeError}`}>
-        <h2>Your provider account is suspended</h2><p>Contact Auxilium support for help with your account. Your existing bookings remain available below.</p>
+        <h2>Your provider account is suspended</h2><p>Contact Auxillium support for help with your account. Your existing bookings remain available below.</p>
         <Link href="/support" className={styles.textLink}>Contact support<CustomerIcon name="arrow" /></Link>
       </section>}
       {underReview && <section className={styles.accountNotice}>
-        <h2>Your application is under review</h2><p>Auxilium is reviewing your profile and service requirements. You can review your application in Profile.</p>
+        <h2>Your application is under review</h2><p>Auxillium is reviewing your profile and service requirements. You can review your application in Profile.</p>
         <Link href="/dashboard/provider/onboarding?section=review" className={styles.textLink}>Review application<CustomerIcon name="arrow" /></Link>
       </section>}
       {!approved && latestReview?.decision === "rejected" && latestReview.notes && <section className={`${styles.accountNotice} ${styles.noticeWarning}`}>
@@ -80,7 +80,7 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
             {applicationAction && <ActionCard icon="overview" title={rejected ? "Update your application" : "Finish your provider profile"} href="/dashboard/provider/onboarding?section=review" action={rejected ? "Review and update" : "Continue setup"}>
               {rejected ? "Review the feedback, update your profile, and submit it again." : `${completion.completedCount} of ${completion.totalCount} profile sections are complete. Finish your application and send it for review.`}
             </ActionCard>}
-            {serviceReviewAction && <ActionCard icon="help" title="Service review needed" href="/dashboard/provider/onboarding?section=credentials" action="Review credentials">One or more services need an Auxilium review before they can take bookings. Keep any required documents current.</ActionCard>}
+            {serviceReviewAction && <ActionCard icon="help" title="Service review needed" href="/dashboard/provider/onboarding?section=credentials" action="Review credentials">One or more services need an Auxillium review before they can take bookings. Keep any required documents current.</ActionCard>}
             {groups.requests.length > 0 && <ActionCard icon="calendar" title={groups.requests.length === 1 ? "1 new request" : `${groups.requests.length} new requests`} href="/dashboard/provider/bookings?filter=requests" action="Review requests">Review the job details and respond to your customers.</ActionCard>}
             {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id)} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. Confirm the price before marking the work complete.</ActionCard>}
             {cases.length > 0 && <ActionCard icon="help" title={cases.length === 1 ? "Respond to a resolution request" : `${cases.length} resolution requests`} href={providerBookingPath(cases[0].id)} action="Review request">{cases[0].serviceName} · {cases[0].customerName}. Review the customer’s concern and add your response.</ActionCard>}

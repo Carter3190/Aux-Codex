@@ -1,6 +1,6 @@
-# Auxilium
+# Auxillium
 
-Auxilium is a local-services marketplace that connects customers with trusted
+Auxillium is a local-services marketplace that connects customers with trusted
 independent providers. This repository contains the marketplace application that
 will run separately from the public Squarespace website at
 `app.theauxillium.com`.
@@ -23,7 +23,7 @@ will run separately from the public Squarespace website at
 - Private booking-linked customer/provider conversations
 - Provider Stripe Connect Accounts v2 onboarding with hosted identity and bank verification
 - Provider-confirmed final booking prices
-- Stripe-hosted customer Checkout with a 5% Auxilium application fee
+- Stripe-hosted customer Checkout with a 5% Auxillium application fee
 - Signed, idempotent webhook reconciliation for payment status
 - Provider-confirmed service completion for successfully paid bookings
 - One immutable verified customer review per completed booking
@@ -90,8 +90,8 @@ and privacy-limited verified reviews are public marketplace content.
 
 The payment integration uses Stripe Connect Accounts v2 merchant accounts and
 direct charges. Each provider is the merchant for their customer charges and
-pays Stripe's processing costs; Auxilium collects a 5% application fee. Stripe
-collects provider identity and bank information. Auxilium stores only the
+pays Stripe's processing costs; Auxillium collects a 5% application fee. Stripe
+collects provider identity and bank information. Auxillium stores only the
 connected account ID and non-sensitive status flags.
 
 1. In **Supabase → Project Settings → API Keys**, create or copy a server-only
@@ -127,11 +127,11 @@ STRIPE_WEBHOOK_SECRET=whsec_your_local_listener_secret
 STRIPE_CONNECT_WEBHOOK_SECRET=whsec_your_connected_accounts_listener_secret
 ```
 
-To test Auxilium's transactional notifications, create a Resend API key and add:
+To test Auxillium's transactional notifications, create a Resend API key and add:
 
 ```bash
 RESEND_API_KEY=re_your_api_key
-EMAIL_FROM="Auxilium <notifications@auth.theauxillium.com>"
+EMAIL_FROM="Auxillium <notifications@auth.theauxillium.com>"
 EMAIL_REPLY_TO=your-support-address@example.com
 SUPPORT_EMAIL=your-support-address@example.com
 ```
@@ -246,7 +246,7 @@ account being reviewed.
 
 1. Sign in as an approved provider and select **Connect with Stripe** on the
    provider dashboard.
-2. Complete Stripe's test onboarding and return to Auxilium. The provider
+2. Complete Stripe's test onboarding and return to Auxillium. The provider
    dashboard must show **Payments ready** from Stripe’s actual account status.
 3. Open an accepted booking, enter the full final price, and save it.
 4. Before the work is complete, confirm the customer cannot start Checkout.
@@ -257,11 +257,11 @@ account being reviewed.
    expiry, any three-digit CVC, and any postal code.
 6. Confirm the customer and provider dashboards both show **Paid**. In Stripe,
    verify the direct charge belongs to the provider's connected account and
-   created a 5% application fee for Auxilium.
+   created a 5% application fee for Auxillium.
 
-Auxilium's 5% is the gross platform commission. With direct charges, Stripe
+Auxillium's 5% is the gross platform commission. With direct charges, Stripe
 deducts its payment-processing fee from the provider's connected-account
-balance, so the provider receives the booking price minus Auxilium's fee and
+balance, so the provider receives the booking price minus Auxillium's fee and
 Stripe's applicable fees.
 
 ## Testing completed bookings and reviews
@@ -287,13 +287,13 @@ Stripe's applicable fees.
 4. Review both statements. To test a refund, choose a full or partial amount,
    enter decision notes, check the final confirmation box, and issue the refund.
 5. Confirm both participant dashboards show the refund amount and resolution.
-6. In Stripe test mode, confirm the provider charge and Auxilium application fee
+6. In Stripe test mode, confirm the provider charge and Auxillium application fee
    are refunded proportionally.
 
 The final admin confirmation creates a real Stripe refund for the environment
 whose secret key is configured. Keep test keys installed during development.
 Stripe remains the source of truth for card-network disputes and evidence; signed
-dispute webhooks identify the affected booking in the Auxilium admin queue.
+dispute webhooks identify the affected booking in the Auxillium admin queue.
 
 ## Verification commands
 

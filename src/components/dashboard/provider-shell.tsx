@@ -43,7 +43,7 @@ export function ProviderDashboardShell({
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.wordmark}>Auxilium</Link>
+          <Link href="/" className={styles.wordmark}>Auxillium</Link>
           <div className={styles.account}>
             <span className={styles.avatar} aria-hidden="true">{initials || "A"}</span>
             <div className={styles.accountName}>
@@ -80,7 +80,7 @@ export function ProviderDashboardShell({
             <Link href="/provider-agreement">Provider agreement</Link>
             <Link href="/provider-standards">Provider standards</Link>
           </nav>
-          <p>© 2026 Auxilium LLC. <span>Payments processed by Stripe.</span></p>
+          <p>© 2026 Auxillium LLC. <span>Payments processed by Stripe.</span></p>
         </div>
       </footer>
     </div>

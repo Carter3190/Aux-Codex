@@ -8,7 +8,7 @@ let stripeClient: Stripe | undefined;
 export function getStripe() {
   stripeClient ??= new Stripe(getStripeSecretKey(), {
     appInfo: {
-      name: "Auxilium",
+      name: "Auxillium",
       version: "0.1.0",
     },
   });

@@ -32,13 +32,13 @@ export function ProviderSubmitCard({
         Final step
       </p>
       <h2>
-        {providerStatus === "approved" ? "Application approved" : providerStatus === "suspended" ? "Account assistance needed" : providerStatus === "rejected" ? "Your application needs changes" : submittedAt ? "Application submitted" : "Submit for Auxilium review"}
+        {providerStatus === "approved" ? "Application approved" : providerStatus === "suspended" ? "Account assistance needed" : providerStatus === "rejected" ? "Your application needs changes" : submittedAt ? "Application submitted" : "Submit for Auxillium review"}
       </h2>
       <p className={styles.description}>
         {providerStatus === "approved"
           ? "Your application was approved. Profile and credential changes may require another review."
           : providerStatus === "suspended"
-            ? "Contact Auxilium support before making further changes to your account."
+            ? "Contact Auxillium support before making further changes to your account."
           : providerStatus === "rejected"
             ? "Review the feedback and update your profile before submitting it again."
           : submittedAt

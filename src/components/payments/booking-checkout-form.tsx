@@ -37,7 +37,7 @@ export function BookingCheckoutForm({
             : "Pay securely with Stripe"}
       </button>
       <p className={styles.hint}>
-        Payment details are entered on Stripe and are never stored by Auxilium.
+        Payment details are entered on Stripe and are never stored by Auxillium.
       </p>
     </form>
   );

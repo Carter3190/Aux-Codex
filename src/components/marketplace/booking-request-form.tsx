@@ -91,7 +91,7 @@ export function BookingRequestForm({
           placeholder="Address or location where the work is needed"
         />
         <span className={styles.hint}>
-          This stays private and is shown only to you, the provider, and Auxilium admins.
+          This stays private and is shown only to you, the provider, and Auxillium admins.
         </span>
         <FieldError message={state.fieldErrors?.serviceLocation?.[0]} />
       </label>
@@ -119,10 +119,10 @@ export function BookingRequestForm({
           required
         />
         <span>
-          I understand that {providerName}, not Auxilium, will perform and be
+          I understand that {providerName}, not Auxillium, will perform and be
           responsible for the requested service. If the provider accepts, any
           resulting service agreement will be directly with that provider. I
-          agree to Auxilium’s current{" "}
+          agree to Auxillium’s current{" "}
           <Link
             href="/terms"
             target="_blank"

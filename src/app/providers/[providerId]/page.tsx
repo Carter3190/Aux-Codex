@@ -52,7 +52,7 @@ function ServiceApproval({ check }: { check?: PublicServiceCredentialCheck }) {
     <div className={styles.serviceApproval}>
       {credentialLabel && <p className={styles.serviceApprovalLabel}>{credentialLabel}</p>}
       <p className={credentialLabel ? styles.serviceApprovalNote : styles.serviceApprovalLabel}>
-        Approved by Auxilium
+        Approved by Auxillium
       </p>
     </div>
   );
@@ -96,7 +96,7 @@ export default async function ProviderProfilePage({
           <div className={styles.heroGrid}>
             <div className={styles.profilePhoto}>
               {provider.photos[0] ? (
-                // Provider photos are served from Auxilium's public Supabase bucket.
+                // Provider photos are served from Auxillium's public Supabase bucket.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={provider.photos[0].publicUrl}
@@ -169,7 +169,7 @@ export default async function ProviderProfilePage({
                   Customer reviews
                 </p>
                 <h2 className={styles.sectionTitle}>
-                  Verified Auxilium bookings
+                  Verified Auxillium bookings
                 </h2>
               </div>
               {provider.reviewCount > 0 && provider.averageRating !== null && (
@@ -255,7 +255,7 @@ export default async function ProviderProfilePage({
             <div className={styles.bookingForm}>
               {!provider.bookingEligible ? (
                 <div className={styles.bookingUnavailable}>
-                  Check back for booking availability after Auxilium reviews the service.
+                  Check back for booking availability after Auxillium reviews the service.
                 </div>
               ) : profile?.role === "customer" ? (
                 <BookingRequestForm

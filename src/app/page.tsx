@@ -26,7 +26,7 @@ export default function Home() {
         </section>
       </div>
       <section id="about" className={`${styles.about} ${styles.stack}`} aria-labelledby="about-title">
-        <div><p className={styles.kicker}>About Auxilium</p><h2 id="about-title">More time for what matters.</h2></div>
+        <div><p className={styles.kicker}>About Auxillium</p><h2 id="about-title">More time for what matters.</h2></div>
         <div className={styles.grid2}>
           <article className={`${styles.card} ${styles.actionCard}`}><span className={styles.iconTile}><CustomerIcon name="overview" /></span><h3>A simpler way to arrange help</h3><p>Find a provider in your community and keep requests, messages, and booking details in one place.</p><Link href="/signup?role=customer" className={styles.secondaryButton}>Create a customer account</Link></article>
           <article className={`${styles.card} ${styles.actionCard}`}><span className={styles.iconTile}><CustomerIcon name="book" /></span><h3>A professional home for your work</h3><p>Introduce your business, submit your service information for review, and manage customer requests from your provider account.</p><Link href="/signup?role=provider" className={styles.secondaryButton}>Apply to offer services</Link></article>

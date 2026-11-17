@@ -33,4 +33,4 @@ export function isClearlyRestrictedProviderService(
 }
 
 export const restrictedProviderServiceMessage =
-  "Healthcare, chiropractic, medical, clinical, patient-care, and emergency-response services cannot be listed on Auxilium.";
+  "Healthcare, chiropractic, medical, clinical, patient-care, and emergency-response services cannot be listed on Auxillium.";

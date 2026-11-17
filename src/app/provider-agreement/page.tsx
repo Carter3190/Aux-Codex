@@ -4,7 +4,7 @@ import { PolicyPage, PolicySection } from "@/components/legal/policy-page";
 
 export const metadata: Metadata = {
   title: "Provider agreement",
-  description: "Terms for professionals offering services through Auxilium.",
+  description: "Terms for professionals offering services through Auxillium.",
   alternates: { canonical: "/provider-agreement" },
 };
 
@@ -13,14 +13,14 @@ export default function ProviderAgreementPage() {
     <PolicyPage
       eyebrow="For providers"
       title="Provider agreement"
-      summary="This agreement supplements the Terms of Service for every person or business that applies to offer services through Auxilium."
+      summary="This agreement supplements the Terms of Service for every person or business that applies to offer services through Auxillium."
       updated="November 11, 2026"
     >
       <PolicySection title="1. Independent provider relationship and personnel">
         <p>
           Each accepted booking creates a direct service agreement between the
           provider identified in the booking and the customer. The provider, not
-          Auxilium, supplies and is responsible for the service. Auxilium
+          Auxillium, supplies and is responsible for the service. Auxillium
           provides marketplace, communication, payment, and administrative
           technology and does not become the service contractor by facilitating
           a booking or payment.
@@ -28,7 +28,7 @@ export default function ProviderAgreementPage() {
         <p>
           Providers operate independent businesses. Nothing in this agreement
           creates an employment, agency, partnership, joint-venture, or franchise
-          relationship with Auxilium, and providers may not represent otherwise.
+          relationship with Auxillium, and providers may not represent otherwise.
           Providers control whether to accept requests and the lawful price,
           methods, scheduling, staffing, supervision, tools, safety precautions,
           and professional judgment used to perform the work, subject to the
@@ -42,7 +42,7 @@ export default function ProviderAgreementPage() {
           own. Providers must select, train, supervise, and verify that Provider
           Personnel are legally authorized and qualified for the work they
           perform, and hold the licenses and coverage required by applicable law
-          or Auxilium for that service and location. Providers are also responsible
+          or Auxillium for that service and location. Providers are also responsible
           for their tools, transportation, expenses, taxes, licenses, permits,
           insurance, and service results.
         </p>
@@ -51,20 +51,20 @@ export default function ProviderAgreementPage() {
       <PolicySection title="2. Application and continuing accuracy">
         <p>
           A provider must submit truthful, complete profile and credential
-          information and keep it current. Auxilium may request identity,
+          information and keep it current. Auxillium may request identity,
           business, license, insurance, or other documentation relevant to the
           services offered. Approval is discretionary and may be revisited when
           information changes or concerns arise.
         </p>
         <p>
           A profile label describing a document or credential review means only
-          that Auxilium reviewed the identified information under the stated
+          that Auxillium reviewed the identified information under the stated
           process as of the applicable date. It is not a warranty of identity,
           qualifications, insurance coverage, work quality, safety, or future
           conduct and does not replace a customer’s own evaluation.
         </p>
         <p>
-          Providers must promptly notify Auxilium of any change to business
+          Providers must promptly notify Auxillium of any change to business
           ownership or legal name, loss or restriction of a license or permit,
           insurance cancellation or lapse, regulatory or disciplinary action, or
           other fact that makes profile or credential information inaccurate.
@@ -82,7 +82,7 @@ export default function ProviderAgreementPage() {
           <li>
             Do not offer or perform healthcare, chiropractic care, medical
             diagnosis or treatment, emergency services, or another restricted
-            category unless Auxilium has expressly authorized that category in
+            category unless Auxillium has expressly authorized that category in
             writing.
           </li>
         </ul>
@@ -91,7 +91,7 @@ export default function ProviderAgreementPage() {
           are incorporated into this agreement.
         </p>
         <p>
-          As between Auxilium and the provider, the provider is responsible for
+          As between Auxillium and the provider, the provider is responsible for
           the performance and results of its services and for service-related
           bodily injury, death, professional error or omission, and loss of or
           damage to property caused by the provider or Provider Personnel.
@@ -110,13 +110,13 @@ export default function ProviderAgreementPage() {
           once the work is finished; payment then becomes due. The customer
           reviews the final price and explicitly pays through Stripe Checkout.
           Marking work complete does not automatically charge the customer or
-          guarantee payment. Auxilium does not guarantee collection of unpaid
+          guarantee payment. Auxillium does not guarantee collection of unpaid
           bookings.
         </p>
         <p>
           Material scope, scheduling, and resolution communication should remain
-          in Auxilium messages. Providers may not use the platform to solicit
-          off-platform payment for an Auxilium-originated booking in order to
+          in Auxillium messages. Providers may not use the platform to solicit
+          off-platform payment for an Auxillium-originated booking in order to
           avoid platform fees or protections.
         </p>
       </PolicySection>
@@ -124,17 +124,17 @@ export default function ProviderAgreementPage() {
       <PolicySection title="5. Payments, fees, taxes, and reversals">
         <p>
           The provider authorizes Stripe to create and administer the provider’s
-          connected merchant account and authorizes Auxilium to facilitate
+          connected merchant account and authorizes Auxillium to facilitate
           onboarding and use the platform functions permitted by Stripe to
           process customer payments directly on that account and collect the
-          disclosed Auxilium platform fee, currently 5% of the final booking
+          disclosed Auxillium platform fee, currently 5% of the final booking
           price. Stripe and the provider’s Stripe agreement govern the connected
           account. Stripe may separately apply processing, payout, reserve,
           risk, or currency fees.
         </p>
         <p>
           Providers authorize refunds of their customer charges and proportional
-          refunds of the Auxilium fee when an approved refund is issued.
+          refunds of the Auxillium fee when an approved refund is issued.
           Providers remain responsible for negative balances, chargebacks,
           dispute fees, taxes, reporting, and other obligations associated with
           their services and connected account.
@@ -144,7 +144,7 @@ export default function ProviderAgreementPage() {
       <PolicySection title="6. Insurance and proof of coverage">
         <p>
           Providers must maintain the coverage required by applicable law or
-          Auxilium for each service and location. Required coverage must be
+          Auxillium for each service and location. Required coverage must be
           valid where the work is performed and cover the service and Provider
           Personnel. Depending on the service, coverage requirements may include
           commercial general liability, workers’
@@ -155,18 +155,18 @@ export default function ProviderAgreementPage() {
         <p>
           Providers must supply current certificates, policy information, and
           endorsements upon request. When a category requirement calls for it,
-          the provider must name Auxilium and its designated affiliates as
+          the provider must name Auxillium and its designated affiliates as
           additional insureds and provide the applicable endorsement. A
           certificate, endorsement, document review, or additional-insured status
-          does not transfer the provider’s responsibility to Auxilium or
-          represent that Auxilium guarantees coverage.
+          does not transfer the provider’s responsibility to Auxillium or
+          represent that Auxillium guarantees coverage.
         </p>
         <p>
-          Providers must notify Auxilium before coverage expires, is canceled,
+          Providers must notify Auxillium before coverage expires, is canceled,
           is not renewed, is materially reduced, or no longer covers an offered
           service, or within 24 hours after learning of the change if advance
           notice is not possible. A provider may not accept or perform a booking
-          without required coverage. Auxilium may pause listings or bookings
+          without required coverage. Auxillium may pause listings or bookings
           while coverage is missing or being reviewed.
         </p>
       </PolicySection>
@@ -174,7 +174,7 @@ export default function ProviderAgreementPage() {
       <PolicySection title="7. Incidents, claims, and resolution cooperation">
         <p>
           In an emergency, providers must contact 911 or the appropriate emergency
-          service first. Providers must then give Auxilium written notice as soon
+          service first. Providers must then give Auxillium written notice as soon
           as reasonably possible, and no later than 24 hours after learning of,
           any booking-related death, bodily injury, emergency response,
           hospitalization, material property damage, police or fire response,
@@ -187,14 +187,14 @@ export default function ProviderAgreementPage() {
           messages, photographs, records, and physical evidence; notify the
           appropriate insurer; provide available claim and insurer contact
           information; and cooperate with reasonable investigations and claim
-          handling. Providers may not make an admission or promise on Auxilium’s
+          handling. Providers may not make an admission or promise on Auxillium’s
           behalf or interfere with another participant’s truthful report.
         </p>
         <p>
-          Auxilium may review platform records, assist with communication, issue
+          Auxillium may review platform records, assist with communication, issue
           a full or partial refund, restrict payouts where permitted, or suspend
           the account while a material issue is reviewed. That assistance is not
-          an admission of liability and does not make Auxilium the service
+          an admission of liability and does not make Auxillium the service
           provider, insurer, or claims adjuster. Stripe and card-network decisions
           remain independently binding where applicable.
         </p>
@@ -203,7 +203,7 @@ export default function ProviderAgreementPage() {
       <PolicySection title="8. Defense and indemnification">
         <p>
           To the fullest extent permitted by law, the provider will defend,
-          indemnify, and hold harmless Auxilium, its affiliates, and their
+          indemnify, and hold harmless Auxillium, its affiliates, and their
           officers, directors, employees, and agents from third-party claims,
           demands, investigations, proceedings, liabilities, judgments, damages,
           penalties, fines, settlements, costs, and reasonable legal fees arising
@@ -223,14 +223,14 @@ export default function ProviderAgreementPage() {
           caused by that protected party’s own negligence, fraud, or willful
           misconduct, and it does not apply where indemnification is prohibited
           by law. The provider may not settle a claim in a way that admits fault
-          by or imposes an obligation on a protected party without Auxilium’s
+          by or imposes an obligation on a protected party without Auxillium’s
           written consent. Insurance requirements do not limit these obligations.
         </p>
       </PolicySection>
 
       <PolicySection title="9. Suspension and termination">
         <p>
-          Auxilium may return an application for changes, reject it, remove a
+          Auxillium may return an application for changes, reject it, remove a
           listing, restrict bookings, or suspend or terminate access for policy
           violations, expired or false credentials, unsafe behavior, repeated
           complaints, fraud risk, legal requirements, or noncooperation.

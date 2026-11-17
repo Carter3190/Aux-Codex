@@ -163,7 +163,7 @@ export async function requestBooking(
         bookingId: createdBookingId,
         recipients: ["provider"],
         eventKey: `booking_requested_${createdBookingId}`,
-        subject: "You have a new Auxilium booking request",
+        subject: "You have a new Auxillium booking request",
         heading: "A customer requested your service",
         message:
           "Review the requested date, location, and customer note before responding.",
@@ -245,7 +245,7 @@ export async function cancelBooking(
       bookingId: bookingId.data,
       recipients: ["provider"],
       eventKey: `booking_cancelled_${bookingId.data}`,
-      subject: "An Auxilium booking request was cancelled",
+      subject: "An Auxillium booking request was cancelled",
       heading: "The customer cancelled the request",
       message:
         "Open your provider dashboard to review the updated booking status.",

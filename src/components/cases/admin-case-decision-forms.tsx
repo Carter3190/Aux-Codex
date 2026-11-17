@@ -40,7 +40,7 @@ export function AdminCaseDecisionForms({
           <h3 className={styles.heading}>Approve a Stripe refund</h3>
           <p className={styles.description}>
             This refunds the provider’s Stripe charge and proportionally refunds
-            Auxilium’s application fee.
+            Auxillium’s application fee.
           </p>
         </div>
         <label className={styles.field}>

@@ -6,11 +6,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(getPublicAppUrl()),
   title: {
-    default: "Auxilium | Local help, made human",
-    template: "%s | Auxilium",
+    default: "Auxillium | Local help, made human",
+    template: "%s | Auxillium",
   },
   description:
-    "Find local professionals whose applications have been reviewed, or grow your independent service business with Auxilium.",
+    "Find local professionals whose applications have been reviewed, or grow your independent service business with Auxillium.",
 };
 
 export default function RootLayout({

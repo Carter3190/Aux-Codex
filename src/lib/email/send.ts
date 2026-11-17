@@ -45,7 +45,7 @@ function plainText(input: TransactionalEmail, actionUrl: string) {
     "",
     `${input.actionLabel}: ${actionUrl}`,
     "",
-    "Auxilium · Local help, made human",
+    "Auxillium · Local help, made human",
   ].join("\n");
 }
 
@@ -65,7 +65,7 @@ function html(input: TransactionalEmail, actionUrl: string) {
         <td align="center">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #dbe5de;border-radius:24px;overflow:hidden">
             <tr>
-              <td style="padding:24px 32px;background:#0f4f3d;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:3px">AUXILIUM</td>
+              <td style="padding:24px 32px;background:#0f4f3d;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:3px">AUXILLIUM</td>
             </tr>
             <tr>
               <td style="padding:36px 32px">
@@ -76,7 +76,7 @@ function html(input: TransactionalEmail, actionUrl: string) {
               </td>
             </tr>
             <tr>
-              <td style="padding:20px 32px;border-top:1px solid #e4ebe6;color:#718078;font-size:13px;line-height:1.6">Auxilium · Local help, made human</td>
+              <td style="padding:20px 32px;border-top:1px solid #e4ebe6;color:#718078;font-size:13px;line-height:1.6">Auxillium · Local help, made human</td>
             </tr>
           </table>
         </td>

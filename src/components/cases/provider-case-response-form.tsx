@@ -18,7 +18,7 @@ export function ProviderCaseResponseForm({ caseId }: { caseId: string }) {
       <input type="hidden" name="caseId" value={caseId} />
       <h3 id={`${responseId}-heading`} className={styles.cardTitle}>Your response</h3>
       <label className={styles.field} htmlFor={responseId}>
-        Your response for Auxilium
+        Your response for Auxillium
         <textarea
           id={responseId}
           name="response"

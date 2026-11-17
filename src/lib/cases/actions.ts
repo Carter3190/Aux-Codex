@@ -109,7 +109,7 @@ function caseDatabaseMessage(message?: string) {
     "refund amount exceeds",
   ];
   if (expected.some((part) => normalized.includes(part))) {
-    return message ?? "Check the resolution request and try again.";
+    return message?.replaceAll("Auxilium", "Auxillium") ?? "Check the resolution request and try again.";
   }
   if (
     normalized.includes("booking_cases") ||
@@ -163,7 +163,7 @@ export async function openBookingCase(
         bookingId: parsed.data.bookingId,
         recipients: ["provider", "admin"],
         eventKey: `booking_case_opened_${createdCaseId}`,
-        subject: "A new Auxilium resolution request was opened",
+        subject: "A new Auxillium resolution request was opened",
         heading: "A booking needs review",
         message:
           "Open the resolution center to review the request and provide the appropriate response.",
@@ -172,7 +172,7 @@ export async function openBookingCase(
 
     revalidateResolutionPages();
     return success(
-      "Your request was sent to Auxilium. The provider can respond, and an admin will review it before any refund is issued.",
+      "Your request was sent to Auxillium. The provider can respond, and an admin will review it before any refund is issued.",
     );
   } catch (error) {
     return failure(
@@ -205,14 +205,14 @@ export async function respondToBookingCase(
       caseId: parsed.data.caseId,
       recipients: ["customer", "admin"],
       eventKey: `booking_case_provider_response_${parsed.data.caseId}`,
-      subject: "A provider responded to an Auxilium resolution request",
+      subject: "A provider responded to an Auxillium resolution request",
       heading: "The provider response is ready",
       message:
         "Open the resolution center to review the response and the current case status.",
     });
 
     revalidateResolutionPages();
-    return success("Your response was added for Auxilium’s review.");
+    return success("Your response was added for Auxillium’s review.");
   } catch (error) {
     return failure(
       error instanceof Error ? error.message : "Unable to send the response.",
@@ -245,10 +245,10 @@ export async function denyBookingCase(
       caseId: parsed.data.caseId,
       recipients: ["customer", "provider"],
       eventKey: `booking_case_denied_${parsed.data.caseId}`,
-      subject: "Auxilium reviewed your resolution request",
+      subject: "Auxillium reviewed your resolution request",
       heading: "The resolution request was closed",
       message:
-        "Open your dashboard to review Auxilium’s final decision and case notes.",
+        "Open your dashboard to review Auxillium’s final decision and case notes.",
     });
 
     revalidateResolutionPages();
@@ -373,7 +373,7 @@ export async function refundBookingCase(
         message: syncError.message,
       });
       return failure(
-        "Stripe accepted the refund, but Auxilium could not confirm its status yet. Retry this same case to reconcile it safely; do not change the amount.",
+        "Stripe accepted the refund, but Auxillium could not confirm its status yet. Retry this same case to reconcile it safely; do not change the amount.",
       );
     }
 
@@ -381,7 +381,7 @@ export async function refundBookingCase(
       bookingId: prepared.booking_id,
       recipients: ["customer", "provider"],
       eventKey: `booking_refund_${prepared.refund_id}`,
-      subject: "An Auxilium booking refund was processed",
+      subject: "An Auxillium booking refund was processed",
       heading: "The booking refund was processed",
       message: `$${(refund.amount / 100).toFixed(2)} was sent back through Stripe. Open your dashboard for the updated payment balance and resolution notes.`,
     });
@@ -389,7 +389,7 @@ export async function refundBookingCase(
     revalidateResolutionPages();
     return success(
       refund.status === "succeeded"
-        ? "Stripe refund completed. The provider charge and Auxilium fee were refunded proportionally."
+        ? "Stripe refund completed. The provider charge and Auxillium fee were refunded proportionally."
         : "Stripe refund started. Its signed webhook will update the final status.",
     );
   } catch (error) {

@@ -23,7 +23,7 @@ export function ProviderEarningsSummary({ booking, earnings }: {
         <div><dt>{isTest ? "Test payment total" : "Customer total"}</dt><dd>{total === null ? "Price not set" : formatCustomerMoney(total)}</dd></div>
         {refunded > 0 && <div><dt>{isTest ? "Test refund" : "Customer refunds"}</dt><dd>{deduction(refunded)}</dd></div>}
         {!isTest && <>
-          <div><dt>{refunded > 0 || (earnings?.platformFeeRefundedCents ?? 0) > 0 ? "Auxilium fee retained" : "Auxilium fee (5%)"}</dt><dd>{platformFee === null ? "Pending fee details" : deduction(platformFee)}</dd></div>
+          <div><dt>{refunded > 0 || (earnings?.platformFeeRefundedCents ?? 0) > 0 ? "Auxillium fee retained" : "Auxillium fee (5%)"}</dt><dd>{platformFee === null ? "Pending fee details" : deduction(platformFee)}</dd></div>
           <div><dt>Stripe processing fee</dt><dd>{earnings?.stripeFeeCents === null || earnings?.stripeFeeCents === undefined ? feePlaceholder : deduction(earnings.stripeFeeCents)}</dd></div>
           <div className={styles.net}><dt>Net earnings</dt><dd>{earnings?.status === "confirmed" && earnings.netEarningsCents !== null ? formatCustomerMoney(earnings.netEarningsCents) : feePlaceholder}</dd></div>
         </>}

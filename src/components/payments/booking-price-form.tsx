@@ -28,7 +28,7 @@ export function BookingPriceForm({
         Agreed booking price (USD)
         <span className={styles.hint}>
           Save the full total agreed with your customer. You can update it again
-          before checkout starts. Auxilium’s 5% commission is calculated automatically.
+          before checkout starts. Auxillium’s 5% commission is calculated automatically.
         </span>
           <NumberField
             name="amount"

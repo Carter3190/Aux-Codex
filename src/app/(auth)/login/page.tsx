@@ -18,14 +18,14 @@ export default async function LoginPage({ searchParams }: {
         Welcome back
       </p>
       <h1 className={styles.title}>
-        Sign in to Auxilium
+        Sign in to Auxillium
       </h1>
       <p className={styles.description}>
         Access your bookings, profile, and conversations.
       </p>
       <LoginForm nextPath={nextPath ?? undefined} />
       <p className={styles.footnote}>
-        New to Auxilium?{" "}
+        New to Auxillium?{" "}
         <Link href="/signup" className={styles.textLink}>
           Create an account
         </Link>

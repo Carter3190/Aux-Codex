@@ -4,7 +4,7 @@ import { PolicyPage, PolicySection } from "@/components/legal/policy-page";
 
 export const metadata: Metadata = {
   title: "Provider standards",
-  description: "Eligibility, credential, safety, and service standards for Auxilium providers.",
+  description: "Eligibility, credential, safety, and service standards for Auxillium providers.",
   alternates: { canonical: "/provider-standards" },
 };
 
@@ -13,7 +13,7 @@ export default function ProviderStandardsPage() {
     <PolicyPage
       eyebrow="Trust & safety"
       title="Provider standards"
-      summary="These standards describe the minimum expectations for providers who apply, appear in the marketplace, and serve Auxilium customers."
+      summary="These standards describe the minimum expectations for providers who apply, appear in the marketplace, and serve Auxillium customers."
       updated="November 5, 2026"
     >
       <PolicySection title="Eligibility">
@@ -28,7 +28,7 @@ export default function ProviderStandardsPage() {
           <li>
             Use only personnel who are legally authorized, appropriately trained,
             and supervised for the work they perform. Confirm they hold the
-            licenses and coverage required by applicable law or Auxilium for the
+            licenses and coverage required by applicable law or Auxillium for the
             service and location.
           </li>
           <li>Do not apply while prohibited from the work by law, license action, or court order.</li>
@@ -42,15 +42,15 @@ export default function ProviderStandardsPage() {
           Documents must be authentic, current, legible, and belong to the
           applicant, disclosed business, or applicable Provider Personnel.
           Providers must satisfy all category-specific requirements communicated
-          by Auxilium, including any required commercial general liability,
+          by Auxillium, including any required commercial general liability,
           workers’ compensation, automobile, professional liability, garage or
           garagekeepers, bond, or specialty coverage. Providers must update
-          Auxilium before a required credential expires or materially changes.
+          Auxillium before a required credential expires or materially changes.
         </p>
         <p>
-          Auxilium may review documents, request clarification, or confirm
+          Auxillium may review documents, request clarification, or confirm
           information with an issuer where permitted. Public labels summarize
-          the license and insurance requirements Auxilium confirmed for the
+          the license and insurance requirements Auxillium confirmed for the
           listed service and area. Document review is not a guarantee of
           coverage, policy exclusions, scope,
           identity, work quality, safety, or future conduct. Customers should
@@ -72,13 +72,13 @@ export default function ProviderStandardsPage() {
           <li>Clearly explain whether pricing is fixed, hourly, starting-at, or quote-based.</li>
           <li>Set the final booking price before payment and explain material changes.</li>
           <li>
-            Offer and perform only the service categories Auxilium has approved
+            Offer and perform only the service categories Auxillium has approved
             for the provider’s profile.
           </li>
           <li>
             Do not offer or perform healthcare, chiropractic care, medical
             diagnosis or treatment, emergency services, or another restricted
-            category unless Auxilium has expressly authorized that category in
+            category unless Auxillium has expressly authorized that category in
             writing.
           </li>
           <li>Do not advertise prohibited, unsafe, or unlawful services.</li>
@@ -94,11 +94,11 @@ export default function ProviderStandardsPage() {
           <li>Stop work and communicate when site conditions make the agreed service unsafe.</li>
           <li>
             In an emergency, contact 911 or the appropriate emergency service
-            first, then notify Auxilium as soon as reasonably possible.
+            first, then notify Auxillium as soon as reasonably possible.
           </li>
         </ul>
         <p>
-          Providers must give Auxilium written notice no later than 24 hours
+          Providers must give Auxillium written notice no later than 24 hours
           after learning of a booking-related death, bodily injury, emergency
           response, hospitalization, material property damage, police or fire
           response, regulatory inquiry, insurance claim, demand, or threatened or
@@ -109,7 +109,7 @@ export default function ProviderStandardsPage() {
 
       <PolicySection title="Review and enforcement">
         <p>
-          Auxilium may approve, return, reject, re-review, suspend, or remove a
+          Auxillium may approve, return, reject, re-review, suspend, or remove a
           provider based on application completeness, credential status, user
           reports, booking history, payment risk, safety concerns, or legal
           requirements. The response may range from education or profile changes

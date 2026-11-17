@@ -22,7 +22,7 @@ export function BookingResolutionPanel({ booking, perspective }: {
       <header className={styles.heading}>
         <p className={styles.eyebrow}>Booking support</p>
         <h3>{canRespond ? "Respond to a resolution request" : "Resolution request"}</h3>
-        {canRespond && <p>Review the customer’s concern and send your response to Auxilium.</p>}
+        {canRespond && <p>Review the customer’s concern and send your response to Auxillium.</p>}
       </header>
       <div className={canRespond ? styles.columns : styles.single}>
         <section className={styles.card} aria-label={perspective === "provider" ? "Customer’s request" : "Your request"}>
@@ -42,10 +42,10 @@ export function BookingResolutionPanel({ booking, perspective }: {
           {supportCase.providerResponse && <section className={styles.note} aria-label="Provider response">
             <h4>Provider response</h4><p>{supportCase.providerResponse}</p>
           </section>}
-          {supportCase.adminNotes && <section className={styles.note} aria-label="Auxilium decision notes">
-            <h4>Auxilium decision notes</h4><p>{supportCase.adminNotes}</p>
+          {supportCase.adminNotes && <section className={styles.note} aria-label="Auxillium decision notes">
+            <h4>Auxillium decision notes</h4><p>{supportCase.adminNotes}</p>
           </section>}
-          {canRespond && <p className={styles.caption}>Your response is sent to Auxilium for review.</p>}
+          {canRespond && <p className={styles.caption}>Your response is sent to Auxillium for review.</p>}
         </section>
         {canRespond && <ProviderCaseResponseForm caseId={supportCase.id} />}
       </div>

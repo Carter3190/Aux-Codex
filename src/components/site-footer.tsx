@@ -14,7 +14,7 @@ export function SiteFooter() {
   return <footer data-site-footer className={styles.footer}>
     <div className={styles.footerInner}>
       <nav className={styles.footerLinks} aria-label="Support and legal">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
-      <p>© 2026 Auxilium LLC. <span>Payments processed by Stripe.</span></p>
+      <p>© 2026 Auxillium LLC. <span>Payments processed by Stripe.</span></p>
     </div>
   </footer>;
 }

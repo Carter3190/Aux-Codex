@@ -12,7 +12,7 @@ export default function CheckEmailPage() {
       <EmailIcon />
       <p className={styles.kicker}>Email confirmation</p>
       <h1 className={styles.title}>Check your email</h1>
-      <p className={styles.description}>We sent a confirmation link. Open it to verify your email and finish creating your Auxilium account.</p>
+      <p className={styles.description}>We sent a confirmation link. Open it to verify your email and finish creating your Auxillium account.</p>
       <div className={styles.notice}>If you don’t see the message, check your spam or promotions folder.</div>
       <div className={styles.actions}><Link href="/login" className={styles.secondary}>Return to sign in</Link></div>
       <p className={styles.footnote}>Need another link? Enter the same email you used to create your account.</p>

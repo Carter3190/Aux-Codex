@@ -245,7 +245,7 @@ export default async function AdminCasesPage({
         </div>
         <p className="mt-3 max-w-3xl leading-7 text-muted">
           Stripe remains the source of truth for evidence submission and final
-          card-network decisions. Auxilium mirrors signed dispute events here so
+          card-network decisions. Auxillium mirrors signed dispute events here so
           the affected booking is immediately identifiable.
         </p>
 

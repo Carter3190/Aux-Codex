@@ -46,7 +46,7 @@ export function ProviderPayments({ profile, bookings, setup, earnings, paginatio
           <>
             <table className={styles.table}>
               <caption className={styles.caption}>Payment fees and earnings for your bookings</caption>
-              <thead><tr><th scope="col">Booking</th><th scope="col">Customer total</th><th scope="col">Refunds</th><th scope="col">Auxilium fee</th><th scope="col">Stripe fee</th><th scope="col">Net earnings</th></tr></thead>
+              <thead><tr><th scope="col">Booking</th><th scope="col">Customer total</th><th scope="col">Refunds</th><th scope="col">Auxillium fee</th><th scope="col">Stripe fee</th><th scope="col">Net earnings</th></tr></thead>
               <tbody>{payments.map((booking) => {
                 const payment = booking.payment!;
                 const amounts = earnings[booking.id];
@@ -64,16 +64,16 @@ export function ProviderPayments({ profile, bookings, setup, earnings, paginatio
                     </td>
                     <td data-label="Customer total">{formatCustomerMoney(payment.amountCents)}</td>
                     <td data-label="Refunds">{deduction(amounts?.refundedAmountCents ?? payment.refundedAmountCents)}</td>
-                    <td data-label="Auxilium fee">{isTest ? "—" : platformFee === null ? "Pending fee details" : deduction(platformFee)}</td>
+                    <td data-label="Auxillium fee">{isTest ? "—" : platformFee === null ? "Pending fee details" : deduction(platformFee)}</td>
                     <td data-label="Stripe fee">{amounts?.stripeFeeCents === null || amounts?.stripeFeeCents === undefined ? feePlaceholder : deduction(amounts.stripeFeeCents)}</td>
                     <td data-label="Net earnings" className={styles.net}>{amounts?.status === "confirmed" && amounts.netEarningsCents !== null ? formatCustomerMoney(amounts.netEarningsCents) : feePlaceholder}</td>
                   </tr>
                 );
               })}</tbody>
-              {captured.length > 0 && <tfoot><tr><th scope="row">Collected payments</th><td data-label="Customer total">{formatCustomerMoney(totals.gross)}</td><td data-label="Refunds">{deduction(totals.refunded)}</td><td data-label="Auxilium fee">{totals.platformPending ? "Pending fee details" : deduction(totals.platform)}</td><td data-label="Stripe fee">{totals.stripePending ? "Pending fee details" : deduction(totals.stripe)}</td><td data-label="Net earnings" className={styles.net}>{totals.netPending ? "Pending fee details" : formatCustomerMoney(totals.net)}</td></tr></tfoot>}
+              {captured.length > 0 && <tfoot><tr><th scope="row">Collected payments</th><td data-label="Customer total">{formatCustomerMoney(totals.gross)}</td><td data-label="Refunds">{deduction(totals.refunded)}</td><td data-label="Auxillium fee">{totals.platformPending ? "Pending fee details" : deduction(totals.platform)}</td><td data-label="Stripe fee">{totals.stripePending ? "Pending fee details" : deduction(totals.stripe)}</td><td data-label="Net earnings" className={styles.net}>{totals.netPending ? "Pending fee details" : formatCustomerMoney(totals.net)}</td></tr></tfoot>}
             </table>
             {pagination && pagination.pageCount > 1 && <nav className={styles.pagination} aria-label="Payment history pages"><p>Page {pagination.page} of {pagination.pageCount} · {pagination.totalPayments} payments</p><div>{pagination.page > 1 && <Link href={`/dashboard/provider/payments?page=${pagination.page - 1}`}>Previous</Link>}{pagination.page < pagination.pageCount && <Link href={`/dashboard/provider/payments?page=${pagination.page + 1}`}>Next<CustomerIcon name="arrow" /></Link>}</div></nav>}
-            <p className={styles.note}>Net earnings use the recorded payment fees and refunds. Auxilium’s platform commission is 5%. Fee returns are reflected after refunds. Totals cover this page and exclude test payments and unpaid or processing checkouts. A payment and its bank deposit are separate events.</p>
+            <p className={styles.note}>Net earnings use the recorded payment fees and refunds. Auxillium’s platform commission is 5%. Fee returns are reflected after refunds. Totals cover this page and exclude test payments and unpaid or processing checkouts. A payment and its bank deposit are separate events.</p>
             <p className={styles.note}>If a fee is still pending, open the booking for its details. Actual fees appear once Stripe makes them available.</p>
           </>
         ) : <p className={styles.empty}>No payment activity yet. Payment details will appear here when a customer starts checkout.</p>}

@@ -25,7 +25,7 @@ const signUpSchema = z.object({
   email: z.email("Enter a valid email address.").trim().toLowerCase(),
   password: passwordSchema,
   role: z.enum(["customer", "provider"], {
-    error: "Choose how you plan to use Auxilium.",
+    error: "Choose how you plan to use Auxillium.",
   }),
   terms: z.literal("accepted", {
     error: "Review and accept the marketplace agreements.",
@@ -48,7 +48,7 @@ function configurationError(): AuthFormState | null {
 
   return {
     message:
-      "Auxilium authentication is not connected yet. Add your Supabase project details first.",
+      "Auxillium authentication is not connected yet. Add your Supabase project details first.",
   };
 }
 

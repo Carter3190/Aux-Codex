@@ -16,7 +16,7 @@ export function ProviderCard({ provider }: { provider: MarketplaceProviderCard }
       <div className={styles.identity}>
         <div className={styles.avatar}>
           {provider.primaryPhotoUrl ? (
-            // Provider photos are served from Auxilium's public Supabase bucket.
+            // Provider photos are served from Auxillium's public Supabase bucket.
             // eslint-disable-next-line @next/next/no-img-element
             <img src={provider.primaryPhotoUrl} alt="" className={styles.avatarImage} />
           ) : (
