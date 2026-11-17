@@ -121,7 +121,7 @@ export async function setBookingPrice(
       bookingId: parsed.data.bookingId,
       recipients: ["customer"],
       eventKey: `booking_price_set_${parsed.data.bookingId}_${amountCents}`,
-      subject: "Your Auxilium booking price is ready",
+      subject: "Your Auxillium booking price is ready",
       heading: "Your provider set the final price",
       message: `The final price is $${(amountCents / 100).toFixed(2)}. Review it with your provider. Payment is due after the work is finished.`,
     });
@@ -207,7 +207,7 @@ export async function startStripeOnboarding(
           business_profile: {
             name: displayName ?? undefined,
             product_description:
-              "Local services booked through the Auxilium marketplace.",
+              "Local services booked through the Auxillium marketplace.",
           },
           controller: {
             fees: { payer: "account" },
@@ -389,7 +389,7 @@ export async function startBookingCheckout(
           return failure("Unable to confirm the previous checkout status. Please try again.");
         }
       } else {
-        return failure("This previous checkout needs reconciliation. Contact Auxilium support.");
+        return failure("This previous checkout needs reconciliation. Contact Auxillium support.");
       }
 
       const { data: expiredPayment, error: expireError } = await admin
@@ -470,7 +470,7 @@ export async function startBookingCheckout(
                 unit_amount: prepared.amount_cents,
                 product_data: {
                   name: `${bookingResult.data.service_name} with ${bookingResult.data.provider_name}`,
-                  description: "Payment for a completed Auxilium service",
+                  description: "Payment for a completed Auxillium service",
                 },
               },
             },

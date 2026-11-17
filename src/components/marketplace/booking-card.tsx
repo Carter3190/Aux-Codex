@@ -95,7 +95,7 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
     {perspective === "customer" && booking.payment && booking.payment.refundedAmountCents > 0 && <p>Refunded: {formatCustomerMoney(booking.payment.refundedAmountCents)} of {formatCustomerMoney(booking.payment.amountCents)}</p>}
     {perspective === "customer" && paymentDue && <BookingCheckoutForm bookingId={booking.id} paymentStatus={paymentStatus ?? null} />}
     {perspective === "provider" && canSetPrice && <BookingPriceForm bookingId={booking.id} defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents} hasAgreedPrice={booking.agreedPriceCents !== null} />}
-    {perspective === "provider" && <p className={styles.note}>Auxilium’s platform commission is 5%. Stripe confirms its processing fee after payment. Available earnings are deposited according to your Stripe payout schedule.</p>}
+    {perspective === "provider" && <p className={styles.note}>Auxillium’s platform commission is 5%. Stripe confirms its processing fee after payment. Available earnings are deposited according to your Stripe payout schedule.</p>}
   </section>;
 
   const help = <div className={styles.stack}>
@@ -109,7 +109,7 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
         paymentLabel: paymentStatus === "partially_refunded" ? "Partially refunded" : "Paid" }}
     />}
     {perspective === "customer" && canCancel && <section className={styles.panel}><h3>Cancel this request</h3><p>No successful payment has been collected. Cancelling an unpaid request does not require a refund.</p><BookingCancelForm bookingId={booking.id} /></section>}
-    <section className={styles.panel}><h3>Need help with this visit?</h3><p>{completedUnpaid ? "Contact your provider to discuss the completed work or agreed price. Contact Auxilium support if you need help resolving a concern." : "Use your booking conversation to coordinate with the other party. Auxilium support can help with account or booking issues."}</p><Link href="/support" className={styles.secondary}>Contact support<CustomerIcon name="arrow" /></Link></section>
+    <section className={styles.panel}><h3>Need help with this visit?</h3><p>{completedUnpaid ? "Contact your provider to discuss the completed work or agreed price. Contact Auxillium support if you need help resolving a concern." : "Use your booking conversation to coordinate with the other party. Auxillium support can help with account or booking issues."}</p><Link href="/support" className={styles.secondary}>Contact support<CustomerIcon name="arrow" /></Link></section>
   </div>;
 
   const review = <section className={styles.panel}>

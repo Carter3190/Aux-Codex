@@ -1,16 +1,16 @@
-# Auxilium production launch
+# Auxillium production launch
 
 The public Squarespace website remains at `theauxillium.com`. The marketplace
 application is deployed separately to Vercel at `app.theauxillium.com`.
 
 Do the first deployment with Stripe test keys. Switch to live Stripe keys only
-after the complete production-domain test passes and Auxilium is ready to accept
+after the complete production-domain test passes and Auxillium is ready to accept
 real payments.
 
 ## Before accepting real customers or payments
 
 Deployment is not the same as public launch. Before switching Stripe to live
-mode, Auxilium should have owner-approved versions of:
+mode, Auxillium should have owner-approved versions of:
 
 - Terms of service and a provider agreement
 - Privacy policy and data-retention/deletion process
@@ -45,7 +45,7 @@ STRIPE_CONNECT_WEBHOOK_SECRET
 STRIPE_LIVE_MODE_ENABLED=false
 APP_URL=https://app.theauxillium.com
 RESEND_API_KEY
-EMAIL_FROM=Auxilium <notifications@auth.theauxillium.com>
+EMAIL_FROM=Auxillium <notifications@auth.theauxillium.com>
 EMAIL_REPLY_TO
 SUPPORT_EMAIL
 ```
@@ -93,10 +93,10 @@ Keep the **Confirm signup** email link as:
 
 The verified Resend domain `auth.theauxillium.com` can send marketplace alerts.
 
-1. Open **Resend → API Keys** and create a sending key for Auxilium production.
+1. Open **Resend → API Keys** and create a sending key for Auxillium production.
 2. Save the key as `RESEND_API_KEY` in Vercel.
 3. Set `EMAIL_FROM` to an address on the verified domain, such as
-   `Auxilium <notifications@auth.theauxillium.com>`.
+   `Auxillium <notifications@auth.theauxillium.com>`.
 4. Optionally set `EMAIL_REPLY_TO` to the inbox that should receive support
    replies.
 5. Redeploy, then confirm `notifications` is `enabled` at `/api/health`.
@@ -162,7 +162,7 @@ Then repeat the proven test-mode flow on the deployed application:
 
 ## 8. Switch Stripe from test to live
 
-When Auxilium is legally and operationally ready for real transactions:
+When Auxillium is legally and operationally ready for real transactions:
 
 1. Complete the platform's Stripe live-account activation.
 2. Replace Vercel's test `STRIPE_SECRET_KEY` with the live `sk_live_...` key.
@@ -238,3 +238,25 @@ The existing Resend configuration sends the completion email. The new completion
 Marking complete still does not charge the customer, create a bank payout, or add a one-hour time lock. The existing scheduled-date and agreed-price checks remain. Customer payment stays an explicit action after completion; the 5% fee and Stripe payout schedule are unchanged.
 
 Verify the bucket is private, the two new tables have RLS, authenticated users cannot attest image verification, and existing payment totals/function hashes match the preflight. Run the full test suite, lint, type check, and production build before publishing. No new environment variables or paid-plan upgrade are required for this release.
+
+
+## Brand spelling release (November 17, 2026)
+
+This release corrects the displayed name to **Auxillium** throughout the app,
+transactional emails, and current policies. Stripe metadata/idempotency keys,
+internal headers, existing customer/provider data, and historical agreement
+records retain their original identifiers and contents. Payment behavior and
+the 5% platform fee are unchanged.
+
+The four current agreement pages have spelling-only revisions dated 2026-11-17.
+Apply `supabase/migrations/20261117000000_auxillium_brand_spelling.sql` when the
+matching production candidate is ready to promote, then deploy that exact
+candidate promptly. The existing legal gate fails closed during any version
+mismatch; signed-in users must review and accept the newly published versions
+themselves. Earlier versions, review completions, and acceptances are never
+rewritten or synthesized. The migration also corrects future affirmation text
+and new-account fallback names; it does not rename existing profiles.
+
+Check the current source hashes, representative public and signed-in screens,
+transactional email sender display names, and hosted confirmation-email settings
+after publication. Do not send test emails or create bookings for a spelling check.

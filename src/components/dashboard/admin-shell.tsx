@@ -32,7 +32,7 @@ export function AdminDashboardShell({
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.wordmark}>Auxilium</Link>
+          <Link href="/" className={styles.wordmark}>Auxillium</Link>
           <div className={styles.account}>
             <div className={styles.accountName}>
               <span>{profile.fullName}</span><small>Administrator</small>
@@ -60,7 +60,7 @@ export function AdminDashboardShell({
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <nav aria-label="Administration support and legal"><Link href="/support">Support</Link><Link href="/terms">Terms of service</Link><Link href="/privacy">Privacy policy</Link><Link href="/provider-standards">Provider standards</Link></nav>
-          <p>© 2026 Auxilium LLC. <span>Payments processed by Stripe.</span></p>
+          <p>© 2026 Auxillium LLC. <span>Payments processed by Stripe.</span></p>
         </div>
       </footer>
     </div>

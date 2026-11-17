@@ -65,11 +65,25 @@ function sender({ configured = true, response = async () => ({ ok: true, status:
   const senderModule = loadModule("../src/lib/email/send.ts", {
     "server-only": {},
     "@/lib/stripe/config": { getAppUrl: () => "https://app.example.test" },
-    "./config": { isTransactionalEmailConfigured: () => configured, getTransactionalEmailConfig: () => ({ apiKey: "re_TEST_ONLY", from: "Auxilium <test@example.test>" }) },
+    "./config": { isTransactionalEmailConfigured: () => configured, getTransactionalEmailConfig: () => ({ apiKey: "re_TEST_ONLY", from: "Auxillium <test@example.test>" }) },
     "./booking-completion": { createBookingCompletionEmail, renderBookingCompletionEmail },
   }, ["fetch", "console"], [async (url, options) => { requests.push({ url, options }); return response(); }, { error: (...args) => logs.push(args) }]);
   return { send: senderModule.sendBookingCompletionEmail, requests, logs };
 }
+
+test("email sender spelling changes only the exact legacy brand display name", () => {
+  for (const [from, expected] of [
+    ["Auxilium <test@example.test>", "Auxillium <test@example.test>"],
+    ['"AUXILIUM" <test@example.test>', '"Auxillium" <test@example.test>'],
+    ["Auxillium <test@example.test>", "Auxillium <test@example.test>"],
+    ["Custom Support <test@example.test>", "Custom Support <test@example.test>"],
+    ["Auxilium Support <test@example.test>", "Auxilium Support <test@example.test>"],
+    ["Auxilium@example.test", "Auxilium@example.test"],
+  ]) {
+    const config = loadModule("../src/lib/email/config.ts", { "server-only": {} }, ["process"], [{ env: { RESEND_API_KEY: "re_TEST_ONLY", EMAIL_FROM: from } }]);
+    assert.equal(config.getTransactionalEmailConfig().from, expected);
+  }
+});
 
 test("completion delivery uses a stable Resend key, one recipient, and no photo attachments", async () => {
   const { send, requests } = sender();

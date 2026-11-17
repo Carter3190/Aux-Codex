@@ -36,7 +36,7 @@ export function SiteHeader({ accountHref = "/login", accountLabel = "Sign in", s
   return (
     <header className={styles.header} onKeyDown={(event) => { if (event.key === "Escape") setMenuOpen(false); }}>
       <div className={styles.headerInner}>
-        <Link href="/" className={styles.brand} onClick={() => setMenuOpen(false)}>Auxilium</Link>
+        <Link href="/" className={styles.brand} onClick={() => setMenuOpen(false)}>Auxillium</Link>
         <nav className={styles.desktopNav} aria-label="Main navigation">
           {greeting && <span className={styles.greeting}>{greeting}</span>}
           {allLinks.map(([label, href]) => <Link key={`${label}-${href}`} href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}

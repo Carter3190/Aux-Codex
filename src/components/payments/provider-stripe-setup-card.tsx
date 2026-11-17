@@ -32,7 +32,7 @@ export function ProviderStripeSetupCard({ setup }: { setup: ProviderPaymentSetup
       {status === "ready" ? (
         <p className={styles.description}>
           Customers pay after you confirm the agreed price and mark the work complete.
-          Auxilium’s commission stays at 5%. Stripe deposits available earnings after
+          Auxillium’s commission stays at 5%. Stripe deposits available earnings after
           processing fees according to your payout schedule.
         </p>
       ) : status === "pending" ? (
@@ -54,7 +54,7 @@ export function ProviderStripeSetupCard({ setup }: { setup: ProviderPaymentSetup
         </p>
       ) : unavailable ? (
         <p className={styles.description}>
-          Payment setup is temporarily unavailable. Contact Auxilium support for help.
+          Payment setup is temporarily unavailable. Contact Auxillium support for help.
         </p>
       ) : (
         <p className={styles.description}>

@@ -1,7 +1,10 @@
 import "server-only";
 
 const resendApiKey = process.env.RESEND_API_KEY?.trim();
-const emailFrom = process.env.EMAIL_FROM?.trim();
+const emailFrom = process.env.EMAIL_FROM?.trim().replace(
+  /^("?)Auxilium\1(?=\s*<)/i,
+  "$1Auxillium$1",
+);
 const emailReplyTo = process.env.EMAIL_REPLY_TO?.trim();
 
 export function isTransactionalEmailConfigured() {

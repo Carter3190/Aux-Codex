@@ -4,7 +4,7 @@ import { PolicyPage, PolicySection } from "@/components/legal/policy-page";
 
 export const metadata: Metadata = {
   title: "Cancellation, refund, and dispute policy",
-  description: "How Auxilium handles booking cancellations, refund requests, and payment disputes.",
+  description: "How Auxillium handles booking cancellations, refund requests, and payment disputes.",
   alternates: { canonical: "/cancellation-refunds" },
 };
 
@@ -21,7 +21,7 @@ export default function CancellationRefundsPage() {
           A customer may cancel a pending or accepted request from the dashboard
           before the provider marks the work complete, provided payment has not
           started. A provider may decline a pending request. When no payment has
-          been completed, there is no Auxilium refund to issue.
+          been completed, there is no Auxillium refund to issue.
         </p>
         <p>
           Customers should review the provider’s final price, requested time,
@@ -46,11 +46,11 @@ export default function CancellationRefundsPage() {
           submitted as a private resolution request from the applicable booking
           in the customer dashboard. The customer selects the issue type,
           requested amount, and explanation. The provider may respond, and an
-          Auxilium administrator reviews the available booking, payment,
+          Auxillium administrator reviews the available booking, payment,
           message, and participant records.
         </p>
         <p>
-          Opening a request does not guarantee a refund. Auxilium may approve a
+          Opening a request does not guarantee a refund. Auxillium may approve a
           full refund, approve a partial refund, deny the request, or close it
           when the issue is resolved another way. Approved refunds are sent to
           the original payment method through Stripe and may take several
@@ -76,7 +76,7 @@ export default function CancellationRefundsPage() {
         <p>
           Resolution review is administrative marketplace assistance. It does
           not decide legal fault, transfer responsibility for the provider’s
-          services to Auxilium, or prevent a participant from exercising rights
+          services to Auxillium, or prevent a participant from exercising rights
           that cannot lawfully be waived.
         </p>
       </PolicySection>
@@ -92,16 +92,16 @@ export default function CancellationRefundsPage() {
           Customers should give the provider a reasonable opportunity to respond
           when safe and appropriate, but should not continue an interaction that
           feels unsafe. For an immediate threat or emergency, contact local
-          emergency services rather than Auxilium.
+          emergency services rather than Auxillium.
         </p>
       </PolicySection>
 
       <PolicySection title="Card disputes and chargebacks">
         <p>
           A card dispute opened with a bank is handled under Stripe and card-
-          network rules. Auxilium may share relevant transaction and service
+          network rules. Auxillium may share relevant transaction and service
           evidence with Stripe. A bank’s final decision can differ from an
-          Auxilium resolution decision. Users must not seek duplicate recovery
+          Auxillium resolution decision. Users must not seek duplicate recovery
           through both a platform refund and a chargeback.
         </p>
       </PolicySection>

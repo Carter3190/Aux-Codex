@@ -9,7 +9,7 @@ import { searchApprovedProviders } from "@/lib/marketplace/data";
 export const metadata: Metadata = {
   title: "Find local providers",
   description:
-    "Find local providers, explore their profiles, and request your next service through Auxilium.",
+    "Find local providers, explore their profiles, and request your next service through Auxillium.",
 };
 
 type ProvidersPageProps = {
@@ -104,7 +104,7 @@ export default async function ProvidersPage({ searchParams }: ProvidersPageProps
             <div className={styles.emptyState}>
               <h3>No matching providers yet</h3>
               <p>
-                Try a different search or location, or check back as more providers join Auxilium.
+                Try a different search or location, or check back as more providers join Auxillium.
               </p>
             </div>
           )}

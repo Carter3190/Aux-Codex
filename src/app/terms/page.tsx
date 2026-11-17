@@ -5,7 +5,7 @@ import { legalVersion } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Terms of service",
-  description: "Terms governing use of the Auxilium local-service marketplace.",
+  description: "Terms governing use of the Auxillium local-service marketplace.",
   alternates: { canonical: "/terms" },
 };
 
@@ -14,36 +14,36 @@ export default function TermsPage() {
     <PolicyPage
       eyebrow="Legal"
       title="Terms of service"
-      summary="These terms govern customer, provider, and visitor use of Auxilium’s marketplace, booking, communication, payment, and resolution services."
+      summary="These terms govern customer, provider, and visitor use of Auxillium’s marketplace, booking, communication, payment, and resolution services."
       updated="November 11, 2026"
     >
       <PolicySection title="1. Agreement and eligibility">
         <p>
-          By creating an account, accessing Auxilium, or using a marketplace
+          By creating an account, accessing Auxillium, or using a marketplace
           service, you agree to these Terms of Service and acknowledge our{" "}
           <Link href="/privacy">Privacy Policy</Link>. You must be at least 18
           years old and legally able to enter a binding agreement.
         </p>
         <p>
           These terms are versioned as <strong>{legalVersion}</strong>. If you
-          use Auxilium on behalf of a business, you represent that you have
+          use Auxillium on behalf of a business, you represent that you have
           authority to bind that business.
         </p>
       </PolicySection>
 
       <PolicySection title="2. Marketplace role and direct service agreement">
         <p>
-          Auxilium provides technology that helps customers discover independent
+          Auxillium provides technology that helps customers discover independent
           service providers, request work, communicate, pay, review completed
           bookings, and request resolution assistance. If a provider accepts a
           request, any resulting service agreement is directly between the
-          customer and the identified provider. The provider, not Auxilium,
-          supplies and is responsible for that service. Auxilium is not the
+          customer and the identified provider. The provider, not Auxillium,
+          supplies and is responsible for that service. Auxillium is not the
           service contractor and is not a party to the customer-provider service
           agreement.
         </p>
         <p>
-          Auxilium does not employ, appoint, supervise, direct, train, equip, or
+          Auxillium does not employ, appoint, supervise, direct, train, equip, or
           control providers or their owners, employees, agents, temporary
           workers, contractors, or subcontractors. Providers independently
           control whether to accept a request and the lawful methods, personnel,
@@ -53,7 +53,7 @@ export default function TermsPage() {
         <p>
           Provider approval, credential review, profile labels, and customer
           reviews help inform marketplace decisions. A label describing a
-          document or credential review means only that Auxilium reviewed the
+          document or credential review means only that Auxillium reviewed the
           identified information under the stated process as of the applicable
           date. No review or label guarantees identity, licensing, insurance
           coverage, quality, safety, availability, future conduct, or fitness for
@@ -78,8 +78,8 @@ export default function TermsPage() {
           <li>
             Do not request, advertise, arrange, or perform healthcare,
             chiropractic care, medical diagnosis or treatment, emergency
-            services, or another category Auxilium identifies as restricted or
-            prohibited unless Auxilium has expressly authorized that category in
+            services, or another category Auxillium identifies as restricted or
+            prohibited unless Auxillium has expressly authorized that category in
             writing.
           </li>
         </ul>
@@ -102,11 +102,11 @@ export default function TermsPage() {
           customer must review the price and complete Stripe Checkout. Marking
           work complete does not automatically charge the customer’s card.
           Payment is processed by Stripe under its own terms and privacy policy;
-          Auxilium does not store full payment-card details.
+          Auxillium does not store full payment-card details.
         </p>
         <p>
           Providers authorize Stripe to process customer payments directly on
-          the provider’s connected merchant account and authorize Auxilium to
+          the provider’s connected merchant account and authorize Auxillium to
           collect the disclosed platform fee, currently 5% of the booking price.
           Stripe processing, payout, refund, reserve, and dispute rules may also
           apply.
@@ -123,23 +123,23 @@ export default function TermsPage() {
         <p>
           The <Link href="/cancellation-refunds">Cancellation, Refund, and
           Dispute Policy</Link> is part of these terms. Customers and providers
-          should keep material booking communication inside Auxilium so the
+          should keep material booking communication inside Auxillium so the
           record can be reviewed if a problem arises.
         </p>
         <p>
-          Auxilium may review participant statements and platform records and may
+          Auxillium may review participant statements and platform records and may
           approve, partially approve, or deny a requested refund. Card-network
           disputes are decided under Stripe and card-network rules, not solely by
-          Auxilium.
+          Auxillium.
         </p>
         <p>
           Claims concerning a provider’s services, acts or omissions, personnel,
           bodily injury, death, professional error, or property damage should be
           directed to the provider and, when applicable, the provider’s insurer.
-          Auxilium’s voluntary assistance with communication, records, refunds,
+          Auxillium’s voluntary assistance with communication, records, refunds,
           safety review, or account restrictions is administrative marketplace
           assistance. It is not an admission of liability and does not make
-          Auxilium the service provider, insurer, claims adjuster, or guarantor
+          Auxillium the service provider, insurer, claims adjuster, or guarantor
           of a provider’s obligations.
         </p>
       </PolicySection>
@@ -149,7 +149,7 @@ export default function TermsPage() {
           Providers also agree to the <Link href="/provider-agreement">Provider
           Agreement</Link> and <Link href="/provider-standards">Provider
           Standards</Link>. Providers are independent businesses, not employees,
-          agents, partners, or franchisees of Auxilium, and are responsible for
+          agents, partners, or franchisees of Auxillium, and are responsible for
           their services and results; the acts and omissions of all personnel
           they use; and their supervision, tools, methods, safety, permits,
           taxes, insurance, and legal compliance.
@@ -158,7 +158,7 @@ export default function TermsPage() {
 
       <PolicySection title="7. Content, feedback, and reviews">
         <p>
-          You retain ownership of content you submit. You give Auxilium a
+          You retain ownership of content you submit. You give Auxillium a
           worldwide, non-exclusive, royalty-free license to host, reproduce,
           format, and display that content as needed to operate, secure, promote,
           and improve the marketplace. Public provider profiles and verified
@@ -166,7 +166,7 @@ export default function TermsPage() {
           or platform policy.
         </p>
         <p>
-          Reviews must reflect a genuine completed booking. Auxilium may remove
+          Reviews must reflect a genuine completed booking. Auxillium may remove
           content that is fraudulent, irrelevant, abusive, unlawful, or exposes
           sensitive personal information.
         </p>
@@ -174,12 +174,12 @@ export default function TermsPage() {
 
       <PolicySection title="8. Disclaimers and limits">
         <p>
-          To the fullest extent permitted by law, Auxilium is provided “as is”
+          To the fullest extent permitted by law, Auxillium is provided “as is”
           and “as available.” We do not warrant uninterrupted access or any
-          provider’s work. Auxilium does not assume responsibility for a
+          provider’s work. Auxillium does not assume responsibility for a
           provider’s services, service results, acts or omissions, personnel,
           professional judgment, bodily injury, death, or property damage.
-          Auxilium is not responsible for indirect, incidental, special,
+          Auxillium is not responsible for indirect, incidental, special,
           exemplary, or consequential damages, or lost profits, revenues, data,
           or goodwill arising from use of the platform.
         </p>
@@ -188,14 +188,14 @@ export default function TermsPage() {
           extent permitted by applicable law. Some jurisdictions do not allow
           certain warranty exclusions or liability limits, so parts of this
           section may not apply to you. Nothing in these terms excludes or limits
-          responsibility for Auxilium’s own conduct to the extent that applicable
+          responsibility for Auxillium’s own conduct to the extent that applicable
           law does not permit that responsibility to be excluded or limited.
         </p>
         <p>
-          To the fullest extent permitted by law, Auxilium’s total aggregate
+          To the fullest extent permitted by law, Auxillium’s total aggregate
           liability to you for all claims arising out of or relating to the
           platform or these terms will not exceed the greater of (a) $100 or (b)
-          the platform fees Auxilium actually retained from you during the 12
+          the platform fees Auxillium actually retained from you during the 12
           months immediately before the event giving rise to the claim. This
           limit applies regardless of the legal theory asserted. It does not
           limit payment obligations owed to a provider, a provider’s
@@ -206,7 +206,7 @@ export default function TermsPage() {
 
       <PolicySection title="9. Changes, termination, governing law, and contact">
         <p>
-          You may stop using Auxilium at any time, subject to outstanding
+          You may stop using Auxillium at any time, subject to outstanding
           bookings, payments, refunds, disputes, and lawful record-retention
           obligations. We may update these terms prospectively and will post a
           new effective date when we do. Material changes may require renewed
@@ -220,7 +220,7 @@ export default function TermsPage() {
         </p>
         <p>
           Questions or notices can be submitted through the{" "}
-          <Link href="/support">Auxilium Support Center</Link>. These terms and
+          <Link href="/support">Auxillium Support Center</Link>. These terms and
           related non-contractual claims are governed by Michigan law, without
           regard to conflict-of-law principles. Any mandatory consumer
           protections or other rights that cannot lawfully be waived remain

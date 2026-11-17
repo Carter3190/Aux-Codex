@@ -38,7 +38,7 @@ export function BookingCaseRequestForm({
       <header className={styles.heading}>
         <p className={styles.eyebrow}>Booking support</p>
         <h3 id={`${id}-heading`}>Request help with a booking</h3>
-        <p>Open a private resolution request for Auxilium to review.</p>
+        <p>Open a private resolution request for Auxillium to review.</p>
       </header>
       {bookingContext && (
         <div className={styles.context}>
@@ -109,7 +109,7 @@ export function BookingCaseRequestForm({
         <p className={styles.error}>{state.fieldErrors.details[0]}</p>
       )}
       <div className={styles.reviewNote}>
-        Auxilium reviews your details and the provider’s response before any
+        Auxillium reviews your details and the provider’s response before any
         refund is sent. Submitting a request does not automatically issue a refund.
       </div>
       <CaseFeedback state={state} />

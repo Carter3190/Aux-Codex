@@ -19,7 +19,7 @@ export function BookingReviewForm({ bookingId }: { bookingId: string }) {
       <div>
         <h3 className={styles.heading}>Review your completed service</h3>
         <p className={styles.description}>
-          Your review will be labeled as coming from a verified Auxilium booking.
+          Your review will be labeled as coming from a verified Auxillium booking.
         </p>
       </div>
       <label className={styles.field}>

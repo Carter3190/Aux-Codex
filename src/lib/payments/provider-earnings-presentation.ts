@@ -60,7 +60,7 @@ function splitBalance(balance: EarningsBalance) {
 /**
  * Reconcile actual Stripe records, never a published percentage estimate.
  * The charge balance's total fee already includes the application fee: split
- * it first so Auxilium's commission is not deducted a second time.
+ * it first so Auxillium's commission is not deducted a second time.
  */
 export function reconcileProviderEarnings(
   payment: EarningsPayment,
@@ -130,6 +130,6 @@ export function reconcileProviderEarnings(
     platformFeeRefundedCents: app.amountRefunded,
     stripeFeeCents,
     netEarningsCents,
-    message: "After recorded refunds, Auxilium's retained fee, and Stripe payment fees. Bank deposits follow your Stripe payout schedule.",
+    message: "After recorded refunds, Auxillium's retained fee, and Stripe payment fees. Bank deposits follow your Stripe payout schedule.",
   };
 }

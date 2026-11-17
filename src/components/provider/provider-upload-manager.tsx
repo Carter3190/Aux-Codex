@@ -201,7 +201,7 @@ export function ProviderUploadManager({
         </form>
       </div>}
       {section !== "photos" && <>
-        <p className={styles.description}>Auxilium checks the requirements for each service and service area. Keep required documents current and submit renewals before they expire.</p>
+        <p className={styles.description}>Auxillium checks the requirements for each service and service area. Keep required documents current and submit renewals before they expire.</p>
         {credentials.length > 0 && <section className={styles.stack} aria-label="Submitted credentials">
           {credentials.map((credential) => <article key={credential.id} className={styles.credential}>
             <div className={styles.credentialTop}>

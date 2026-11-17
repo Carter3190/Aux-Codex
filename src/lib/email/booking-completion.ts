@@ -121,7 +121,7 @@ export function renderBookingCompletionEmail(
 <div style="display:none;max-height:0;overflow:hidden">${escapeHtml(content.heading)}</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:28px 12px;background:#f2f5f8"><tr><td align="center">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;background:#fff;border:1px solid #d9e3ee;border-radius:16px;overflow:hidden">
-<tr><td style="padding:28px 24px 0;color:#345f94;font-size:27px;font-weight:700;letter-spacing:-1px">Auxilium</td></tr>
+<tr><td style="padding:28px 24px 0;color:#345f94;font-size:27px;font-weight:700;letter-spacing:-1px">Auxillium</td></tr>
 <tr><td style="padding:28px 24px">
 <h1 style="margin:0 0 24px;font-size:25px;line-height:1.3;color:#203346">${escapeHtml(content.heading)}</h1>
 <p style="margin:0 0 18px;font-size:15px;line-height:1.7">Hi ${escapeHtml(content.recipientName)},</p>
@@ -131,7 +131,7 @@ export function renderBookingCompletionEmail(
 <a href="${escapeHtml(actionUrl)}" style="display:inline-block;max-width:100%;box-sizing:border-box;padding:13px 18px;border:1px solid #345f94;border-radius:10px;background:#345f94;color:#fff;text-decoration:none;font-size:14px;font-weight:700;line-height:1.5">${escapeHtml(content.actionLabel)}</a>
 <p style="margin:24px 0 18px;color:#586c84;font-size:12px;line-height:1.7">Completion photos, when provided, are available in your booking after you sign in.</p>
 <p style="margin:0;color:#586c84;font-size:14px;line-height:1.7">${escapeHtml(content.paymentNote)}</p>
-</td></tr><tr><td style="padding:18px 24px;border-top:1px solid #d9e3ee;color:#586c84;font-size:12px;line-height:1.7;overflow-wrap:anywhere">Auxilium · Booking ${escapeHtml(content.bookingId)}</td></tr>
+</td></tr><tr><td style="padding:18px 24px;border-top:1px solid #d9e3ee;color:#586c84;font-size:12px;line-height:1.7;overflow-wrap:anywhere">Auxillium · Booking ${escapeHtml(content.bookingId)}</td></tr>
 </table></td></tr></table></body></html>`;
 
   const text = [
@@ -139,7 +139,7 @@ export function renderBookingCompletionEmail(
     ...content.details.map((detail) => `${detail.label}: ${detail.value}`), "",
     content.instructions, "", `${content.actionLabel}: ${actionUrl}`, "",
     "Completion photos, when provided, are available in your booking after you sign in.",
-    content.paymentNote, "", `Auxilium · Booking ${content.bookingId}`,
+    content.paymentNote, "", `Auxillium · Booking ${content.bookingId}`,
   ].join("\n");
   return { html, text };
 }

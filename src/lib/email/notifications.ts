@@ -144,7 +144,7 @@ export async function notifyBookingParticipants(
           heading: input.heading,
           message: `${input.message} Service: ${row.service_name}.`,
           actionLabel:
-            target.role === "admin" ? "Review in Auxilium" : "Open your dashboard",
+            target.role === "admin" ? "Review in Auxillium" : "Open your dashboard",
           actionPath: actionPath(target.role),
           idempotencyKey: `${input.eventKey}_${target.id}`,
         }),

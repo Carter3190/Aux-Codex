@@ -26,7 +26,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
   const selected = sections.find(([key]) => key === section);
   const reviewing = section === "review";
   const sectionTitle = selected?.[0] === "introduction" ? "Your introduction" : selected?.[0] === "services" ? "Your services" : selected?.[0] === "photos" ? "Profile photos" : selected?.[0] === "credentials" ? "Your credentials" : selected?.[0] === "availability" ? "Your availability" : reviewing ? "Review your application" : "Your provider profile";
-  const sectionDescription = selected?.[0] === "services" ? "Manage your services and pricing." : selected?.[0] === "photos" ? "Add a clear profile photo or examples of your completed work." : selected?.[0] === "credentials" ? "Documents and expiration dates stay private between you and Auxilium." : selected?.[0] === "availability" ? "Choose the days and times you normally accept service requests." : reviewing ? "Check your information before sending it to Auxilium." : undefined;
+  const sectionDescription = selected?.[0] === "services" ? "Manage your services and pricing." : selected?.[0] === "photos" ? "Add a clear profile photo or examples of your completed work." : selected?.[0] === "credentials" ? "Documents and expiration dates stay private between you and Auxillium." : selected?.[0] === "availability" ? "Choose the days and times you normally accept service requests." : reviewing ? "Check your information before sending it to Auxillium." : undefined;
   const reviewRows = [
     ["introduction", "Introduction", details.businessName || profile.fullName],
     ["services", "Services", `${services.length} ${services.length === 1 ? "service" : "services"} added`],
@@ -39,7 +39,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
     : profile.providerStatus === "rejected" ? "Application needs changes"
     : profile.providerStatus === "suspended" ? "Account suspended"
     : details.submittedAt ? "Application under review" : "Finish your provider profile";
-  const statusDescription = profile.providerStatus === "suspended" ? "Contact Auxilium support before making further changes."
+  const statusDescription = profile.providerStatus === "suspended" ? "Contact Auxillium support before making further changes."
     : profile.providerStatus === "approved" ? "Manage your public profile and account information below."
     : profile.providerStatus === "rejected" ? "Review the feedback, update your profile, and submit it again."
     : details.submittedAt ? "Your submitted application is awaiting review. You can check its details in Application review."
@@ -83,7 +83,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
           {selected[0] === "availability" && <ProviderAvailabilityForm availability={availability} />}
         </section>
       ) : null}
-      <p className={styles.privacy}>Credential documents stay private and can only be viewed by you and authorized Auxilium administrators.</p>
+      <p className={styles.privacy}>Credential documents stay private and can only be viewed by you and authorized Auxillium administrators.</p>
     </DashboardShell>
   );
 }

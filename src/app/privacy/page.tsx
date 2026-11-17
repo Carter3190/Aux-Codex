@@ -4,7 +4,7 @@ import { PolicyPage, PolicySection } from "@/components/legal/policy-page";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
-  description: "How Auxilium collects, uses, shares, and protects personal information.",
+  description: "How Auxillium collects, uses, shares, and protects personal information.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <PolicyPage
       eyebrow="Privacy"
       title="Privacy policy"
-      summary="This policy explains what information Auxilium handles, why it is needed, and the choices available to marketplace users."
+      summary="This policy explains what information Auxillium handles, why it is needed, and the choices available to marketplace users."
       updated="October 26, 2026"
     >
       <PolicySection title="1. Information we collect">
@@ -64,11 +64,11 @@ export default function PrivacyPage() {
           and manage the requested service. Listed provider profile content and
           verified reviews are public. Private credentials, private messages,
           payment records, and resolution details are limited to authorized
-          participants, Auxilium administrators, and service providers that need
+          participants, Auxillium administrators, and service providers that need
           them to perform contracted functions.
         </p>
         <p>
-          Auxilium currently relies on Supabase for authentication, database, and
+          Auxillium currently relies on Supabase for authentication, database, and
           file storage; Stripe for payments and connected-provider payouts;
           Resend for transactional email; and Vercel for application hosting.
           Those companies process information under their own terms and privacy
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
           protect safety and rights, investigate abuse, or support a business
           transaction subject to appropriate safeguards.
         </p>
-        <p>Auxilium does not sell personal information for money.</p>
+        <p>Auxillium does not sell personal information for money.</p>
       </PolicySection>
 
       <PolicySection title="4. Retention and deletion">
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
 
       <PolicySection title="6. Children and regional rights">
         <p>
-          Auxilium is not intended for children under 18, and we do not knowingly
+          Auxillium is not intended for children under 18, and we do not knowingly
           create accounts for them. Depending on where you live, you may have
           rights to access, correct, delete, restrict, or obtain a copy of
           personal information, or to appeal a privacy-request decision. We may
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
         <p>
           We may update this policy as the service or law changes. The date above
           identifies the current version. Submit privacy questions or requests
-          through the <Link href="/support">Auxilium Support Center</Link>.
+          through the <Link href="/support">Auxillium Support Center</Link>.
         </p>
       </PolicySection>
     </PolicyPage>
