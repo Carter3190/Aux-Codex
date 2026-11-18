@@ -14,14 +14,13 @@ type SiteHeaderProps = {
 };
 
 const navigation = [
-  ["Home", "/"],
-  ["About Us", "/#about"],
-  ["Find a Provider", "/providers"],
+  ["Home Page", "/"],
+  ["About Us", "https://theauxillium.com/about-us"],
   ["Offer Services", "/signup?role=provider"],
   ["Support", "/support"],
 ] as const;
 
-export function SiteHeader({ accountHref = "/login", accountLabel = "Sign in", secondaryAccountHref, secondaryAccountLabel, greeting }: SiteHeaderProps) {
+export function SiteHeader({ accountHref = "/login", accountLabel = "Sign In", secondaryAccountHref, secondaryAccountLabel, greeting }: SiteHeaderProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const accountLinks: ReadonlyArray<readonly [string, string]> = [
@@ -31,7 +30,7 @@ export function SiteHeader({ accountHref = "/login", accountLabel = "Sign in", s
   const allLinks = [...navigation, ...accountLinks];
   function isActive(href: string) {
     if (href.includes("#") || href.includes("?")) return false;
-    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return href === "/" ? pathname === "/" || pathname === "/providers" || pathname.startsWith("/providers/") : pathname.startsWith(href);
   }
   return (
     <header className={styles.header} onKeyDown={(event) => { if (event.key === "Escape") setMenuOpen(false); }}>
@@ -39,12 +38,12 @@ export function SiteHeader({ accountHref = "/login", accountLabel = "Sign in", s
         <Link href="/" className={styles.brand} onClick={() => setMenuOpen(false)}>Auxillium</Link>
         <nav className={styles.desktopNav} aria-label="Main navigation">
           {greeting && <span className={styles.greeting}>{greeting}</span>}
-          {allLinks.map(([label, href]) => <Link key={`${label}-${href}`} href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
+          {allLinks.map(([label, href]) => <Link key={`${label}-${href}`} href={href} className={href === "/login" ? styles.signIn : undefined} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
         </nav>
         <button type="button" className={styles.menuButton} aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="mobile-site-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "Close" : "Menu"}</button>
       </div>
       <nav id="mobile-site-navigation" className={styles.mobileNav} aria-label="Mobile navigation" hidden={!menuOpen}>
-        {allLinks.map(([label, href]) => <Link key={`${label}-${href}-mobile`} href={href} aria-current={isActive(href) ? "page" : undefined} onClick={() => setMenuOpen(false)}>{label}</Link>)}
+        {allLinks.map(([label, href]) => <Link key={`${label}-${href}-mobile`} href={href} className={href === "/login" ? styles.signIn : undefined} aria-current={isActive(href) ? "page" : undefined} onClick={() => setMenuOpen(false)}>{label}</Link>)}
       </nav>
     </header>
   );

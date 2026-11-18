@@ -3,7 +3,6 @@ import { getPublicAppUrl } from "@/lib/site";
 
 const publicRoutes = [
   "",
-  "/providers",
   "/support",
   "/terms",
   "/privacy",
@@ -26,11 +25,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return publicRoutes.map((route) => ({
     url: `${appUrl}${route}`,
     lastModified: new Date(
-      updatedLegalRoutes.has(route)
+      route === ""
+        ? "2026-11-18T00:00:00.000Z"
+        : updatedLegalRoutes.has(route)
         ? "2026-10-26T00:00:00.000Z"
         : "2026-09-21T00:00:00.000Z",
     ),
     changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : route === "/providers" ? 0.9 : 0.5,
+    priority: route === "" ? 1 : 0.5,
   }));
 }

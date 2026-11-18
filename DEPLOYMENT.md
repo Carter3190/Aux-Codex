@@ -260,3 +260,28 @@ and new-account fallback names; it does not rename existing profiles.
 Check the current source hashes, representative public and signed-in screens,
 transactional email sender display names, and hosted confirmation-email settings
 after publication. Do not send test emails or create bookings for a spelling check.
+
+
+## Provider-search homepage (November 18, 2026)
+
+The app root `/` is the real provider directory and its page title/navigation
+label is **Home Page**. `/providers` is a permanent compatibility redirect that
+preserves the effective `q` and `area` search filters. Provider profile URLs
+under `/providers/[providerId]` retain their existing route and shared layout.
+The old marketing Home content is removed from the app root. About Us remains
+at `https://theauxillium.com/about-us`. No schema migration or legal-version
+publication is required.
+
+After the app deployment is ready, update the existing Squarespace homepage's
+page/navigation titles to Home Page, replace its old content with the minimal
+Home Page fallback, and remove the duplicate Find a Provider navigation link.
+The homepage-specific Page Header Code Injection sends only top-level public
+requests for `/`, `/welcome`, or `/welcome/` to `https://app.theauxillium.com/`,
+preserving query strings and fragments. Legacy `#about` visits go to the
+existing Squarespace About Us page. Editor frames and other pages are excluded.
+This is a client-side handoff, not an HTTP redirect or DNS/domain-forwarding change.
+
+Keep backups of the previous homepage block and page-header injection before
+updating Squarespace. Verify both home entrances, search/clear, legacy filtered
+provider links, native About Us back-navigation, mobile navigation, and preserved
+private account paths after publication.

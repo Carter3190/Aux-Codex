@@ -310,3 +310,10 @@ The deployment health check is available at `/api/health`. It reports overall
 core readiness, notification and support status, the safe payment mode, and
 whether the release is still prelaunch without identifying credentials or
 returning secret values.
+
+
+### Public Home Page
+
+Provider search is the app's Home Page at `/`. Existing `/providers` bookmarks
+redirect there with their search filters. Individual provider profiles retain
+their original URLs. The separate About Us page remains on the marketing domain.
