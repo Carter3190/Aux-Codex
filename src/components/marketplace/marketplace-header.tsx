@@ -12,10 +12,5 @@ export function MarketplaceHeader({
       accountLabel="Dashboard"
       greeting={`Hi, ${profile.fullName.split(" ")[0]}`}
     />
-  ) : (
-    <SiteHeader
-      secondaryAccountHref="/signup?role=customer"
-      secondaryAccountLabel="Create account"
-    />
-  );
+  ) : <SiteHeader />;
 }
