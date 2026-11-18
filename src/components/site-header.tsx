@@ -15,8 +15,11 @@ type SiteHeaderProps = {
 
 const navigation = [
   ["Home Page", "/"],
-  ["About Us", "https://theauxillium.com/about-us"],
   ["Offer Services", "/signup?role=provider"],
+] as const;
+
+const helpNavigation = [
+  ["About Us", "https://theauxillium.com/about-us"],
   ["Support", "/support"],
 ] as const;
 
@@ -27,7 +30,7 @@ export function SiteHeader({ accountHref = "/login", accountLabel = "Sign In", s
     [accountLabel, accountHref],
     ...(secondaryAccountHref && secondaryAccountLabel ? [[secondaryAccountLabel, secondaryAccountHref] as const] : []),
   ];
-  const allLinks = [...navigation, ...accountLinks];
+  const allLinks = [...navigation, ...accountLinks, ...helpNavigation];
   function isActive(href: string) {
     if (href.includes("#") || href.includes("?")) return false;
     return href === "/" ? pathname === "/" || pathname === "/providers" || pathname.startsWith("/providers/") : pathname.startsWith(href);
