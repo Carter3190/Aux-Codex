@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/lib/auth/actions";
 import type { CurrentProfile } from "@/lib/auth/profile";
+import { BrandWordmark } from "../brand-wordmark";
 import styles from "./admin-shell.module.css";
 
 export function AdminDashboardShell({
@@ -32,7 +33,7 @@ export function AdminDashboardShell({
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.wordmark}>Auxillium</Link>
+          <Link href="/" className={styles.wordmark} aria-label="Auxillium"><BrandWordmark /></Link>
           <div className={styles.account}>
             <div className={styles.accountName}>
               <span>{profile.fullName}</span><small>Administrator</small>

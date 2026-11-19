@@ -1,14 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #080808;
-  --surface: #ffffff;
-  --muted: #5f5f5f;
-  --brand: #080808;
-  --brand-dark: #000000;
-  --accent: #080808;
-  --border: #d8d8d8;
+  --aux-ink: #203346;
+  --aux-muted: #526477;
+  --aux-brand: #285bc4;
+  --aux-brand-hover: #214da8;
+  --aux-end: #137879;
+  --aux-page: #f5f8fc;
+  --aux-paper: #ffffff;
+  --aux-line: #cfdfee;
+  --aux-input-line: #b9cfe3;
+  --aux-soft: #e5f1fc;
+  --aux-mint: #e4f6ee;
+  --aux-peach: #fff0df;
+  --aux-page-gradient: linear-gradient(125deg, color-mix(in srgb, #e0edff 65%, var(--aux-page)), color-mix(in srgb, #e5f7ef 65%, var(--aux-page)) 58%, color-mix(in srgb, #fff0e4 65%, var(--aux-page)));
+  --aux-header-gradient: linear-gradient(105deg, var(--aux-paper) 35%, color-mix(in srgb, var(--aux-soft) 50%, var(--aux-paper)));
+  --aux-footer-gradient: linear-gradient(110deg, var(--aux-paper), color-mix(in srgb, var(--aux-soft) 35%, var(--aux-paper)));
+  --aux-primary-gradient: linear-gradient(110deg, var(--aux-brand), var(--aux-end));
+  --aux-feature-gradient: linear-gradient(125deg, var(--aux-brand), #316bd3 52%, var(--aux-end));
+  --aux-tint-gradient: linear-gradient(135deg, var(--aux-soft), var(--aux-mint));
+  --background: var(--aux-page);
+  --foreground: var(--aux-ink);
+  --surface: var(--aux-paper);
+  --muted: var(--aux-muted);
+  --brand: var(--aux-brand);
+  --brand-dark: var(--aux-brand-hover);
+  --accent: var(--aux-end);
+  --border: var(--aux-line);
 }
 
 @theme inline {
@@ -29,13 +47,13 @@
 }
 
 html {
-  background: var(--background);
+  background: var(--aux-page-gradient);
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  background: var(--background);
+  background: var(--aux-page-gradient);
   color: var(--foreground);
   font-family: var(--font-sans);
   letter-spacing: -0.012em;
@@ -68,6 +86,7 @@ a {
 
 :where(a, button).bg-brand {
   border: 1.5px solid var(--brand);
+  background: var(--aux-primary-gradient);
   box-shadow: none;
 }
 
@@ -98,6 +117,6 @@ a {
 }
 
 ::selection {
-  background: #dcdcdc;
+  background: var(--aux-soft);
   color: var(--foreground);
 }

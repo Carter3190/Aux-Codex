@@ -7,10 +7,10 @@
   gap: 8px;
   margin-bottom: 20px;
   padding: 10px 15px;
-  border: 1px solid #cedbed;
+  border: 1px solid var(--aux-line);
   border-radius: 10px;
-  background: #eaf0f8;
-  color: #345f94;
+  background: var(--aux-soft);
+  color: var(--aux-brand);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
@@ -19,11 +19,11 @@
   transition: background 150ms ease, border-color 150ms ease;
 }
 .backAction:hover {
-  border-color: #9fb7d5;
-  background: #dfe9f6;
-  color: #254468;
+  border-color: var(--aux-input-line);
+  background: var(--aux-soft);
+  color: var(--aux-brand-hover);
   text-decoration: none;
 }
-.backAction:focus-visible { outline: 3px solid #345f94; outline-offset: 3px; }
+.backAction:focus-visible { outline: 3px solid var(--aux-brand); outline-offset: 3px; }
 .backAction svg { width: 16px; height: 16px; flex-shrink: 0; }
 @media (prefers-reduced-motion: reduce) { .backAction { transition: none; } }

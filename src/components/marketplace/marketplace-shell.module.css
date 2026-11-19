@@ -1,14 +1,14 @@
 .shell {
-  --background: #f2f5f8;
-  --foreground: #203346;
-  --surface: #ffffff;
-  --muted: #66778a;
-  --brand: #345f94;
-  --border: #dce4ed;
+  --background: var(--aux-page);
+  --foreground: var(--aux-ink);
+  --surface: var(--aux-paper);
+  --muted: var(--aux-muted);
+  --brand: var(--aux-brand);
+  --border: var(--aux-line);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--background);
+  background: var(--aux-page-gradient);
   color: var(--foreground);
   color-scheme: light;
 }
@@ -25,7 +25,7 @@
 .footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--aux-footer-gradient);
 }
 
 .footerInner {

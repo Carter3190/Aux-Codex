@@ -5,8 +5,8 @@
 .inboxHeading span { color: var(--muted); font-size: 12px; }
 .inboxRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 16px; margin-inline: 26px; padding-block: 23px; color: var(--foreground); text-decoration: none; }
 .inboxRow + .inboxRow { border-top: 1px solid var(--border); }
-.inboxRow:hover .openConversation { border-color: var(--brand); color: var(--brand-dark); background: #edf3fa; }
-.initials { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 43px; height: 43px; border-radius: 11px; color: var(--brand); background: #eaf0f8; font-size: 13px; font-weight: 600; }
+.inboxRow:hover .openConversation { border-color: var(--brand); color: var(--brand-dark); background: var(--aux-soft); }
+.initials { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 43px; height: 43px; border-radius: 11px; color: var(--brand); background: var(--aux-tint-gradient); font-size: 13px; font-weight: 600; }
 .inboxCopy { min-width: 0; }
 .inboxTitle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .inboxCopy h3 { margin: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
@@ -16,14 +16,14 @@
 .inboxAction time { color: var(--muted); font-size: 11px; }
 .openConversation,.secondaryButton,.backButton,.primaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.5; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; }
 .openConversation,.secondaryButton { color: var(--brand); background: var(--surface); }
-.secondaryButton:hover { color: var(--brand-dark); border-color: var(--brand); background: #f3f7fc; }
-.backButton { margin-bottom: 24px; border-color: #d6e2f1; color: var(--brand-dark); background: #eaf0f8; }
-.backButton:hover { background: #dfe9f6; border-color: #b9cee9; }
-.primaryButton { color: #fff; background: var(--brand); border-color: var(--brand); }
+.secondaryButton:hover { color: var(--brand-dark); border-color: var(--brand); background: var(--aux-soft); }
+.backButton { margin-bottom: 24px; border-color: var(--aux-line); color: var(--brand-dark); background: var(--aux-soft); }
+.backButton:hover { background: var(--aux-soft); border-color: var(--aux-input-line); }
+.primaryButton { color: var(--aux-paper); background: var(--aux-primary-gradient); border-color: var(--brand); }
 .primaryButton:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
 .primaryButton:disabled { cursor: not-allowed; opacity: .6; }
 .openConversation svg,.secondaryButton svg,.backButton svg,.primaryButton svg { flex-shrink: 0; width: 16px; height: 16px; }
-.badge { display: inline-flex; width: fit-content; align-items: center; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 500; line-height: 1.5; color: #345f94; background: #eaf0f8; }
+.badge { display: inline-flex; width: fit-content; align-items: center; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 500; line-height: 1.5; color: var(--aux-brand); background: var(--aux-soft); }
 .badge.pending { color: #795223; background: #fff4dd; }
 .badge.declined { color: #a23434; background: #fceeee; }
 .badge.cancelled { color: #5f6c7c; background: #eef1f5; }
@@ -36,8 +36,8 @@
 .message { display: grid; align-self: flex-start; gap: 5px; max-width: 84%; min-width: 0; }
 .own { align-self: flex-end; text-align: right; }
 .sender { margin: 0; font-size: 12px; color: var(--muted); }
-.messageBody { margin: 0; padding: 12px 15px; border-radius: 12px; background: #f2f5f8; color: var(--foreground); font-size: 14px; line-height: 1.75; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
-.own .messageBody { background: #eaf0f8; color: #254468; }
+.messageBody { margin: 0; padding: 12px 15px; border-radius: 12px; background: var(--aux-page); color: var(--foreground); font-size: 14px; line-height: 1.75; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
+.own .messageBody { background: var(--aux-soft); color: var(--aux-brand-hover); }
 .messageTime { font-size: 11px; color: var(--muted); }
 .details { padding: 25px; }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 19px 16px; margin: 23px 0; }
@@ -55,13 +55,13 @@
 .threadEmpty p { margin: 9px 0 0; max-width: 360px; color: var(--muted); font-size: 13px; line-height: 1.8; }
 .composer { display: grid; gap: 10px; border-top: 1px solid var(--border); padding: 21px 25px 25px; }
 .composer label { font-size: 13px; font-weight: 600; }
-.composer textarea { display: block; width: 100%; min-width: 0; margin-top: 0; padding: 13px 15px; resize: vertical; border: 1px solid #bfd0e4; border-radius: 11px; background: #fff; color: var(--foreground); font: inherit; font-size: 14px; line-height: 1.7; }
-.composer textarea::placeholder { color: #6c7d90; }
+.composer textarea { display: block; width: 100%; min-width: 0; margin-top: 0; padding: 13px 15px; resize: vertical; border: 1px solid var(--aux-input-line); border-radius: 11px; background: var(--aux-paper); color: var(--foreground); font: inherit; font-size: 14px; line-height: 1.7; }
+.composer textarea::placeholder { color: var(--aux-muted); }
 .composer textarea:focus { outline: 2px solid var(--brand); outline-offset: 2px; }
 .composeActions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 13px; }
 .composeActions p { margin: 0; color: var(--muted); font-size: 11px; }
 .composeActions button { margin-left: auto; }
-.feedback { margin: 0; padding: 12px 14px; border: 1px solid #d6e2f1; border-radius: 10px; background: #eaf0f8; color: #254468; font-size: 13px; line-height: 1.7; }
+.feedback { margin: 0; padding: 12px 14px; border: 1px solid var(--aux-line); border-radius: 10px; background: var(--aux-soft); color: var(--aux-brand-hover); font-size: 13px; line-height: 1.7; }
 .feedbackError { color: #a23434; background: #fceeee; border-color: #efcaca; }
 .fieldError { margin: 0; color: #a23434; font-size: 13px; }
 @media (max-width: 950px) { .threadGrid { grid-template-columns: minmax(0, 1fr); } .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .fullFact { grid-column: 1 / -1; } }

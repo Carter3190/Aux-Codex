@@ -1,6 +1,7 @@
 "use client";
 
 import { CustomerIcon } from "@/components/dashboard/customer-icon";
+import { BrandWordmark } from "@/components/brand-wordmark";
 import styles from "@/components/recovery/recovery-pages.module.css";
 
 export default function GlobalError({ retry }: { retry: () => void }) {
@@ -10,7 +11,7 @@ export default function GlobalError({ retry }: { retry: () => void }) {
         <main className={styles.page}>
           <title>Something went wrong | Auxillium</title>
           <div className={styles.narrow}>
-            <p className={styles.brand}>Auxillium</p>
+            <p className={styles.brand}><BrandWordmark /></p>
             <section className={styles.panel}>
               <span className={styles.icon}><CustomerIcon name="help" /></span>
               <p className={styles.eyebrow}>Let’s try again</p>

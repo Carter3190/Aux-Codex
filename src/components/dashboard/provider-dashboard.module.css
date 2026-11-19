@@ -6,29 +6,29 @@
 .textLink:hover { text-decoration: underline; text-underline-offset: 4px; }
 .textLink svg { width: 15px; height: 15px; flex-shrink: 0; }
 .primaryButton, .secondaryButton, .heroButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; border-radius: 10px; padding: 10px 15px; font-size: 13px; font-weight: 600; text-decoration: none; text-align: center; }
-.primaryButton { background: var(--brand); border: 1px solid var(--brand); color: #fff; }
+.primaryButton { background: var(--aux-primary-gradient); border: 1px solid var(--brand); color: var(--aux-paper); }
 .primaryButton:hover { background: var(--brand-dark); }
 .secondaryButton { background: var(--surface); border: 1px solid var(--border); color: var(--foreground); }
-.secondaryButton:hover { background: #eaf0f8; }
+.secondaryButton:hover { background: var(--aux-soft); }
 .primaryButton svg, .secondaryButton svg, .heroButton svg { width: 16px; height: 16px; flex-shrink: 0; }
-.hero { background: #254468; color: #f3f7fc; border-radius: 20px; padding: 30px; min-height: 300px; }
+.hero { background: var(--aux-feature-gradient); color: var(--aux-paper); border-radius: 20px; padding: 30px; min-height: 300px; }
 .heroTop { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 7px; margin-bottom: 25px; }
-.hero .badge { background: rgb(255 255 255 / 12%); color: #f0f6ff; }
+.hero .badge { background: rgb(255 255 255 / 12%); color: var(--aux-paper); }
 .heroMain { display: flex; gap: 20px; align-items: flex-start; }
 .dateTile { width: 57px; flex-shrink: 0; border: 1px solid rgb(255 255 255 / 24%); border-radius: 12px; padding: 7px; text-align: center; }
-.dateTile span { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #cbd9eb; }
+.dateTile span { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #edf5ff; }
 .dateTile strong { display: block; font-size: 29px; font-weight: 500; line-height: 1.2; }
 .hero h3 { margin: 0; font-size: clamp(23px, 2.2vw, 30px); font-weight: 500; letter-spacing: -.04em; line-height: 1.25; overflow-wrap: anywhere; }
-.heroCustomer { color: #ccdaea; margin-top: 8px; font-size: 14px; }
-.heroTime { display: flex; align-items: center; gap: 8px; color: #ccdaea; margin-top: 22px; font-size: 13px; }
+.heroCustomer { color: #edf5ff; margin-top: 8px; font-size: 14px; }
+.heroTime { display: flex; align-items: center; gap: 8px; color: #edf5ff; margin-top: 22px; font-size: 13px; }
 .heroTime svg { width: 16px; height: 16px; flex-shrink: 0; }
 .heroActions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 25px; }
-.heroButton { background: #f1f6fd; border: 1px solid #f1f6fd; color: #254468; }
-.heroButton:hover { background: #dce9fa; }
-.heroLink { display: inline-flex; align-items: center; gap: 7px; color: #f1f6fd; font-size: 13px; padding: 10px 0; }
+.heroButton { background: var(--aux-paper); border: 1px solid var(--aux-paper); color: var(--aux-brand); }
+.heroButton:hover { background: var(--aux-soft); }
+.heroLink { display: inline-flex; align-items: center; gap: 7px; color: var(--aux-paper); font-size: 13px; padding: 10px 0; }
 .heroLink:hover { text-decoration: underline; }
 .heroLink svg { width: 16px; height: 16px; }
-.serviceIcon { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; background: #eaf0f8; color: var(--brand); }
+.serviceIcon { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; background: var(--aux-tint-gradient); color: var(--brand); }
 .serviceIcon svg { width: 19px; height: 19px; }
 .actionStack { display: grid; gap: 15px; }
 .actionCard { display: flex; align-items: flex-start; gap: 13px; padding: 21px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
@@ -46,16 +46,16 @@
 .emptyState > .serviceIcon { margin-bottom: 17px; }
 .emptyState h2 { font-size: 22px; font-weight: 500; letter-spacing: -.025em; margin: 0; }
 .emptyState p { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 10px auto 0; max-width: 460px; }
-.emptyFeatured { background: #254468; border-color: #254468; color: #f3f7fc; min-height: 300px; }
-.emptyFeatured p { color: #ccdaea; }
-.emptyFeatured .serviceIcon { background: rgb(255 255 255 / 12%); color: #dbe9ff; }
+.emptyFeatured { background: var(--aux-feature-gradient); border-color: var(--aux-brand-hover); color: var(--aux-paper); min-height: 300px; }
+.emptyFeatured p { color: #edf5ff; }
+.emptyFeatured .serviceIcon { background: rgb(255 255 255 / 12%); color: #edf5ff; }
 .emptyFeatured .heroButton { margin-top: 24px; }
 .subtleNotice { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 20px; }
 .subtleNotice svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 3px; }
 .subtleNotice a, .statusNote a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
 .workspaceName { color: var(--muted); font-size: 12px; margin-top: 17px; }
 .statusNote { color: var(--muted); font-size: 13px; margin-top: 24px; line-height: 1.7; }
-.accountNotice { padding: 22px; border: 1px solid #d3e0f2; border-radius: 15px; background: #eaf1fb; color: #254468; margin-bottom: 26px; }
+.accountNotice { padding: 22px; border: 1px solid var(--aux-line); border-radius: 15px; background: var(--aux-soft); color: var(--aux-brand-hover); margin-bottom: 26px; }
 .accountNotice h2 { font-size: 16px; font-weight: 600; }
 .accountNotice p { font-size: 13px; line-height: 1.75; margin-top: 7px; }
 .accountNotice .textLink { margin-top: 12px; }
@@ -64,8 +64,8 @@
 .preserveLines { white-space: pre-wrap; }
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
 .tab { display: inline-flex; gap: 7px; align-items: center; padding: 9px 15px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 500; }
-.tab:hover { background: #eaf0f8; }
-.tab[aria-current="page"] { color: var(--brand); background: #e5edf8; }
+.tab:hover { background: var(--aux-soft); }
+.tab[aria-current="page"] { color: var(--brand); background: var(--aux-soft); }
 .tab span { font-size: 12px; opacity: .8; }
 .bookingList { display: grid; gap: 16px; }
 .bookingCard { padding: 23px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
@@ -78,7 +78,7 @@
 .badge { display: inline-flex; align-items: center; gap: 5px; width: fit-content; border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 500; line-height: 1.4; }
 .badge svg { width: 13px; height: 13px; }
 .paid { color: #2f6945; background: #eaf4ec; }
-.processing { color: #345f94; background: #eaf0fa; }
+.processing { color: var(--aux-brand); background: var(--aux-soft); }
 .failed { color: #a23434; background: #fceeee; }
 .neutral { color: #5f6c7c; background: #eef1f5; }
 .bookingCardBottom { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
