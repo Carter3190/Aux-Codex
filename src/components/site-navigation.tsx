@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { AccountAvatar, type AccountAvatarData } from "./account-avatar";
 import styles from "./site-navigation.module.css";
 
 export type SiteNavigationProps = {
+  account?: AccountAvatarData | null;
   showOfferServices?: boolean;
   accountHref?: string;
   accountLabel?: string;
@@ -24,10 +26,10 @@ const helpNavigation = [
   ["Support", "/support"],
 ] as const;
 
-export function SiteNavigation({ showOfferServices = true, accountHref = "/login", accountLabel = "Sign In", secondaryAccountHref, secondaryAccountLabel, greeting }: SiteNavigationProps) {
+export function SiteNavigation({ account = null, showOfferServices = true, accountHref = "/login", accountLabel = "Sign In", secondaryAccountHref, secondaryAccountLabel, greeting }: SiteNavigationProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const accountLinks: ReadonlyArray<readonly [string, string]> = [
+  const accountLinks: ReadonlyArray<readonly [string, string]> = account ? [] : [
     [accountLabel, accountHref],
     ...(secondaryAccountHref && secondaryAccountLabel ? [[secondaryAccountLabel, secondaryAccountHref] as const] : []),
   ];
@@ -41,11 +43,14 @@ export function SiteNavigation({ showOfferServices = true, accountHref = "/login
     <header className={styles.header} onKeyDown={(event) => { if (event.key === "Escape") setMenuOpen(false); }}>
       <div className={styles.headerInner}>
         <Link href="/" className={styles.brand} onClick={() => setMenuOpen(false)}>Auxillium</Link>
-        <nav className={styles.desktopNav} aria-label="Main navigation">
-          {greeting && <span className={styles.greeting}>{greeting}</span>}
-          {allLinks.map(([label, href]) => <Link key={`${label}-${href}`} href={href} className={href === "/login" ? styles.signIn : undefined} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
-        </nav>
-        <button type="button" className={styles.menuButton} aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="mobile-site-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "Close" : "Menu"}</button>
+        <div className={styles.headerActions}>
+          <nav className={styles.desktopNav} aria-label="Main navigation">
+            {!account && greeting && <span className={styles.greeting}>{greeting}</span>}
+            {allLinks.map(([label, href]) => <Link key={`${label}-${href}`} href={href} className={href === "/login" ? styles.signIn : undefined} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
+          </nav>
+          <button type="button" className={styles.menuButton} aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="mobile-site-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "Close" : "Menu"}</button>
+          {account && <AccountAvatar account={account} onClick={() => setMenuOpen(false)} />}
+        </div>
       </div>
       <nav id="mobile-site-navigation" className={styles.mobileNav} aria-label="Mobile navigation" hidden={!menuOpen}>
         {allLinks.map(([label, href]) => <Link key={`${label}-${href}-mobile`} href={href} className={href === "/login" ? styles.signIn : undefined} aria-current={isActive(href) ? "page" : undefined} onClick={() => setMenuOpen(false)}>{label}</Link>)}
