@@ -193,7 +193,7 @@ export function ProviderServiceCredentialReviewForm({
         empty={<>Approve current insurance in {privateCredentials} before selecting it. Use “Confirm approval” to record an individual review on an earlier approval.</>}
         error={state.fieldErrors?.insuranceCredentialIds?.[0]}
       />}
-      <label className="flex items-start gap-2.5 rounded-xl border border-border bg-[#f7f7f7] p-3 text-sm leading-6 text-foreground">
+      <label className="flex items-start gap-2.5 rounded-xl border border-border bg-[var(--aux-page)] p-3 text-sm leading-6 text-foreground">
         <input type="checkbox" name="scopeConfirmed" value="confirmed" required className="mt-1 h-4 w-4 shrink-0 accent-brand" />
         <span>I checked both requirements for this work and area. If a license is required, I confirmed its status with the issuing authority. If insurance is required, I confirmed the insured party and applicable coverage with the insurer or broker.</span>
       </label>

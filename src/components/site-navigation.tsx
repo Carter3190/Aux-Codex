@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { AccountAvatar, type AccountAvatarData } from "./account-avatar";
+import { BrandWordmark } from "./brand-wordmark";
 import styles from "./site-navigation.module.css";
 
 export type SiteNavigationProps = {
@@ -42,7 +43,7 @@ export function SiteNavigation({ account = null, showOfferServices = true, accou
   return (
     <header className={styles.header} onKeyDown={(event) => { if (event.key === "Escape") setMenuOpen(false); }}>
       <div className={styles.headerInner}>
-        <Link href="/" className={styles.brand} onClick={() => setMenuOpen(false)}>Auxillium</Link>
+        <Link href="/" className={styles.brand} aria-label="Auxillium" onClick={() => setMenuOpen(false)}><BrandWordmark /></Link>
         <div className={styles.headerActions}>
           <nav className={styles.desktopNav} aria-label="Main navigation">
             {!account && greeting && <span className={styles.greeting}>{greeting}</span>}

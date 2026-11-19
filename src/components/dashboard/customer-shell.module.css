@@ -1,16 +1,16 @@
 .shell {
-  --background: #f2f5f8;
-  --foreground: #203346;
-  --surface: #ffffff;
-  --muted: #66778a;
-  --brand: #345f94;
-  --brand-dark: #254468;
-  --accent: #345f94;
-  --border: #dce4ed;
+  --background: var(--aux-page);
+  --foreground: var(--aux-ink);
+  --surface: var(--aux-paper);
+  --muted: var(--aux-muted);
+  --brand: var(--aux-brand);
+  --brand-dark: var(--aux-brand-hover);
+  --accent: var(--aux-brand);
+  --border: var(--aux-line);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--background);
+  background: var(--aux-page-gradient);
   color: var(--foreground);
   color-scheme: light;
   font-size: 15px;
@@ -18,7 +18,7 @@
 }
 
 .header {
-  background: var(--surface);
+  background: var(--aux-header-gradient);
   border-bottom: 1px solid var(--border);
 }
 
@@ -65,7 +65,7 @@
   justify-content: center;
   border-radius: 50%;
   color: var(--brand);
-  background: #eaf0f8;
+  background: var(--aux-tint-gradient);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0;
@@ -108,7 +108,7 @@
 
 .signOut:hover {
   color: var(--brand-dark);
-  background: #edf3fa;
+  background: var(--aux-soft);
 }
 
 .navigation {
@@ -205,8 +205,8 @@
   padding: 11px 17px;
   border: 1px solid var(--brand);
   border-radius: 10px;
-  color: #ffffff;
-  background: var(--brand);
+  color: var(--aux-paper);
+  background: var(--aux-primary-gradient);
   font-size: 13px;
   font-weight: 500;
   text-align: center;
@@ -233,7 +233,7 @@
 .footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--aux-footer-gradient);
 }
 
 .footerInner {

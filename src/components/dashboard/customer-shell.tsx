@@ -3,6 +3,7 @@ import { signOut } from "@/lib/auth/actions";
 import type { CurrentProfile } from "@/lib/auth/profile";
 import { CustomerIcon } from "./customer-icon";
 import { CustomerNavigation } from "./customer-navigation";
+import { BrandWordmark } from "../brand-wordmark";
 import styles from "./customer-shell.module.css";
 
 type CustomerDashboardShellProps = {
@@ -34,8 +35,8 @@ export function CustomerDashboardShell({
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.wordmark}>
-            Auxillium
+          <Link href="/" className={styles.wordmark} aria-label="Auxillium">
+            <BrandWordmark />
           </Link>
           <div className={styles.account}>
             <span className={styles.avatar} aria-hidden="true">

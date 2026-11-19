@@ -1,14 +1,14 @@
 .page {
-  --background: #f2f5f8;
-  --foreground: #203346;
-  --surface: #ffffff;
-  --muted: #526477;
-  --brand: #345f94;
-  --brand-dark: #254468;
-  --border: #dce4ed;
+  --background: var(--aux-page);
+  --foreground: var(--aux-ink);
+  --surface: var(--aux-paper);
+  --muted: var(--aux-muted);
+  --brand: var(--aux-brand);
+  --brand-dark: var(--aux-brand-hover);
+  --border: var(--aux-line);
   min-height: 100vh;
   color-scheme: light;
-  background: var(--background);
+  background: var(--aux-page-gradient);
   color: var(--foreground);
   font-size: 14px;
   line-height: 1.55;
@@ -23,9 +23,9 @@
 .title { margin: 5px 0 0; color: var(--foreground); font-size: clamp(27px, 4.2vw, 38px); font-weight: 500; letter-spacing: -1.25px; line-height: 1.19; }
 .searchForm { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) auto; gap: 14px; align-items: end; margin-top: 20px; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px 18px; background: var(--surface); }
 .field { min-width: 0; font-size: 13px; font-weight: 600; }
-.input { display: block; width: 100%; min-width: 0; min-height: 44px; margin-top: 5px; padding: 9px 12px; border: 1px solid #bfcddd; border-radius: 9px; background: var(--surface); color: var(--foreground); font-size: 14px; font-weight: 400; }
+.input { display: block; width: 100%; min-width: 0; min-height: 44px; margin-top: 5px; padding: 9px 12px; border: 1px solid var(--aux-input-line); border-radius: 9px; background: var(--surface); color: var(--foreground); font-size: 14px; font-weight: 400; }
 .input::placeholder { color: var(--muted); }
-.searchButton, .profileLink { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--brand); border-radius: 9px; padding: 8px 16px; background: var(--brand); color: white; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 150ms ease; }
+.searchButton, .profileLink { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--brand); border-radius: 9px; padding: 8px 16px; background: var(--aux-primary-gradient); color: white; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 150ms ease; }
 .searchButton { cursor: pointer; }
 .searchButton:hover { background: var(--brand-dark); }
 .resultsHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 15px; margin: 29px 0 13px; }
@@ -36,7 +36,7 @@
 .providerCard, .emptyState { min-width: 0; padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
 .providerCard { display: flex; flex-direction: column; gap: 12px; }
 .identity { display: grid; grid-template-columns: 57px minmax(0, 1fr); align-items: center; gap: 13px; }
-.avatar { display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border-radius: 11px; background: #eaf0f8; color: var(--brand); font-size: 19px; font-weight: 500; }
+.avatar { display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border-radius: 11px; background: var(--aux-tint-gradient); color: var(--brand); font-size: 19px; font-weight: 500; }
 .avatarImage { width: 100%; height: 100%; object-fit: cover; }
 .identityCopy { min-width: 0; }
 .providerName { margin: 0; font-size: 17px; line-height: 1.3; font-weight: 600; }
@@ -44,9 +44,9 @@
 .rating { color: var(--brand); font-weight: 500; }
 .summary { margin: 0; color: var(--muted); font-size: 13px; }
 .services { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
-.services li { padding: 4px 8px; background: #eaf0f8; color: var(--brand-dark); border-radius: 6px; font-size: 12px; }
+.services li { padding: 4px 8px; background: var(--aux-soft); color: var(--brand-dark); border-radius: 6px; font-size: 12px; }
 .profileLink { align-self: flex-start; margin-top: auto; border-color: var(--border); background: var(--surface); color: var(--brand); }
-.profileLink:hover { background: #eaf0f8; }
+.profileLink:hover { background: var(--aux-soft); }
 .emptyState h3 { margin: 0; font-size: 17px; font-weight: 600; }
 .emptyState p { margin: 4px 0 0; color: var(--muted); }
 

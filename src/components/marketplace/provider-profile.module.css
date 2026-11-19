@@ -1,38 +1,38 @@
 .page {
-  --background: #f2f5f8;
-  --foreground: #203346;
-  --surface: #ffffff;
-  --muted: #66778a;
-  --brand: #345f94;
-  --brand-dark: #254468;
-  --accent: #345f94;
-  --border: #dce4ed;
+  --background: var(--aux-page);
+  --foreground: var(--aux-ink);
+  --surface: var(--aux-paper);
+  --muted: var(--aux-muted);
+  --brand: var(--aux-brand);
+  --brand-dark: var(--aux-brand-hover);
+  --accent: var(--aux-brand);
+  --border: var(--aux-line);
   min-height: 100vh;
   color: var(--foreground);
-  background: var(--background);
+  background: var(--aux-page-gradient);
   color-scheme: light;
   font-size: 15px;
   line-height: 1.65;
 }
 
-.heroBand { border-bottom: 1px solid var(--border); background: var(--surface); }
+.heroBand { border-bottom: 1px solid var(--border); background: var(--aux-header-gradient); }
 .heroInner, .contentGrid { width: min(100%, 1120px); margin-inline: auto; padding-inline: 36px; }
 .heroInner { padding-block: 25px 34px; }
 .backLink { display: inline-flex; align-items: center; min-height: 32px; color: var(--brand); font-size: 13px; font-weight: 500; text-decoration: none; }
 .backLink:hover { text-decoration: underline; text-underline-offset: 4px; }
 .heroGrid { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: 30px; margin-top: 20px; }
-.profilePhoto { overflow: hidden; aspect-ratio: 1; border-radius: 18px; background: #eaf0f8; }
+.profilePhoto { overflow: hidden; aspect-ratio: 1; border-radius: 18px; background: var(--aux-soft); }
 .photoImage { width: 100%; height: 100%; object-fit: cover; }
-.photoFallback { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; color: #7896ba; font-size: 66px; font-weight: 500; }
+.photoFallback { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--aux-brand); font-size: 66px; font-weight: 500; }
 .heroCopy { min-width: 0; }
 .heroLabels { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 15px; }
 .eyebrow { margin: 0; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 1.25px; text-transform: uppercase; }
-.reviewedBadge { display: inline-flex; padding: 4px 9px; border-radius: 6px; background: #eaf0f8; color: var(--brand); font-size: 11px; font-weight: 500; }
+.reviewedBadge { display: inline-flex; padding: 4px 9px; border-radius: 6px; background: var(--aux-soft); color: var(--brand); font-size: 11px; font-weight: 500; }
 .providerName { margin: 12px 0 0; font-size: clamp(28px, 3.5vw, 40px); font-weight: 500; line-height: 1.18; letter-spacing: -1.2px; overflow-wrap: anywhere; }
 .headline { max-width: 700px; margin: 12px 0 0; color: var(--foreground); font-size: 18px; line-height: 1.55; overflow-wrap: anywhere; }
 .ratingSummary { margin: 12px 0 0; color: var(--foreground); font-size: 13px; font-weight: 500; }
 .stars { margin: 0; color: var(--brand); font-size: 15px; letter-spacing: 1px; }
-.emptyStars { color: #d6e0eb; }
+.emptyStars { color: var(--aux-line); }
 .providerMeta { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
 .contentGrid { display: grid; gap: 22px; align-items: start; padding-block: 28px 36px; }
 .overviewGrid, .bookingRow { display: grid; gap: 22px; align-items: stretch; min-width: 0; }
@@ -73,7 +73,7 @@
   margin-top: 12px;
   padding: 7px 11px;
   border-radius: 8px;
-  background: #eaf0f8;
+  background: var(--aux-soft);
 }
 .serviceApprovalLabel {
   margin: 0;
@@ -103,12 +103,12 @@
 .bookingForm input, .bookingForm select, .bookingForm textarea { min-width: 0; border-radius: 10px; }
 .bookingForm button { border-radius: 10px; font-size: 14px; }
 .bookingUnavailable { padding: 14px; border: 1px solid #eeddbb; border-radius: 12px; background: #fff6e5; color: #795223; font-size: 13px; line-height: 1.8; }
-.accountNotice { padding: 18px; border-radius: 12px; background: #edf2f8; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.accountNotice { padding: 18px; border-radius: 12px; background: var(--aux-soft); color: var(--muted); font-size: 13px; line-height: 1.8; }
 .signInActions { display: grid; gap: 11px; }
-.primaryButton, .secondaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 11px 16px; border: 1px solid var(--brand); border-radius: 10px; background: var(--brand); color: white; text-align: center; font-size: 13px; font-weight: 500; text-decoration: none; transition: background 150ms ease; }
+.primaryButton, .secondaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 11px 16px; border: 1px solid var(--brand); border-radius: 10px; background: var(--aux-primary-gradient); color: white; text-align: center; font-size: 13px; font-weight: 500; text-decoration: none; transition: background 150ms ease; }
 .primaryButton:hover { background: var(--brand-dark); }
 .secondaryButton { border-color: var(--border); background: var(--surface); color: var(--foreground); }
-.secondaryButton:hover { background: #eaf0f8; }
+.secondaryButton:hover { background: var(--aux-soft); }
 
 @media (max-width: 1000px) {
   .heroGrid { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }

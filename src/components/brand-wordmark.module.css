@@ -1,0 +1,19 @@
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.symbol {
+  display: inline-block;
+  flex: 0 0 1.115385em;
+  width: 1.115385em;
+  height: 1em;
+  transform: translateY(-.15em);
+  background-image: url("/brand/auxillium-symbol-blue-teal.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
