@@ -30,7 +30,7 @@ export function SiteHeader({ accountHref = "/login", accountLabel = "Sign In", s
     [accountLabel, accountHref],
     ...(secondaryAccountHref && secondaryAccountLabel ? [[secondaryAccountLabel, secondaryAccountHref] as const] : []),
   ];
-  const allLinks = [...navigation, ...accountLinks, ...helpNavigation];
+  const allLinks = [...navigation, ...helpNavigation, ...accountLinks];
   function isActive(href: string) {
     if (href.includes("#") || href.includes("?")) return false;
     return href === "/" ? pathname === "/" || pathname === "/providers" || pathname.startsWith("/providers/") : pathname.startsWith(href);
