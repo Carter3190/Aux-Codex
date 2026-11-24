@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { safeDashboardReturnPath } from "./return-path";
+import { hasCustomerAccess } from "./access";
 
 export type UserRole = "customer" | "provider" | "admin";
 export type ProviderStatus =
@@ -18,6 +19,8 @@ export type CurrentProfile = {
   email: string;
   fullName: string;
   role: UserRole;
+  primaryRole?: UserRole;
+  customerAccess?: boolean;
   providerStatus: ProviderStatus;
   createdAt: string;
 };
@@ -26,6 +29,7 @@ type ProfileRow = {
   id: string;
   full_name: string;
   role: UserRole;
+  customer_access: boolean;
   provider_status: ProviderStatus;
   created_at: string;
 };
@@ -49,7 +53,7 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, provider_status, created_at")
+    .select("id, full_name, role, customer_access, provider_status, created_at")
     .eq("id", claims.sub)
     .single();
 
@@ -64,6 +68,8 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
     email: typeof claims.email === "string" ? claims.email : "",
     fullName: profile.full_name,
     role: profile.role,
+    primaryRole: profile.role,
+    customerAccess: profile.role === "customer" || profile.customer_access === true,
     providerStatus: profile.provider_status,
     createdAt: profile.created_at,
   };
@@ -86,7 +92,7 @@ export const getOptionalCurrentProfile = cache(
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, full_name, role, provider_status, created_at")
+      .select("id, full_name, role, customer_access, provider_status, created_at")
       .eq("id", claims.sub)
       .maybeSingle();
 
@@ -100,6 +106,8 @@ export const getOptionalCurrentProfile = cache(
       email: typeof claims.email === "string" ? claims.email : "",
       fullName: profile.full_name,
       role: profile.role,
+      primaryRole: profile.role,
+      customerAccess: profile.role === "customer" || profile.customer_access === true,
       providerStatus: profile.provider_status,
       createdAt: profile.created_at,
     };
@@ -112,6 +120,10 @@ export function getRoleDashboardPath(role: UserRole) {
 
 export async function requireRole(role: UserRole) {
   const profile = await getCurrentProfile();
+
+  if (role === "customer" && hasCustomerAccess(profile)) {
+    return { ...profile, role: "customer" as const, primaryRole: profile.primaryRole ?? profile.role };
+  }
 
   if (profile.role !== role) {
     redirect(getRoleDashboardPath(profile.role));

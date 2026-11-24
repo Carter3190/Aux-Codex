@@ -25,7 +25,7 @@ export default async function CustomerPaymentsPage() {
                   {payment && payment.refundedAmountCents > 0 && <p>Refunded: {formatCustomerMoney(payment.refundedAmountCents)}</p>}
                 </div>
                 <div><span className={styles.paymentAmount}>{formatCustomerMoney(payment?.amountCents ?? booking.agreedPriceCents!)}</span><CustomerPaymentBadge booking={booking} /></div>
-                <Link className={styles.secondaryButton} href={customerBookingPath(booking.id)}>{customerPaymentDue(booking) ? "Review & pay" : "View payment"} <CustomerIcon name="arrow" /></Link>
+                <Link className={styles.secondaryButton} href={customerBookingPath(booking.id, "payment")}>{customerPaymentDue(booking) ? "Review & pay" : "View payment"} <CustomerIcon name="arrow" /></Link>
               </article>
             );
           })}</div>

@@ -12,6 +12,9 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
   const [state, action, pending] = useActionState(signUp, initialAuthState);
   const [role, setRole] = useState(defaultRole);
   const [agreed, setAgreed] = useState(false);
+  const signInHref = role === "provider"
+    ? `/login?next=${encodeURIComponent("/dashboard/provider/application")}`
+    : "/login";
 
   function chooseRole(nextRole: "customer" | "provider") {
     if (nextRole === role) return;
@@ -20,6 +23,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
   }
 
   return (
+    <>
     <form action={action} className={styles.form}>
       <p className={styles.formDescription} aria-live="polite">Create a {role} account to get started.</p>
       <fieldset className={styles.roleFieldset} aria-label="Account type">
@@ -64,5 +68,10 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
       {state.message && <p role="alert" className={styles.alert}>{state.message}</p>}
       <button type="submit" disabled={pending} className={styles.primary}>{pending ? "Creating account…" : "Create account"}</button>
     </form>
+    <p className={styles.footnote}>
+      Already have an account?{" "}
+      <Link href={signInHref} className={styles.textLink}>Sign in</Link>
+    </p>
+    </>
   );
 }

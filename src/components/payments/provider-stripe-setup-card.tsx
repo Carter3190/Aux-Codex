@@ -3,17 +3,22 @@
 import Link from "next/link";
 import { useActionState, useId } from "react";
 import { startStripeOnboarding } from "@/lib/payments/actions";
+import type { ProviderStatus } from "@/lib/auth/profile";
 import { initialPaymentActionState, type ProviderPaymentSetup } from "@/lib/payments/types";
 import { providerStripeStatus, stripeSetupLabels } from "@/lib/payments/stripe-setup-status";
 import { PaymentFeedback } from "./payment-feedback";
 import styles from "./provider-stripe-setup-card.module.css";
 
-export function ProviderStripeSetupCard({ setup }: { setup: ProviderPaymentSetup }) {
+export function ProviderStripeSetupCard({ setup, providerStatus }: {
+  setup: ProviderPaymentSetup;
+  providerStatus: ProviderStatus;
+}) {
   const [state, action, pending] = useActionState(startStripeOnboarding, initialPaymentActionState);
   const headingId = useId();
   const status = providerStripeStatus(setup);
   const unavailable = status === "unavailable";
-  const title = {
+  const approvalRequired = providerStatus !== "approved";
+  const title = approvalRequired && !setup.hasAccount ? "Payment setup after approval" : {
     not_started: "Connect Stripe payments",
     incomplete: "Finish Stripe setup",
     pending: "Stripe is reviewing your information",
@@ -27,9 +32,13 @@ export function ProviderStripeSetupCard({ setup }: { setup: ProviderPaymentSetup
     <section className={styles.card} aria-labelledby={headingId}>
       <div className={styles.heading}>
         <div><p className={styles.eyebrow}>Stripe payments</p><h2 id={headingId}>{title}</h2></div>
-        <span className={styles.badge} data-status={status} role="status">{stripeSetupLabels[status]}</span>
+        <span className={styles.badge} data-status={status} role="status">{approvalRequired && !setup.hasAccount ? "Approval required" : stripeSetupLabels[status]}</span>
       </div>
-      {status === "ready" ? (
+      {approvalRequired && !setup.hasAccount ? (
+        <p className={styles.description}>
+          You can connect Stripe once Auxillium approves your provider profile.
+        </p>
+      ) : status === "ready" ? (
         <p className={styles.description}>
           Customers pay after you confirm the agreed price and mark the work complete.
           Auxillium’s commission stays at 5%. Stripe deposits available earnings after
@@ -67,9 +76,12 @@ export function ProviderStripeSetupCard({ setup }: { setup: ProviderPaymentSetup
           {setup.requirementsDueCount} Stripe {setup.requirementsDueCount === 1 ? "item is" : "items are"} still required.
         </p>
       )}
-      {unavailable ? (
+      {approvalRequired && setup.hasAccount && status !== "ready" && (
+        <p className={styles.note}>Your provider profile must be approved before you can update Stripe setup.</p>
+      )}
+      {unavailable || (approvalRequired && setup.hasAccount && status !== "ready") ? (
         <Link href="/support" className={styles.secondary}>Contact support</Link>
-      ) : status !== "ready" && (
+      ) : !approvalRequired && status !== "ready" && (
         <form action={action} className={styles.actions}>
           <PaymentFeedback state={state} />
           <button type="submit" disabled={pending} className={styles.primary}>

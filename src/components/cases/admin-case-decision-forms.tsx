@@ -15,10 +15,12 @@ export function AdminCaseDecisionForms({
   caseId,
   requestedRefundCents,
   remainingRefundCents,
+  refundPending: refundInProgress,
 }: {
   caseId: string;
   requestedRefundCents: number;
   remainingRefundCents: number;
+  refundPending: boolean;
 }) {
   const [refundState, refundAction, refundPending] = useActionState(
     refundBookingCase,
@@ -109,6 +111,9 @@ export function AdminCaseDecisionForms({
             This closes the request without moving money. The note is visible to
             the customer and provider.
           </p>
+          {(refundInProgress || refundPending || refundState.status === "success") && (
+            <p className={styles.hint} role="status">A refund is being processed. Wait for its status to update before making another decision.</p>
+          )}
         </div>
         <label className={styles.field}>
           Decision notes
@@ -128,7 +133,7 @@ export function AdminCaseDecisionForms({
         <CaseFeedback state={denyState} tone="info" />
         <button
           type="submit"
-          disabled={denyPending}
+          disabled={denyPending || refundInProgress || refundPending || refundState.status === "success"}
           className={`${styles.secondary} ${styles.danger}`}
         >
           {denyPending ? "Saving decision…" : "Deny with notes"}

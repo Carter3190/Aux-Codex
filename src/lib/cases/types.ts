@@ -38,6 +38,7 @@ export type AdminResolutionCase = BookingCase & {
   serviceName: string;
   bookingStatus: string;
   payment: BookingPayment;
+  refundPending: boolean;
 };
 
 export type PaymentDispute = {

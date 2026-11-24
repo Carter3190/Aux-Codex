@@ -38,7 +38,7 @@ export function CustomerOverview({ profile, bookings, payment }: {
                   <p>{booking.providerName} · {booking.serviceName}. {booking.payment?.status === "failed"
                     ? `Review the booking and try again when you’re ready. The final price is ${formatCustomerMoney(booking.agreedPriceCents!)}.`
                     : `Review the final price of ${formatCustomerMoney(booking.agreedPriceCents!)} for your completed visit, then pay securely.`}</p>
-                  <Link className={styles.textLink} href={customerBookingPath(booking.id)}>{booking.payment?.status === "failed" ? "Review payment" : "Review & pay"}<CustomerIcon name="arrow" /></Link>
+                  <Link className={styles.textLink} href={customerBookingPath(booking.id, "payment")}>{booking.payment?.status === "failed" ? "Review payment" : "Review & pay"}<CustomerIcon name="arrow" /></Link>
                 </article>
               ))}
             </div>
@@ -94,7 +94,7 @@ export function CustomerOverview({ profile, bookings, payment }: {
                   <div>
                     <h3>How did your visit go?</h3>
                     <p>Share your experience with {reviewDue.providerName} after your completed visit.</p>
-                    <Link className={styles.textLink} href={customerBookingPath(reviewDue.id)}>Leave a review<CustomerIcon name="arrow" /></Link>
+                    <Link className={styles.textLink} href={customerBookingPath(reviewDue.id, "review")}>Leave a review<CustomerIcon name="arrow" /></Link>
                   </div>
                 </article>
               )}

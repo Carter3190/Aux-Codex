@@ -129,9 +129,14 @@ export async function notifyBookingParticipants(
 
     const participantProfiles = (participantData ?? []) as ProfileRow[];
     const targets = [
-      ...participantProfiles.filter((profile) =>
-        input.recipients.includes(profile.role),
-      ),
+      ...participantProfiles.flatMap((profile): ProfileRow[] => {
+        // A provider applicant can still be the customer on this booking.
+        const bookingRole = profile.id === row.customer_id ? "customer"
+          : profile.id === row.provider_id ? "provider" : null;
+        return bookingRole && input.recipients.includes(bookingRole)
+          ? [{ ...profile, role: bookingRole }]
+          : [];
+      }),
       ...admins,
     ];
 

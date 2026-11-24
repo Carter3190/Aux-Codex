@@ -11,12 +11,16 @@ import { requireRole } from "@/lib/auth/profile";
 import { getProviderBookings } from "@/lib/marketplace/data";
 import { getBookingCompletionPhotos } from "@/lib/marketplace/completion-photos";
 import { getProviderEarnings } from "@/lib/payments/provider-earnings";
+import { bookingDetailTab } from "@/lib/marketplace/booking-detail-navigation";
 import styles from "@/components/dashboard/provider-dashboard.module.css";
 
 export const metadata: Metadata = { title: "Booking details" };
 
-export default async function ProviderBookingDetails({ params }: { params: Promise<{ bookingId: string }> }) {
-  const { bookingId } = await params;
+export default async function ProviderBookingDetails({ params, searchParams }: {
+  params: Promise<{ bookingId: string }>;
+  searchParams: Promise<{ tab?: string | string[] }>;
+}) {
+  const [{ bookingId }, query] = await Promise.all([params, searchParams]);
   const parsed = z.uuid().safeParse(bookingId);
   if (!parsed.success) notFound();
   const [profile, bookings] = await Promise.all([requireRole("provider"), getProviderBookings()]);
@@ -26,6 +30,6 @@ export default async function ProviderBookingDetails({ params }: { params: Promi
   const completion = booking.status === "completed" ? await getBookingCompletionPhotos(booking.id) : { photos: [], error: null };
   const canMessage = bookingConversationWritable(booking);
   return <DashboardShell profile={profile} title={booking.serviceName} description={booking.customerName} actions={<Link className={styles.secondaryButton} href={`/dashboard/messages/${booking.id}`}><CustomerIcon name="messages" />{canMessage ? "Message customer" : "View conversation"}</Link>}>
-    <div className={styles.page}><Link className={navigation.backAction} href="/dashboard/provider/bookings"><CustomerIcon name="back" />Back to your bookings</Link><div className={styles.detailContent}><BookingCard booking={booking} perspective="provider" providerEarnings={earnings[booking.id]} completionPhotos={completion.photos} completionPhotosError={completion.error} /></div></div>
+    <div className={styles.page}><Link className={navigation.backAction} href="/dashboard/provider/bookings"><CustomerIcon name="back" />Back to your bookings</Link><div className={styles.detailContent}><BookingCard booking={booking} perspective="provider" providerEarnings={earnings[booking.id]} completionPhotos={completion.photos} completionPhotosError={completion.error} initialTab={bookingDetailTab(query.tab)} /></div></div>
   </DashboardShell>;
 }

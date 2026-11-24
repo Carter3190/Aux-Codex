@@ -4,6 +4,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getCurrentProfile, requireRole } from "@/lib/auth/profile";
+import { hasCustomerAccess } from "@/lib/auth/access";
 import { createClient } from "@/lib/supabase/server";
 import type {
   BookingRequest,
@@ -525,10 +526,10 @@ export async function getConversationInbox(): Promise<{
   const supabase = await createClient();
   const participantColumn =
     profile.role === "customer" ? "customer_id" : "provider_id";
-  const bookingsResult = await supabase
-    .from("booking_requests")
-    .select(bookingColumns)
-    .eq(participantColumn, profile.id)
+  const bookingQuery = supabase.from("booking_requests").select(bookingColumns);
+  const bookingsResult = await (profile.role === "provider" && hasCustomerAccess(profile)
+    ? bookingQuery.or(`customer_id.eq.${profile.id},provider_id.eq.${profile.id}`)
+    : bookingQuery.eq(participantColumn, profile.id))
     .order("created_at", { ascending: false });
 
   if (bookingsResult.error) {
@@ -572,9 +573,7 @@ export async function getConversationInbox(): Promise<{
   const conversations = bookings.map((booking): ConversationSummary => ({
     booking,
     counterpartName:
-      profile.role === "customer"
-        ? booking.providerName
-        : booking.customerName,
+      booking.customerId === profile.id ? booking.providerName : booking.customerName,
     lastMessage: lastMessageByBooking.get(booking.id) ?? null,
   }));
 
@@ -633,7 +632,7 @@ export async function getBookingConversation(
   }
 
   return {
-    profile,
+    profile: isCustomer ? { ...profile, role: "customer", primaryRole: profile.primaryRole ?? profile.role } : profile,
     booking,
     messages: (messagesResult.data as MessageRow[]).map(mapMessage),
     perspective: isCustomer ? "customer" : "provider",
@@ -656,11 +655,11 @@ export async function requireMarketplaceActionRole(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, role")
+    .select("id, role, customer_access")
     .eq("id", userId)
     .single();
 
-  if (error || data?.role !== role) {
+  if (error || !data || (data.role !== role && !(role === "customer" && data.customer_access === true))) {
     throw new Error(`Only ${role} accounts can perform this action.`);
   }
 

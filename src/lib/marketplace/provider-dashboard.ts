@@ -1,7 +1,8 @@
 import type { BookingRequest } from "./types";
+import type { BookingDetailTab } from "./booking-detail-navigation";
 
-export function providerBookingPath(bookingId: string) {
-  return `/dashboard/provider/bookings/${encodeURIComponent(bookingId)}`;
+export function providerBookingPath(bookingId: string, tab?: BookingDetailTab) {
+  return `/dashboard/provider/bookings/${encodeURIComponent(bookingId)}${tab ? `?tab=${tab}` : ""}`;
 }
 
 export function providerNeedsPrice(booking: BookingRequest) {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import { getConversationInbox } from "@/lib/marketplace/data";
+import { hasCustomerAccess } from "@/lib/auth/access";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 import styles from "@/components/messages/messages.module.css";
 
@@ -54,7 +55,7 @@ export default async function MessagesPage() {
           <section className={styles.empty}>
             <h2>No conversations yet</h2>
             <p>A conversation becomes available when a customer sends a booking request.</p>
-            {profile.role === "customer" && <Link href="/providers" className={styles.primaryButton}>Browse providers <CustomerIcon name="arrow" /></Link>}
+            {hasCustomerAccess(profile) && <Link href="/providers" className={styles.primaryButton}>Browse providers <CustomerIcon name="arrow" /></Link>}
           </section>
         )}
       </div>

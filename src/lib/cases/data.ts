@@ -143,15 +143,29 @@ export async function getAdminResolutionWorkspace(): Promise<{
 
   if (paymentIds.length === 0) return { admin, cases: [], disputes: [] };
 
-  const paymentsResult = await supabase
-    .from("booking_payments")
-    .select(
-      "id, booking_id, amount_cents, platform_fee_cents, refunded_amount_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
-    )
-    .in("id", paymentIds);
+  const [paymentsResult, pendingRefundsResult] = await Promise.all([
+    supabase
+      .from("booking_payments")
+      .select(
+        "id, booking_id, amount_cents, platform_fee_cents, refunded_amount_cents, currency, status, checkout_expires_at, paid_at, refunded_at",
+      )
+      .in("id", paymentIds),
+    caseRows.length ? supabase
+      .from("booking_refunds")
+      .select("case_id")
+      .in("case_id", caseRows.map((row) => row.id))
+      .in("status", ["pending", "requires_action"])
+      : Promise.resolve({ data: [], error: null }),
+  ]);
   if (paymentsResult.error) {
     throw new Error("Unable to load resolution payment records.");
   }
+  if (pendingRefundsResult.error) {
+    throw new Error("Unable to load resolution refund records.");
+  }
+  const pendingRefundCases = new Set(
+    (pendingRefundsResult.data ?? []).map((row: { case_id: string | null }) => row.case_id),
+  );
 
   const paymentRows = (paymentsResult.data ?? []) as PaymentRow[];
   const paymentById = new Map(paymentRows.map((row) => [row.id, row]));
@@ -183,6 +197,7 @@ export async function getAdminResolutionWorkspace(): Promise<{
         serviceName: booking.service_name,
         bookingStatus: booking.status,
         payment: mapPayment(payment),
+        refundPending: pendingRefundCases.has(row.id),
       },
     ];
   });
