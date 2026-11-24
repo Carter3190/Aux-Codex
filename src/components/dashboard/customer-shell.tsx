@@ -4,6 +4,8 @@ import type { CurrentProfile } from "@/lib/auth/profile";
 import { CustomerIcon } from "./customer-icon";
 import { CustomerNavigation } from "./customer-navigation";
 import { BrandWordmark } from "../brand-wordmark";
+import { hasProviderAccess } from "@/lib/auth/access";
+import design from "../site-design.module.css";
 import styles from "./customer-shell.module.css";
 
 type CustomerDashboardShellProps = {
@@ -66,6 +68,9 @@ export function CustomerDashboardShell({
             {description && <p className={styles.description}>{description}</p>}
           </div>
           <div className={styles.headingActions}>
+            <Link href={hasProviderAccess(profile) ? "/dashboard/provider" : "/offer-services"} className={design.secondaryButton}>
+              {hasProviderAccess(profile) ? "Provider dashboard" : "Offer Services"}
+            </Link>
             {actions === undefined ? (
               <Link href="/providers" className={styles.browseButton}>
                 Browse providers <CustomerIcon name="browse" />

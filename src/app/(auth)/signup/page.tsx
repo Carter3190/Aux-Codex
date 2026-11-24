@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SignupForm } from "@/components/auth/signup-form";
+import { getOptionalCurrentProfile, getRoleDashboardPath } from "@/lib/auth/profile";
 import styles from "@/components/auth/auth.module.css";
 
 export const metadata: Metadata = {
@@ -13,6 +14,12 @@ type SignupPageProps = {
 
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const { role } = await searchParams;
+  const profile = await getOptionalCurrentProfile();
+  if (profile) {
+    redirect(role === "provider" && profile.role === "customer"
+      ? "/offer-services"
+      : getRoleDashboardPath(profile.role));
+  }
   const defaultRole = role === "provider" ? "provider" : "customer";
 
   return (
@@ -24,12 +31,6 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         Create your account
       </h1>
       <SignupForm defaultRole={defaultRole} />
-      <p className={styles.footnote}>
-        Already have an account?{" "}
-        <Link href="/login" className={styles.textLink}>
-          Sign in
-        </Link>
-      </p>
     </section>
   );
 }

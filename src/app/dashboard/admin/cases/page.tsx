@@ -206,6 +206,7 @@ export default async function AdminCasesPage({
                         caseId={item.id}
                         requestedRefundCents={item.requestedRefundCents}
                         remainingRefundCents={remainingRefundCents}
+                        refundPending={item.refundPending}
                       />
                     )}
                   </div>

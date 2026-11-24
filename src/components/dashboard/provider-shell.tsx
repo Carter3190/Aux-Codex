@@ -4,6 +4,7 @@ import type { CurrentProfile } from "@/lib/auth/profile";
 import { CustomerIcon } from "./customer-icon";
 import { ProviderNavigation } from "./provider-navigation";
 import { BrandWordmark } from "../brand-wordmark";
+import { hasCustomerAccess } from "@/lib/auth/access";
 import styles from "./provider-shell.module.css";
 
 type ProviderDashboardShellProps = {
@@ -66,7 +67,10 @@ export function ProviderDashboardShell({
             <h1>{title}</h1>
             {description && <p className={styles.description}>{description}</p>}
           </div>
-          {headingAction && <div className={styles.headingActions}>{headingAction}</div>}
+          {(headingAction || hasCustomerAccess(profile)) && <div className={styles.headingActions}>
+            {hasCustomerAccess(profile) && <Link href="/dashboard/customer" className={styles.profileButton}>Customer dashboard</Link>}
+            {headingAction}
+          </div>}
         </div>
         <div className={styles.pageBody}>{children}</div>
       </main>

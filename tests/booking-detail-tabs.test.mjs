@@ -6,6 +6,7 @@ import * as jsxRuntime from "react/jsx-runtime";
 import { renderToStaticMarkup } from "react-dom/server";
 import { z } from "zod";
 import ts from "typescript";
+import { bookingDetailTab } from "../src/lib/marketplace/booking-detail-navigation.ts";
 
 const css = new Proxy({}, { get: (_target, key) => String(key) });
 function load(path, dependencies) {
@@ -70,7 +71,7 @@ test("a booking without payment due keeps Overview as its default", () => {
   assert.doesNotMatch(html, /aria-label="Payment due"/);
 });
 
-test("the actual customer booking page passes only its approved Overview query into the rendered tabs", async () => {
+test("customer booking links select the requested section and reject unsupported query values", async () => {
   const bookingId = "22222222-2222-4222-8222-222222222222";
   const propsSeen = [];
   const page = load("../src/app/dashboard/customer/bookings/[bookingId]/page.tsx", {
@@ -83,6 +84,7 @@ test("the actual customer booking page passes only its approved Overview query i
     "@/components/dashboard/customer-icon": { CustomerIcon: () => null },
     "@/components/dashboard/customer-dashboard.module.css": { default: css },
     "@/lib/marketplace/booking-messaging": { bookingConversationWritable: () => true },
+    "@/lib/marketplace/booking-detail-navigation": { bookingDetailTab },
     "@/lib/marketplace/data": { getCustomerBookings: async () => ({ customer: { id: "customer" }, bookings: [{ id: bookingId, status: "completed", serviceName: "Completed service" }] }) },
     "@/lib/marketplace/completion-photos": { getBookingCompletionPhotos: async () => ({ photos: [{ id: "photo" }], error: null }) },
     "@/components/marketplace/booking-card": { BookingCard: (props) => {
@@ -90,11 +92,42 @@ test("the actual customer booking page passes only its approved Overview query i
       return React.createElement(BookingDetailTabs, { ...panels, paymentDue: true, initialTab: props.initialTab });
     } },
   }).default;
-  for (const [tab, expected] of [["overview", "Overview"], [undefined, "Payment"], ["help", "Payment"]]) {
+  for (const [tab, expected] of [["overview", "Overview"], ["payment", "Payment"], ["help", "Help"], ["review", "Review"], [undefined, "Payment"], ["unknown", "Payment"], [["review", "payment"], "Payment"]]) {
     const tree = await page({ params: Promise.resolve({ bookingId }), searchParams: Promise.resolve({ tab }) });
     const html = renderToStaticMarkup(tree);
     assert.equal(selectedTab(html), expected);
-    assert.equal(propsSeen.at(-1).initialTab, tab === "overview" ? "overview" : undefined);
+    assert.equal(propsSeen.at(-1).initialTab, bookingDetailTab(tab));
     assert.equal(propsSeen.at(-1).completionPhotos.length, 1);
   }
+});
+
+test("provider booking shortcuts reach the requested form without bypassing booking ownership", async () => {
+  const bookingId = "22222222-2222-4222-8222-222222222222";
+  const propsSeen = [];
+  const page = load("../src/app/dashboard/provider/bookings/[bookingId]/page.tsx", {
+    "react/jsx-runtime": jsxRuntime,
+    "@/components/navigation-actions.module.css": { default: css },
+    "next/link": { default: ({ href, children }) => React.createElement("a", { href }, children) },
+    "next/navigation": { notFound: () => { throw new Error("Missing owned booking"); } },
+    zod: { z },
+    "@/components/dashboard/dashboard-shell": { DashboardShell: ({ children }) => React.createElement("main", null, children) },
+    "@/components/dashboard/customer-icon": { CustomerIcon: () => null },
+    "@/components/dashboard/provider-dashboard.module.css": { default: css },
+    "@/lib/marketplace/booking-messaging": { bookingConversationWritable: () => true },
+    "@/lib/marketplace/booking-detail-navigation": { bookingDetailTab },
+    "@/lib/auth/profile": { requireRole: async (role) => { assert.equal(role, "provider"); return { id: "provider" }; } },
+    "@/lib/marketplace/data": { getProviderBookings: async () => [{ id: bookingId, status: "accepted", serviceName: "Visit" }] },
+    "@/lib/payments/provider-earnings": { getProviderEarnings: async () => ({}) },
+    "@/lib/marketplace/completion-photos": { getBookingCompletionPhotos: async () => { throw new Error("Unfinished work has no completion gallery"); } },
+    "@/components/marketplace/booking-card": { BookingCard: (props) => {
+      propsSeen.push(props);
+      return React.createElement(BookingDetailTabs, { ...panels, initialTab: props.initialTab });
+    } },
+  }).default;
+  for (const [tab, expected] of [["payment", "Payment"], ["help", "Help"], ["review", "Review"], ["overview", "Overview"], ["invalid", "Overview"], [["help"], "Overview"]]) {
+    const tree = await page({ params: Promise.resolve({ bookingId }), searchParams: Promise.resolve({ tab }) });
+    assert.equal(selectedTab(renderToStaticMarkup(tree)), expected);
+    assert.equal(propsSeen.at(-1).perspective, "provider");
+  }
+  await assert.rejects(page({ params: Promise.resolve({ bookingId: "33333333-3333-4333-8333-333333333333" }), searchParams: Promise.resolve({ tab: "payment" }) }), /Missing owned booking/);
 });

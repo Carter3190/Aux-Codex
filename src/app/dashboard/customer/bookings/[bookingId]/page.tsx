@@ -10,12 +10,13 @@ import { bookingConversationWritable } from "@/lib/marketplace/booking-messaging
 import { BookingCard } from "@/components/marketplace/booking-card";
 import { getCustomerBookings } from "@/lib/marketplace/data";
 import { getBookingCompletionPhotos } from "@/lib/marketplace/completion-photos";
+import { bookingDetailTab } from "@/lib/marketplace/booking-detail-navigation";
 
 export const metadata: Metadata = { title: "Booking details" };
 
 export default async function CustomerBookingDetails({ params, searchParams }: {
   params: Promise<{ bookingId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string | string[] }>;
 }) {
   const [{ bookingId }, query] = await Promise.all([params, searchParams]);
   const parsed = z.uuid().safeParse(bookingId);
@@ -31,7 +32,7 @@ export default async function CustomerBookingDetails({ params, searchParams }: {
       actions={<Link className={styles.secondaryButton} href={`/dashboard/messages/${booking.id}`}><CustomerIcon name="messages" />{canMessage ? "Message provider" : "View conversation"}</Link>}>
       <div className={styles.page}>
         <Link className={navigation.backAction} href="/dashboard/customer/bookings"><CustomerIcon name="back" />Back to your bookings</Link>
-        <div className={styles.detailContent}><BookingCard booking={booking} perspective="customer" completionPhotos={completion.photos} completionPhotosError={completion.error} initialTab={query.tab === "overview" ? "overview" : undefined} /></div>
+        <div className={styles.detailContent}><BookingCard booking={booking} perspective="customer" completionPhotos={completion.photos} completionPhotosError={completion.error} initialTab={bookingDetailTab(query.tab)} /></div>
       </div>
     </DashboardShell>
   );

@@ -4,6 +4,7 @@ import { test } from "node:test";
 import ts from "typescript";
 import { z } from "zod";
 import { safeDashboardReturnPath } from "../src/lib/auth/return-path.ts";
+import { hasCustomerAccess } from "../src/lib/auth/access.ts";
 
 const bookingPath = "/dashboard/customer/bookings/22222222-2222-4222-8222-222222222222?tab=overview";
 class Redirect extends Error { constructor(path) { super("redirect"); this.path = path; } }
@@ -58,6 +59,7 @@ test("signed-out dashboard access carries its trusted return path to the sign-in
       "@/lib/supabase/config": { isSupabaseConfigured: () => true },
       "@/lib/supabase/server": { createClient: async () => ({ auth: { getClaims: async () => ({ data: { claims: null }, error: null }) } }) },
       "./return-path": { safeDashboardReturnPath },
+      "./access": { hasCustomerAccess },
     });
     await assert.rejects(profile.getCurrentProfile(), (error) => error instanceof Redirect && error.path === expected);
   }

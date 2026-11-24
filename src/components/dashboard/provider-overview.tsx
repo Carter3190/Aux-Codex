@@ -82,15 +82,15 @@ export function ProviderOverview({ workspace, bookings, paymentSetup, serviceRev
             </ActionCard>}
             {serviceReviewAction && <ActionCard icon="help" title="Service review needed" href="/dashboard/provider/onboarding?section=credentials" action="Review credentials">One or more services need an Auxillium review before they can take bookings. Keep any required documents current.</ActionCard>}
             {groups.requests.length > 0 && <ActionCard icon="calendar" title={groups.requests.length === 1 ? "1 new request" : `${groups.requests.length} new requests`} href="/dashboard/provider/bookings?filter=requests" action="Review requests">Review the job details and respond to your customers.</ActionCard>}
-            {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id)} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. Confirm the price before marking the work complete.</ActionCard>}
-            {cases.length > 0 && <ActionCard icon="help" title={cases.length === 1 ? "Respond to a resolution request" : `${cases.length} resolution requests`} href={providerBookingPath(cases[0].id)} action="Review request">{cases[0].serviceName} · {cases[0].customerName}. Review the customer’s concern and add your response.</ActionCard>}
-            {stripeAction && <div className={styles.stripeSetup}><ProviderStripeSetupCard setup={paymentSetup} /></div>}
+            {priceNeeded.length > 0 && <ActionCard icon="payments" title={priceNeeded.length === 1 ? "Set an agreed price" : `${priceNeeded.length} prices to confirm`} href={providerBookingPath(priceNeeded[0].id, "payment")} action="Set price">{priceNeeded[0].serviceName} · {priceNeeded[0].customerName}. Confirm the price before marking the work complete.</ActionCard>}
+            {cases.length > 0 && <ActionCard icon="help" title={cases.length === 1 ? "Respond to a resolution request" : `${cases.length} resolution requests`} href={providerBookingPath(cases[0].id, "help")} action="Review request">{cases[0].serviceName} · {cases[0].customerName}. Review the customer’s concern and add your response.</ActionCard>}
+            {stripeAction && <div className={styles.stripeSetup}><ProviderStripeSetupCard setup={paymentSetup} providerStatus={profile.providerStatus} /></div>}
             {!needsAttention && <article className={styles.actionCard}><span className={styles.serviceIcon}><CustomerIcon name="check" /></span><div><h3>No booking actions waiting</h3><p>Your bookings, conversations, and profile are available in the tabs above.</p></div></article>}
           </div>
         </section>
         </div>
       </div>
-      {(approved || paymentSetup.hasAccount) && !stripeAction && <div className={styles.stripeStatus}><ProviderStripeSetupCard setup={paymentSetup} /></div>}
+      {(approved || paymentSetup.hasAccount) && !stripeAction && <div className={styles.stripeStatus}><ProviderStripeSetupCard setup={paymentSetup} providerStatus={profile.providerStatus} /></div>}
     </div>
   </DashboardShell>;
 }

@@ -1,5 +1,6 @@
 import type { BookingRequest } from "./types";
 import type { PaymentStatus } from "@/lib/payments/types";
+import type { BookingDetailTab } from "./booking-detail-navigation";
 
 export const customerPaymentLabels: Record<PaymentStatus, string> = {
   checkout_pending: "Checkout started",
@@ -11,8 +12,8 @@ export const customerPaymentLabels: Record<PaymentStatus, string> = {
   refunded: "Refunded",
 };
 
-export function customerBookingPath(bookingId: string) {
-  return `/dashboard/customer/bookings/${encodeURIComponent(bookingId)}`;
+export function customerBookingPath(bookingId: string, tab?: BookingDetailTab) {
+  return `/dashboard/customer/bookings/${encodeURIComponent(bookingId)}${tab ? `?tab=${tab}` : ""}`;
 }
 
 export function formatCustomerMoney(cents: number) {

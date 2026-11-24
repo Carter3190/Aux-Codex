@@ -7,6 +7,7 @@ import { BookingRequestForm } from "@/components/marketplace/booking-request-for
 import { MarketplaceHeader } from "@/components/marketplace/marketplace-header";
 import styles from "@/components/marketplace/provider-profile.module.css";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
+import { hasCustomerAccess } from "@/lib/auth/access";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
 import type { PublicServiceCredentialCheck } from "@/lib/marketplace/types";
@@ -73,7 +74,7 @@ export default async function ProviderProfilePage({
   ]);
   if (!provider) notFound();
 
-  if (profile?.role === "customer") {
+  if (profile && hasCustomerAccess(profile)) {
     const legalStatus = await getLegalAcceptanceStatus(profile);
     if (!legalStatus.migrationReady || legalStatus.missing.length > 0) {
       redirect(
@@ -253,11 +254,15 @@ export default async function ProviderProfilePage({
             )}
 
             <div className={styles.bookingForm}>
-              {!provider.bookingEligible ? (
+              {profile?.id === provider.providerId ? (
+                <div className={styles.accountNotice}>
+                  This is your public profile. Customers can request your available services here.
+                </div>
+              ) : !provider.bookingEligible ? (
                 <div className={styles.bookingUnavailable}>
                   Check back for booking availability after Auxillium reviews the service.
                 </div>
-              ) : profile?.role === "customer" ? (
+              ) : profile && hasCustomerAccess(profile) ? (
                 <BookingRequestForm
                   providerId={provider.providerId}
                   providerName={provider.displayName}

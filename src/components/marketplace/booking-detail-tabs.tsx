@@ -1,9 +1,10 @@
 "use client";
 
 import { useId, useRef, useState, type ReactNode, type KeyboardEvent } from "react";
+import type { BookingDetailTab } from "@/lib/marketplace/booking-detail-navigation";
 import styles from "./booking-detail.module.css";
 
-type Tab = "overview" | "payment" | "help" | "review";
+type Tab = BookingDetailTab;
 const tabs: Array<{ key: Tab; label: string }> = [
   { key: "overview", label: "Overview" },
   { key: "payment", label: "Payment" },

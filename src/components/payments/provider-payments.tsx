@@ -39,7 +39,7 @@ export function ProviderPayments({ profile, bookings, setup, earnings, paginatio
 
   return (
     <DashboardShell profile={profile} title="Your payments.">
-      <div className={styles.setup}><ProviderStripeSetupCard setup={setup} /></div>
+      <div className={styles.setup}><ProviderStripeSetupCard setup={setup} providerStatus={profile.providerStatus} /></div>
       <section className={styles.history} aria-labelledby="provider-payment-history">
         <h2 id="provider-payment-history">Payment history</h2>
         {payments.length ? (

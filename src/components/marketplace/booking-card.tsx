@@ -15,6 +15,7 @@ import { BookingResolutionPanel } from "@/components/cases/booking-resolution-pa
 import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import type { ProviderEarnings } from "@/lib/payments/provider-earnings-types";
 import type { BookingRequest } from "@/lib/marketplace/types";
+import type { BookingDetailTab } from "@/lib/marketplace/booking-detail-navigation";
 import { customerCalendarDay, customerPaymentDue, customerPaymentLabel, formatCustomerMoney, formatCustomerBookingDate } from "@/lib/marketplace/customer-dashboard";
 import { providerPaymentLabel } from "@/lib/marketplace/provider-dashboard";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
@@ -26,7 +27,7 @@ const activeCaseStatuses = new Set(["open", "provider_responded", "under_review"
 export function BookingCard({ booking, perspective, providerEarnings, completionPhotos = [], completionPhotosError, initialTab }: {
   booking: BookingRequest; perspective: "customer" | "provider"; providerEarnings?: ProviderEarnings;
   completionPhotos?: BookingCompletionPhoto[]; completionPhotosError?: string | null;
-  initialTab?: "overview";
+  initialTab?: BookingDetailTab;
 }) {
   const paymentStatus = booking.payment?.status;
   const paid = paymentStatus === "paid" || paymentStatus === "partially_refunded";

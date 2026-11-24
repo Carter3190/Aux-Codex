@@ -19,7 +19,7 @@ export type SiteNavigationProps = {
 
 const navigation = [
   ["Home Page", "/"],
-  ["Offer Services", "/signup?role=provider"],
+  ["Offer Services", "/offer-services"],
 ] as const;
 
 const helpNavigation = [
