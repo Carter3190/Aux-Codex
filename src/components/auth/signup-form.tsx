@@ -22,8 +22,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
   return (
     <form action={action} className={styles.form}>
       <p className={styles.formDescription} aria-live="polite">Create a {role} account to get started.</p>
-      <fieldset className={styles.roleFieldset}>
-        <legend>I want to</legend>
+      <fieldset className={styles.roleFieldset} aria-label="Account type">
         <div className={styles.roles}>
           <label className={styles.roleChoice}>
             <input type="radio" name="role" value="customer" checked={role === "customer"} onChange={() => chooseRole("customer")} />
