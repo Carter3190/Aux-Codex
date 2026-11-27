@@ -7,6 +7,7 @@ import { CustomerIcon } from "@/components/dashboard/customer-icon";
 import { ConversationLiveUpdates } from "@/components/messages/conversation-live-updates";
 import { MessageComposer } from "@/components/messages/message-composer";
 import { getBookingConversation } from "@/lib/marketplace/data";
+import { bookingConversationReadOnlyMessage } from "@/lib/marketplace/booking-messaging";
 import { labelFromSnakeCase } from "@/lib/providers/presentation";
 import styles from "@/components/messages/messages.module.css";
 
@@ -23,6 +24,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ b
   const conversation = await getBookingConversation(parsedId.data);
   if (!conversation) notFound();
   const { profile, booking, messages, counterpartName, canSend, perspective } = conversation;
+  const readOnlyMessage = bookingConversationReadOnlyMessage(booking);
   const requested = new Date(`${booking.requestedDate}T${booking.requestedStartTime.length === 5 ? `${booking.requestedStartTime}:00` : booking.requestedStartTime}`);
   const requestedDate = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(requested);
   const requestedTime = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(requested);
@@ -41,8 +43,8 @@ export default async function ConversationPage({ params }: { params: Promise<{ b
             <div className={styles.messageList} role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions">
               {messages.length === 0 ? (
                 <div className={styles.threadEmpty}>
-                  <h2>Start the conversation</h2>
-                  <p>Ask a question or coordinate the next step for this booking.</p>
+                  <h2>{canSend ? "Start the conversation" : "No messages in this conversation"}</h2>
+                  <p>{canSend ? "Ask a question or coordinate the next step for this booking." : "This booking’s conversation is closed. Contact Auxillium support if you need help."}</p>
                 </div>
               ) : messages.map((message) => {
                 const isOwn = message.senderId === profile.id;
@@ -57,7 +59,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ b
               })}
               <ConversationLiveUpdates messageCount={messages.length} />
             </div>
-            {canSend ? <MessageComposer bookingId={booking.id} /> : <p className={styles.readOnly}>This conversation is read-only because the booking is {booking.status}.</p>}
+            {canSend ? <MessageComposer bookingId={booking.id} /> : <p className={styles.readOnly}>{readOnlyMessage}</p>}
           </section>
           <aside className={styles.details} aria-labelledby="conversation-booking-details">
             <h2 id="conversation-booking-details">Booking details</h2>

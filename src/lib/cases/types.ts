@@ -39,6 +39,16 @@ export type AdminResolutionCase = BookingCase & {
   bookingStatus: string;
   payment: BookingPayment;
   refundPending: boolean;
+  pendingRefund: PendingBookingRefund | null;
+};
+
+export type PendingBookingRefund = {
+  id: string;
+  amountCents: number;
+  status: "pending" | "requires_action";
+  stripeRefundId: string | null;
+  createdAt: string;
+  canRetry: boolean;
 };
 
 export type PaymentDispute = {
@@ -62,6 +72,7 @@ export type CaseActionState = {
   status?: "success" | "error";
   message?: string;
   fieldErrors?: Record<string, string[] | undefined>;
+  refundPending?: boolean;
 };
 
 export const initialCaseActionState: CaseActionState = {};

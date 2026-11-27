@@ -79,6 +79,13 @@ export type BookingStatus =
   | "cancelled"
   | "completed";
 
+export type ProviderBookingActions = {
+  canAccept: boolean;
+  acceptUnavailableReason: "approval_required" | "service_review_required" | "slot_unavailable" | "request_closed" | "unavailable" | null;
+  canSetPrice: boolean;
+  priceUnavailableReason: "approval_required" | "price_unavailable" | "checkout_started" | "unavailable" | null;
+};
+
 export type BookingRequest = {
   id: string;
   customerId: string;
@@ -102,6 +109,7 @@ export type BookingRequest = {
   payment: BookingPayment | null;
   review: VerifiedReview | null;
   supportCase: BookingCase | null;
+  providerActions?: ProviderBookingActions;
 };
 
 export type BookingMessage = {

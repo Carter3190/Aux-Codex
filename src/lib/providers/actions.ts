@@ -100,15 +100,17 @@ const credentialSchema = z
     documentPath: uploadPathSchema,
   })
   .superRefine((credential, context) => {
-    if (credential.credentialType !== "insurance") return;
+    if (!["license", "insurance"].includes(credential.credentialType)) return;
 
     if (!credential.issuer) {
       context.addIssue({
         code: "custom",
         path: ["issuer"],
-        message: "Enter the insurance carrier.",
+        message: credential.credentialType === "license" ? "Enter the organization that issued the license." : "Enter the insurance carrier.",
       });
     }
+
+    if (credential.credentialType !== "insurance") return;
 
     if (!credential.expiresOn) {
       context.addIssue({
@@ -183,6 +185,8 @@ function databaseMessage(message?: string) {
     normalized.includes("provider agreement") ||
     normalized.includes("terms of service") ||
     normalized.includes("current insurance") ||
+    normalized.includes("license credential needs") ||
+    normalized.includes("license and insurance credentials need") ||
     normalized.includes("restricted service") ||
     normalized.includes("credential was not found") ||
     normalized.includes("required credentials for every active service") ||
@@ -332,17 +336,65 @@ export async function addProviderService(
   }
 }
 
-export async function removeProviderService(formData: FormData) {
-  const id = z.uuid().safeParse(formData.get("serviceId"));
-  if (!id.success) return;
+export async function updateProviderService(
+  _previousState: ProviderActionState,
+  formData: FormData,
+): Promise<ProviderActionState> {
+  const serviceId = z.uuid().safeParse(formData.get("serviceId"));
+  const parsed = serviceSchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+    pricingType: formData.get("pricingType"),
+    price: formData.get("price"),
+    servicePolicyConfirmation: formData.get("servicePolicyConfirmation"),
+  });
+  if (!serviceId.success) return failure("Choose a saved service to edit.");
+  if (!parsed.success) return { status: "error", fieldErrors: parsed.error.flatten().fieldErrors };
+  if (isClearlyRestrictedProviderService(parsed.data.name, parsed.data.description)) {
+    return failure(restrictedProviderServiceMessage);
+  }
+  const price = priceInCents(parsed.data.pricingType, parsed.data.price);
+  if (price.error) return { status: "error", fieldErrors: { price: [price.error] } };
+  try {
+    const { supabase, userId } = await requireActionRole("provider");
+    const { data, error } = await supabase.from("provider_services")
+      .update({ name: parsed.data.name, description: parsed.data.description,
+        pricing_type: parsed.data.pricingType, price_cents: price.value })
+      .eq("id", serviceId.data).eq("provider_id", userId).select("id").maybeSingle();
+    if (error) return failure(databaseMessage(error.message));
+    if (!data) return failure("This service is unavailable. Reload your services and try again.");
+    revalidatePath("/dashboard/provider", "layout");
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/providers", "layout");
+    return success("Service saved. Changed services need Auxillium review before new bookings.");
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Unable to save service.");
+  }
+}
 
-  const { supabase, userId } = await requireActionRole("provider");
-  await supabase
-    .from("provider_services")
-    .delete()
-    .eq("id", id.data)
-    .eq("provider_id", userId);
-  revalidatePath("/dashboard/provider", "layout");
+export async function setProviderServiceActive(
+  _previousState: ProviderActionState,
+  formData: FormData,
+): Promise<ProviderActionState> {
+  const serviceId = z.uuid().safeParse(formData.get("serviceId"));
+  const isActive = z.enum(["true", "false"]).safeParse(formData.get("isActive"));
+  if (!serviceId.success || !isActive.success) return failure("Choose a saved service to update.");
+  try {
+    const { supabase, userId } = await requireActionRole("provider");
+    const { data, error } = await supabase.from("provider_services")
+      .update({ is_active: isActive.data === "true" })
+      .eq("id", serviceId.data).eq("provider_id", userId).select("id").maybeSingle();
+    if (error) return failure(databaseMessage(error.message));
+    if (!data) return failure("This service is unavailable. Reload your services and try again.");
+    revalidatePath("/dashboard/provider", "layout");
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/providers", "layout");
+    return success(isActive.data === "true"
+      ? "Service restored. Submit it for Auxillium review before accepting new bookings."
+      : "Service archived. Existing bookings and payment records are kept.");
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Unable to update service.");
+  }
 }
 
 export async function saveProviderAvailability(
@@ -485,6 +537,40 @@ export async function registerProviderCredential(
     return success("Credential submitted for review.");
   } catch (error) {
     return failure(error instanceof Error ? error.message : "Unable to add credential.");
+  }
+}
+
+export async function updateProviderCredentialMetadata(
+  _previousState: ProviderActionState,
+  formData: FormData,
+): Promise<ProviderActionState> {
+  const credentialId = z.uuid().safeParse(formData.get("credentialId"));
+  if (!credentialId.success) return failure("Choose a saved credential to edit.");
+  try {
+    const { supabase, userId } = await requireActionRole("provider");
+    const current = await supabase.from("provider_credentials")
+      .select("credential_type, document_path").eq("id", credentialId.data)
+      .eq("provider_id", userId).maybeSingle();
+    if (current.error || !current.data) return failure("This credential is unavailable. Reload and try again.");
+    const parsed = credentialSchema.safeParse({
+      credentialType: current.data.credential_type,
+      documentPath: current.data.document_path,
+      title: formData.get("title"), issuer: formData.get("issuer"),
+      credentialNumber: formData.get("credentialNumber"), expiresOn: formData.get("expiresOn"),
+    });
+    if (!parsed.success) return { status: "error", message: "Check the credential details and try again.", fieldErrors: parsed.error.flatten().fieldErrors };
+    const { data, error } = await supabase.from("provider_credentials")
+      .update({ title: parsed.data.title, issuer: parsed.data.issuer,
+        credential_number: parsed.data.credentialNumber, expires_on: parsed.data.expiresOn || null })
+      .eq("id", credentialId.data).eq("provider_id", userId).select("id").maybeSingle();
+    if (error) return failure(databaseMessage(error.message));
+    if (!data) return failure("This credential is unavailable. Reload and try again.");
+    revalidatePath("/dashboard/provider", "layout");
+    revalidatePath("/dashboard/admin", "layout");
+    revalidatePath("/providers", "layout");
+    return success("Credential details saved. Changed details need Auxillium review before use for new bookings.");
+  } catch (error) {
+    return failure(error instanceof Error ? error.message : "Unable to save credential.");
   }
 }
 

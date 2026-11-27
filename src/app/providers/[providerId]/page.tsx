@@ -8,6 +8,7 @@ import { MarketplaceHeader } from "@/components/marketplace/marketplace-header";
 import styles from "@/components/marketplace/provider-profile.module.css";
 import { getOptionalCurrentProfile } from "@/lib/auth/profile";
 import { hasCustomerAccess } from "@/lib/auth/access";
+import { providerBookingReturnPath } from "@/lib/auth/return-path";
 import { getLegalAcceptanceStatus } from "@/lib/legal/data";
 import { getApprovedProvider } from "@/lib/marketplace/data";
 import type { PublicServiceCredentialCheck } from "@/lib/marketplace/types";
@@ -84,6 +85,7 @@ export default async function ProviderProfilePage({
   }
 
   const serviceChecks = new Map(provider.serviceChecks.map((check) => [check.serviceId, check]));
+  const requestReturn = encodeURIComponent(providerBookingReturnPath(provider.providerId)!);
 
   return (
     <main className={styles.page}>
@@ -242,7 +244,7 @@ export default async function ProviderProfilePage({
               ))}
             </ul>
           </section>
-          <aside className={styles.bookingPanel}>
+          <aside id="request-booking" className={styles.bookingPanel}>
             <p className={styles.eyebrow}>{provider.bookingEligible ? "Request a booking" : "Booking availability"}</p>
             <h2 className={styles.bookingTitle}>
               {provider.bookingEligible ? `Tell ${provider.displayName} what you need.` : "New requests are unavailable"}
@@ -275,10 +277,10 @@ export default async function ProviderProfilePage({
                 </div>
               ) : (
                 <div className={styles.signInActions}>
-                  <Link href="/login" className={styles.primaryButton}>
+                  <Link href={`/login?next=${requestReturn}`} className={styles.primaryButton}>
                     Sign in to request
                   </Link>
-                  <Link href="/signup?role=customer" className={styles.secondaryButton}>
+                  <Link href={`/signup?role=customer&next=${requestReturn}`} className={styles.secondaryButton}>
                     Create customer account
                   </Link>
                 </div>

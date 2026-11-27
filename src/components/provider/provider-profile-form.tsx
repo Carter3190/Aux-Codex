@@ -14,7 +14,7 @@ export function ProviderProfileForm({ details }: { details: ProviderDetails }) {
     ? <span className={styles.error}>{state.fieldErrors[name]![0]}</span> : null;
 
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={styles.form} data-unsaved-form>
       <div className={styles.columns}>
         <section className={styles.panel} aria-labelledby="provider-business-details">
           <h2 id="provider-business-details">Business details</h2>
@@ -52,6 +52,7 @@ export function ProviderProfileForm({ details }: { details: ProviderDetails }) {
           </label>
         </section>
       </div>
+      <p className={styles.description}>Changes to your introduction pause new bookings until Auxillium approves the update.</p>
       <FormFeedback state={state} />
       <div className={styles.actions}>
         <button type="submit" disabled={pending} className={styles.primary}>{pending ? "Saving…" : "Save introduction"}</button>

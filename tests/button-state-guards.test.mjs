@@ -6,6 +6,7 @@ import * as jsxRuntime from "react/jsx-runtime";
 import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
 import * as stripeStatus from "../src/lib/payments/stripe-setup-status.ts";
+import * as refundStatus from "../src/lib/cases/refund-status.ts";
 
 const css = new Proxy({}, { get: (_target, key) => String(key) });
 function load(path, dependencies) {
@@ -77,17 +78,18 @@ function denialButton(html) {
 
 test("denial is unavailable during a recorded, submitted, or newly started refund", () => {
   assert.doesNotMatch(denialButton(decisionForms()), /disabled/);
-  for (const state of [{ refundPending: true }, { localRefundPending: true }, { refundState: { status: "success" } }]) {
+  for (const state of [{ refundPending: true }, { localRefundPending: true }, { refundState: { status: "success", refundPending: true } }]) {
     const html = decisionForms(state);
     assert.match(denialButton(html), /disabled/);
     assert.match(html, /A refund is being processed/);
   }
   const recordedPending = decisionForms({ refundPending: true });
-  assert.match(recordedPending, /Confirm and issue refund/, "Safe refund reconciliation remains available");
+  assert.match(recordedPending, /Retry existing refund/);
+  assert.match(recordedPending, /status review in Stripe/, "Missing pending details fail closed instead of guessing an amount");
 });
 
 test("the admin workspace reads pending refunds and fails closed when that status cannot be loaded", async () => {
-  let pendingRows = [{ case_id: "case" }];
+  let pendingRows = [{ id: "refund", case_id: "case", amount_cents: 5000, status: "pending", stripe_refund_id: "re_existing", created_at: new Date().toISOString() }];
   let pendingError = null;
   const queried = [];
   const values = {
@@ -105,8 +107,13 @@ test("the admin workspace reads pending refunds and fails closed when that statu
     "server-only": {}, "next/navigation": { redirect: () => { throw new Error("Unexpected redirect"); } },
     "@/lib/auth/profile": { requireRole: async (role) => { assert.equal(role, "admin"); return { id: "admin" }; } },
     "@/lib/supabase/server": { createClient: async () => supabase },
+    "./refund-status": refundStatus,
   });
-  assert.equal((await getAdminResolutionWorkspace()).cases[0].refundPending, true);
+  const loaded = (await getAdminResolutionWorkspace()).cases[0];
+  assert.equal(loaded.refundPending, true);
+  assert.equal(loaded.pendingRefund.amountCents, 5000);
+  assert.equal(loaded.pendingRefund.stripeRefundId, "re_existing");
+  assert.equal(loaded.pendingRefund.canRetry, true);
   assert.ok(queried.some((q) => q.table === "booking_refunds" && q.column === "status" && q.items.join() === "pending,requires_action"));
   pendingRows = [];
   assert.equal((await getAdminResolutionWorkspace()).cases[0].refundPending, false);

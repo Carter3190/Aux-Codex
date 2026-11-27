@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: {
   if (profile) redirect(nextPath ?? getRoleDashboardPath(profile.role));
   const signupHref = nextPath?.split("?")[0] === "/dashboard/provider/application"
     ? "/signup?role=provider"
-    : "/signup";
+    : nextPath ? `/signup?role=customer&next=${encodeURIComponent(nextPath)}` : "/signup";
 
   return (
     <section className={styles.card}>

@@ -58,7 +58,10 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
     .single();
 
   if (error || !data) {
-    redirect("/setup?reason=profile");
+    const returnPath = safeDashboardReturnPath(
+      (await headers()).get("x-auxilium-request-path"),
+    );
+    redirect(returnPath ? `/setup?reason=profile&next=${encodeURIComponent(returnPath)}` : "/setup?reason=profile");
   }
 
   const profile = data as ProfileRow;

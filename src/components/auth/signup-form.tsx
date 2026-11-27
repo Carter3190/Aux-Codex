@@ -6,15 +6,15 @@ import { signUp } from "@/lib/auth/actions";
 import { initialAuthState } from "@/lib/auth/types";
 import styles from "./auth.module.css";
 
-type SignupFormProps = { defaultRole: "customer" | "provider" };
+type SignupFormProps = { defaultRole: "customer" | "provider"; nextPath?: string };
 
-export function SignupForm({ defaultRole }: SignupFormProps) {
+export function SignupForm({ defaultRole, nextPath }: SignupFormProps) {
   const [state, action, pending] = useActionState(signUp, initialAuthState);
   const [role, setRole] = useState(defaultRole);
   const [agreed, setAgreed] = useState(false);
   const signInHref = role === "provider"
     ? `/login?next=${encodeURIComponent("/dashboard/provider/application")}`
-    : "/login";
+    : nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : "/login";
 
   function chooseRole(nextRole: "customer" | "provider") {
     if (nextRole === role) return;
@@ -25,6 +25,7 @@ export function SignupForm({ defaultRole }: SignupFormProps) {
   return (
     <>
     <form action={action} className={styles.form}>
+      {role === "customer" && nextPath && <input type="hidden" name="next" value={nextPath} />}
       <p className={styles.formDescription} aria-live="polite">Create a {role} account to get started.</p>
       <fieldset className={styles.roleFieldset} aria-label="Account type">
         <div className={styles.roles}>

@@ -1,0 +1,13 @@
+.scope { display: contents; }
+.dialog { width: min(490px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 26px; overflow: auto; border: 1px solid var(--border); border-radius: 18px; color: var(--foreground); background: var(--surface); box-shadow: 0 24px 70px #14273830; }
+.dialog::backdrop { background: #14273899; }
+.dialog h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.35; letter-spacing: -.45px; }
+.dialog p { margin: 13px 0 23px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.actions button { min-height: 44px; padding: 11px 15px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.stay { color: var(--on-brand, #fff); background: var(--brand); }
+.stay:hover { background: var(--brand-dark); }
+.leave { color: var(--brand-dark); background: var(--surface); }
+.leave:hover { background: var(--aux-soft); }
+.actions button:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+@media(max-width: 520px) { .dialog { padding: 22px; } .actions { flex-direction: column; } .actions button { width: 100%; } }

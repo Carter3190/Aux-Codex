@@ -1,4 +1,5 @@
 import { bookingConversationWritable } from "./booking-messaging";
+import { unavailableProviderBookingActions } from "./booking-action-capabilities";
 import "server-only";
 
 import { redirect } from "next/navigation";
@@ -18,6 +19,7 @@ import type {
   PublicAvailability,
   PublicPhoto,
   PublicServiceCredentialCheck,
+  ProviderBookingActions,
   VerifiedReview,
 } from "./types";
 import type { BookingPayment, PaymentStatus } from "@/lib/payments/types";
@@ -511,7 +513,59 @@ export async function getProviderBookings(): Promise<BookingRequest[]> {
     throw new Error("Unable to load booking requests.");
   }
 
-  return attachBookingDetails(supabase, data as BookingRow[]);
+  const rows = data as BookingRow[];
+  const [bookings, actions] = await Promise.all([
+    attachBookingDetails(supabase, rows),
+    getProviderBookingActions(supabase, rows.map((row) => row.id)),
+  ]);
+  return bookings.map((booking) => ({
+    ...booking,
+    providerActions: actions.get(booking.id) ?? { ...unavailableProviderBookingActions },
+  }));
+}
+
+const providerBookingActionRows = z.array(z.object({
+  booking_id: z.uuid(),
+  can_accept: z.boolean(),
+  accept_unavailable_reason: z.enum(["approval_required", "service_review_required", "slot_unavailable", "request_closed"]).nullable(),
+  can_set_price: z.boolean(),
+  price_unavailable_reason: z.enum(["approval_required", "price_unavailable", "checkout_started"]).nullable(),
+})).max(500);
+
+async function getProviderBookingActions(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bookingIds: string[],
+) {
+  const actions = new Map<string, ProviderBookingActions>();
+  const chunks: string[][] = [];
+  for (let index = 0; index < bookingIds.length; index += 500) {
+    chunks.push(bookingIds.slice(index, index + 500));
+  }
+  await Promise.all(chunks.map(async (ids) => {
+    try {
+      const { data, error } = await supabase.rpc("get_provider_booking_action_capabilities", {
+        requested_booking_ids: ids,
+      });
+      // Keep historical bookings and valid decline/completion actions readable
+      // when a new capability lookup is temporarily unavailable.
+      if (error) return;
+      const parsed = providerBookingActionRows.safeParse(data);
+      if (!parsed.success) return;
+      const requested = new Set(ids);
+      for (const row of parsed.data) {
+        if (!requested.has(row.booking_id)) continue;
+        actions.set(row.booking_id, {
+          canAccept: row.can_accept && row.accept_unavailable_reason === null,
+          acceptUnavailableReason: row.accept_unavailable_reason,
+          canSetPrice: row.can_set_price && row.price_unavailable_reason === null,
+          priceUnavailableReason: row.price_unavailable_reason,
+        });
+      }
+    } catch {
+      return;
+    }
+  }));
+  return actions;
 }
 
 export async function getConversationInbox(): Promise<{

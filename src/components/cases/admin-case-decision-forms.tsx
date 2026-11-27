@@ -3,7 +3,7 @@
 import { NumberField } from "@/components/ui/fields";
 import { useActionState } from "react";
 import { denyBookingCase, refundBookingCase } from "@/lib/cases/actions";
-import { initialCaseActionState } from "@/lib/cases/types";
+import { initialCaseActionState, type PendingBookingRefund } from "@/lib/cases/types";
 import { CaseFeedback } from "./case-feedback";
 import styles from "@/components/marketplace/booking-forms.module.css";
 
@@ -16,11 +16,15 @@ export function AdminCaseDecisionForms({
   requestedRefundCents,
   remainingRefundCents,
   refundPending: refundInProgress,
+  pendingRefund = null,
+  decisionNotes = null,
 }: {
   caseId: string;
   requestedRefundCents: number;
   remainingRefundCents: number;
   refundPending: boolean;
+  pendingRefund?: PendingBookingRefund | null;
+  decisionNotes?: string | null;
 }) {
   const [refundState, refundAction, refundPending] = useActionState(
     refundBookingCase,
@@ -30,6 +34,11 @@ export function AdminCaseDecisionForms({
     denyBookingCase,
     initialCaseActionState,
   );
+  const isExistingRefund = refundInProgress || pendingRefund !== null;
+  const existingAmountKnown = pendingRefund && Number.isInteger(pendingRefund.amountCents) && pendingRefund.amountCents >= 100;
+  const canReconcile = Boolean(existingAmountKnown && pendingRefund.canRetry);
+  const originalNotes = decisionNotes && decisionNotes.trim().length >= 10
+    ? decisionNotes : "Reconcile the existing refund status.";
 
   return (
     <div className={styles.decisionGrid}>
@@ -39,15 +48,25 @@ export function AdminCaseDecisionForms({
       >
         <input type="hidden" name="caseId" value={caseId} />
         <div>
-          <h3 className={styles.heading}>Approve a Stripe refund</h3>
+          <h3 className={styles.heading}>{isExistingRefund ? "Existing Stripe refund" : "Approve a Stripe refund"}</h3>
           <p className={styles.description}>
-            This refunds the provider’s Stripe charge and proportionally refunds
-            Auxillium’s application fee.
+            {isExistingRefund
+              ? pendingRefund?.status === "requires_action"
+                ? "Stripe needs an additional step for this refund. Review it in Stripe, then check its status here."
+                : "This refund is already in progress. Its original amount and decision notes stay unchanged."
+              : "This refunds the provider’s Stripe charge and proportionally refunds Auxillium’s application fee."}
           </p>
+          {isExistingRefund && !canReconcile && <p className={styles.hint} role="status">This refund needs a status review in Stripe before another attempt. Contact support to reconcile the existing refund.</p>}
         </div>
         <label className={styles.field}>
           Refund amount (USD)
-          <NumberField
+          {isExistingRefund ? <input
+            name="amount"
+            value={existingAmountKnown ? dollars(pendingRefund.amountCents) : ""}
+            readOnly
+            className={styles.control}
+            aria-label="Existing refund amount (USD)"
+          /> : <NumberField
             name="amount"
             min="1"
             max={dollars(remainingRefundCents)}
@@ -57,9 +76,9 @@ export function AdminCaseDecisionForms({
             )}
             required
             className={styles.control}
-          />
+          />}
           <span className={styles.hint}>
-            {dollars(remainingRefundCents)} USD remains refundable.
+            {isExistingRefund ? "The amount is locked to the existing refund." : `${dollars(remainingRefundCents)} USD remains refundable.`}
           </span>
         </label>
         <label className={styles.field}>
@@ -70,6 +89,8 @@ export function AdminCaseDecisionForms({
             minLength={10}
             maxLength={4000}
             required
+            readOnly={isExistingRefund}
+            defaultValue={isExistingRefund ? originalNotes : undefined}
             className={styles.control}
             placeholder="Explain why this amount is being refunded."
           />
@@ -82,7 +103,7 @@ export function AdminCaseDecisionForms({
             required
           />
           <span>
-            I confirm this immediately creates a Stripe refund for the amount shown.
+            {isExistingRefund ? "I confirm I am checking or retrying only the existing refund for the locked amount shown." : "I confirm this immediately creates a Stripe refund for the amount shown."}
           </span>
         </label>
         {Object.values(refundState.fieldErrors ?? {}).flat()[0] && (
@@ -93,10 +114,10 @@ export function AdminCaseDecisionForms({
         <CaseFeedback state={refundState} />
         <button
           type="submit"
-          disabled={refundPending || remainingRefundCents < 100}
+          disabled={refundPending || (isExistingRefund ? !canReconcile : remainingRefundCents < 100)}
           className={styles.primary}
         >
-          {refundPending ? "Issuing refund…" : "Confirm and issue refund"}
+          {refundPending ? isExistingRefund ? "Checking refund…" : "Issuing refund…" : isExistingRefund ? pendingRefund?.stripeRefundId ? "Check refund status" : "Retry existing refund" : "Confirm and issue refund"}
         </button>
       </form>
 
@@ -111,7 +132,7 @@ export function AdminCaseDecisionForms({
             This closes the request without moving money. The note is visible to
             the customer and provider.
           </p>
-          {(refundInProgress || refundPending || refundState.status === "success") && (
+          {(isExistingRefund || refundPending || refundState.refundPending === true) && (
             <p className={styles.hint} role="status">A refund is being processed. Wait for its status to update before making another decision.</p>
           )}
         </div>
@@ -133,7 +154,7 @@ export function AdminCaseDecisionForms({
         <CaseFeedback state={denyState} tone="info" />
         <button
           type="submit"
-          disabled={denyPending || refundInProgress || refundPending || refundState.status === "success"}
+          disabled={denyPending || isExistingRefund || refundPending || refundState.refundPending === true}
           className={`${styles.secondary} ${styles.danger}`}
         >
           {denyPending ? "Saving decision…" : "Deny with notes"}

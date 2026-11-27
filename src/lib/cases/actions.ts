@@ -13,6 +13,8 @@ import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { CaseActionState } from "./types";
+import { canRetryBookingRefund } from "./refund-status";
+import { notifyRecordedBookingRefund } from "./refund-notifications";
 
 const uuidSchema = z.uuid("Invalid resolution request.");
 const moneySchema = z
@@ -312,6 +314,20 @@ export async function refundBookingCase(
     const stripeAccountId = paymentAccountResult.data.stripe_account_id as
       | string
       | null;
+    const recordedRefund = await admin.from("booking_refunds")
+      .select("stripe_refund_id, created_at")
+      .eq("id", prepared.refund_id)
+      .single();
+    if (recordedRefund.error || !recordedRefund.data) {
+      return failure("Unable to load the existing refund. Refresh this case before trying again.");
+    }
+    const existingStripeRefundId = recordedRefund.data.stripe_refund_id as string | null;
+    if (!canRetryBookingRefund({
+      stripeRefundId: existingStripeRefundId,
+      createdAt: recordedRefund.data.created_at,
+    })) {
+      return failure("This refund needs a status review in Stripe. Contact support to reconcile it before another attempt.");
+    }
     const stripe = getStripe();
     let chargeId = prepared.stripe_charge_id;
     if (!chargeId) {
@@ -344,7 +360,11 @@ export async function refundBookingCase(
         auxilium_payment_id: prepared.payment_id,
       },
     } as const;
-    const refund = stripeAccountId
+    const refund = existingStripeRefundId
+      ? stripeAccountId
+        ? await stripe.refunds.retrieve(existingStripeRefundId, {}, { stripeAccount: stripeAccountId })
+        : await stripe.refunds.retrieve(existingStripeRefundId)
+      : stripeAccountId
       ? await stripe.refunds.create(refundParams, {
           idempotencyKey: `auxilium_refund_${prepared.refund_id}`,
           stripeAccount: stripeAccountId,
@@ -354,7 +374,7 @@ export async function refundBookingCase(
           { idempotencyKey: `auxilium_refund_${prepared.refund_id}` },
         );
 
-    const { error: syncError } = await admin.rpc("record_booking_refund_state", {
+    const { data: recorded, error: syncError } = await admin.rpc("record_booking_refund_state", {
       internal_refund_id: prepared.refund_id,
       stripe_refund_id: refund.id,
       payment_intent_id: stripeObjectId(refund.payment_intent),
@@ -377,21 +397,22 @@ export async function refundBookingCase(
       );
     }
 
-    await notifyBookingParticipants({
-      bookingId: prepared.booking_id,
-      recipients: ["customer", "provider"],
-      eventKey: `booking_refund_${prepared.refund_id}`,
-      subject: "An Auxillium booking refund was processed",
-      heading: "The booking refund was processed",
-      message: `$${(refund.amount / 100).toFixed(2)} was sent back through Stripe. Open your dashboard for the updated payment balance and resolution notes.`,
-    });
+    await notifyRecordedBookingRefund({ refundId: prepared.refund_id });
 
     revalidateResolutionPages();
-    return success(
+    if (recorded === false) {
+      return success("The latest recorded refund status is shown in this case. Review the payment details before making another decision.");
+    }
+    if (refund.status === "failed" || refund.status === "canceled") {
+      return { ...failure("Stripe did not complete this refund. Its status has been updated; review the case before making another decision."), refundPending: false };
+    }
+    return { ...success(
       refund.status === "succeeded"
         ? "Stripe refund completed. The provider charge and Auxillium fee were refunded proportionally."
-        : "Stripe refund started. Its signed webhook will update the final status.",
-    );
+        : refund.status === "requires_action"
+          ? "Stripe needs an additional step for this refund. Review it in Stripe, then check its status here."
+          : "Stripe refund is pending. The final status will update when Stripe confirms it.",
+    ), refundPending: refund.status !== "succeeded" };
   } catch (error) {
     const stripeError = error as {
       code?: unknown;

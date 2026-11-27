@@ -207,6 +207,8 @@ export default async function AdminCasesPage({
                         requestedRefundCents={item.requestedRefundCents}
                         remainingRefundCents={remainingRefundCents}
                         refundPending={item.refundPending}
+                        pendingRefund={item.pendingRefund}
+                        decisionNotes={item.adminNotes}
                       />
                     )}
                   </div>
