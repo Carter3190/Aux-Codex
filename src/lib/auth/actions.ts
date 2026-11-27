@@ -7,7 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { getRequiredLegalAgreements } from "@/lib/legal/agreements";
 import type { AuthFormState, ConfirmationFormState } from "./types";
-import { safeDashboardReturnPath } from "./return-path";
+import { bookingProviderIdFromReturnPath, safeDashboardReturnPath } from "./return-path";
 
 const passwordSchema = z
   .string()
@@ -48,7 +48,7 @@ function configurationError(): AuthFormState | null {
 
   return {
     message:
-      "Auxillium authentication is not connected yet. Add your Supabase project details first.",
+      "Account access is temporarily unavailable. Please try again shortly or contact support.",
   };
 }
 
@@ -96,6 +96,10 @@ export async function signUp(
   }
 
   const acceptedAgreements = getRequiredLegalAgreements(parsed.data.role);
+  const nextPath = safeDashboardReturnPath(formData.get("next"));
+  const bookingProviderId = parsed.data.role === "customer"
+    ? bookingProviderIdFromReturnPath(nextPath)
+    : null;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -104,6 +108,7 @@ export async function signUp(
       data: {
         full_name: parsed.data.fullName,
         requested_role: parsed.data.role,
+        ...(bookingProviderId ? { booking_provider_id: bookingProviderId } : {}),
         accepted_legal_versions: Object.fromEntries(
           acceptedAgreements.map((agreement) => [
             agreement.key,
@@ -120,8 +125,12 @@ export async function signUp(
   }
 
   if (data.session) {
+    if (bookingProviderId) {
+      // A public navigation preference only; it grants no booking permissions.
+      try { await supabase.auth.updateUser({ data: { booking_provider_id: null } }); } catch { /* Navigation can still resume. */ }
+    }
     revalidatePath("/", "layout");
-    redirect("/dashboard");
+    redirect(nextPath ?? "/dashboard");
   }
 
   redirect("/auth/check-email");

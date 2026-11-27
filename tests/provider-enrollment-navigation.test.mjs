@@ -5,7 +5,8 @@ import ts from "typescript";
 import { z } from "zod";
 import { hasCustomerAccess, hasProviderAccess } from "../src/lib/auth/access.ts";
 import { safeDashboardReturnPath } from "../src/lib/auth/return-path.ts";
-import { bookingConversationWritable } from "../src/lib/marketplace/booking-messaging.ts";
+import { bookingConversationReadOnlyMessage, bookingConversationWritable } from "../src/lib/marketplace/booking-messaging.ts";
+import { unavailableProviderBookingActions } from "../src/lib/marketplace/booking-action-capabilities.ts";
 
 class Redirect extends Error {
   constructor(path) { super("redirect"); this.path = path; }
@@ -171,6 +172,7 @@ function bookingRow(overrides = {}) {
 function loadMarketplace(member, db) {
   return load("../src/lib/marketplace/data.ts", {
     "./booking-messaging": { bookingConversationWritable },
+    "./booking-action-capabilities": { unavailableProviderBookingActions },
     "server-only": {},
     "next/navigation": { redirect },
     zod: { z },
@@ -217,6 +219,7 @@ test("conversation context follows participation while retaining the account's p
       "@/components/messages/conversation-live-updates": { ConversationLiveUpdates: "LiveUpdates" },
       "@/components/messages/message-composer": { MessageComposer: "Composer" },
       "@/lib/marketplace/data": { getBookingConversation: async () => conversation },
+      "@/lib/marketplace/booking-messaging": { bookingConversationReadOnlyMessage },
       "@/lib/providers/presentation": { labelFromSnakeCase: (value) => value },
       "@/components/messages/messages.module.css": { default: styles },
     }).default;

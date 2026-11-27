@@ -42,7 +42,7 @@ export function ProviderSubmitCard({
           : providerStatus === "rejected"
             ? "Review the feedback and update your profile before submitting it again."
           : submittedAt
-          ? `Submitted ${new Date(submittedAt).toLocaleDateString()}. Editing any profile section will return the application to draft review.`
+          ? `Submitted ${new Date(submittedAt).toLocaleDateString()}. Changes to your introduction, services, or photos require another review. Availability updates keep this submission in place.`
           : completion.isComplete
             ? "Every required section is complete. Submit your information for an administrator to review."
             : `Complete all ${completion.totalCount} required sections first. You have finished ${completion.completedCount} of ${completion.totalCount}.`}

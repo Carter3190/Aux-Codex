@@ -6,6 +6,7 @@ import { ProviderProfileForm } from "@/components/provider/provider-profile-form
 import { ProviderServiceForm } from "@/components/provider/provider-service-form";
 import { ProviderSubmitCard } from "@/components/provider/provider-submit-card";
 import { ProviderUploadManager } from "@/components/provider/provider-upload-manager";
+import { UnsavedChangesGuard } from "@/components/provider/unsaved-changes-guard";
 import styles from "@/components/provider/provider-profile-workspace.module.css";
 import formStyles from "@/components/provider/provider-forms.module.css";
 import type { ProviderWorkspace } from "@/lib/providers/types";
@@ -47,6 +48,7 @@ export function ProviderProfileWorkspace({ workspace, section }: {
 
   return (
     <DashboardShell profile={profile} title={sectionTitle} description={sectionDescription}>
+      <UnsavedChangesGuard key={section ?? "overview"}>
       <nav className={styles.navigation} aria-label="Profile sections">
         <Link href="/dashboard/provider/onboarding" aria-current={!selected && !reviewing ? "page" : undefined}>Profile overview</Link>
         {sections.map(([key, title]) => <Link key={key} href={`/dashboard/provider/onboarding?section=${key}`} aria-current={selected?.[0] === key ? "page" : undefined}>{title}</Link>)}
@@ -79,11 +81,12 @@ export function ProviderProfileWorkspace({ workspace, section }: {
         <section className={styles.sectionContent} aria-label={sectionTitle}>
           {selected[0] === "introduction" && <ProviderProfileForm details={details} />}
           {selected[0] === "services" && <ProviderServiceForm services={services} />}
-          {(selected[0] === "photos" || selected[0] === "credentials") && <ProviderUploadManager section={selected[0]} providerId={profile.id} photos={photos} credentials={credentials.map((credential) => ({ id: credential.id, credentialType: credential.credentialType, title: credential.title, issuer: credential.issuer, expiresOn: credential.expiresOn, reviewStatus: credential.reviewStatus, reviewNotes: credential.reviewNotes }))} />}
+          {(selected[0] === "photos" || selected[0] === "credentials") && <ProviderUploadManager section={selected[0]} providerId={profile.id} photos={photos} credentials={credentials.map((credential) => ({ id: credential.id, credentialType: credential.credentialType, title: credential.title, issuer: credential.issuer, credentialNumber: credential.credentialNumber, expiresOn: credential.expiresOn, reviewStatus: credential.reviewStatus, reviewNotes: credential.reviewNotes }))} />}
           {selected[0] === "availability" && <ProviderAvailabilityForm availability={availability} />}
         </section>
       ) : null}
       <p className={styles.privacy}>Credential documents stay private and can only be viewed by you and authorized Auxillium administrators.</p>
+      </UnsavedChangesGuard>
     </DashboardShell>
   );
 }

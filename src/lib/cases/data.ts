@@ -10,7 +10,9 @@ import type {
   BookingCaseCategory,
   BookingCaseStatus,
   PaymentDispute,
+  PendingBookingRefund,
 } from "./types";
+import { canRetryBookingRefund } from "./refund-status";
 
 export type BookingCaseRow = {
   id: string;
@@ -152,7 +154,7 @@ export async function getAdminResolutionWorkspace(): Promise<{
       .in("id", paymentIds),
     caseRows.length ? supabase
       .from("booking_refunds")
-      .select("case_id")
+      .select("id, case_id, amount_cents, status, stripe_refund_id, created_at")
       .in("case_id", caseRows.map((row) => row.id))
       .in("status", ["pending", "requires_action"])
       : Promise.resolve({ data: [], error: null }),
@@ -163,9 +165,18 @@ export async function getAdminResolutionWorkspace(): Promise<{
   if (pendingRefundsResult.error) {
     throw new Error("Unable to load resolution refund records.");
   }
-  const pendingRefundCases = new Set(
-    (pendingRefundsResult.data ?? []).map((row: { case_id: string | null }) => row.case_id),
-  );
+  const pendingRefundCases = new Map<string, PendingBookingRefund>();
+  for (const row of pendingRefundsResult.data ?? []) {
+    if (!row.case_id) continue;
+    const refund = {
+      id: row.id,
+      amountCents: row.amount_cents,
+      status: row.status as PendingBookingRefund["status"],
+      stripeRefundId: row.stripe_refund_id,
+      createdAt: row.created_at,
+    };
+    pendingRefundCases.set(row.case_id, { ...refund, canRetry: canRetryBookingRefund(refund) });
+  }
 
   const paymentRows = (paymentsResult.data ?? []) as PaymentRow[];
   const paymentById = new Map(paymentRows.map((row) => [row.id, row]));
@@ -198,6 +209,7 @@ export async function getAdminResolutionWorkspace(): Promise<{
         bookingStatus: booking.status,
         payment: mapPayment(payment),
         refundPending: pendingRefundCases.has(row.id),
+        pendingRefund: pendingRefundCases.get(row.id) ?? null,
       },
     ];
   });

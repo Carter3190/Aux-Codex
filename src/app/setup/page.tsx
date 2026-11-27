@@ -1,19 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getOptionalCurrentProfile } from "@/lib/auth/profile";
+import { safeDashboardReturnPath } from "@/lib/auth/return-path";
 import styles from "@/components/recovery/recovery-pages.module.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
-  title: "Project setup",
+  title: "Account assistance",
 };
 
 export default async function SetupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string }>;
+  searchParams: Promise<{ reason?: string; next?: string | string[] }>;
 }) {
   const query = await searchParams;
   const configured = isSupabaseConfigured();
+  const profileError = query.reason === "profile";
+  if (process.env.NODE_ENV === "production" || profileError) {
+    let isAdmin = false;
+    try { isAdmin = (await getOptionalCurrentProfile())?.role === "admin"; } catch { /* Recovery must remain available during an account outage. */ }
+    if (!isAdmin) {
+      const retryPath = profileError ? safeDashboardReturnPath(query.next) ?? "/dashboard" : "/";
+      return <main className={styles.page}>
+        <section className={`${styles.narrow} ${styles.panel}`}>
+          <p className={styles.eyebrow}>Account assistance</p>
+          <h1>{profileError ? "Your account is temporarily unavailable" : "This part of Auxillium is temporarily unavailable"}</h1>
+          <p className={styles.description}>{profileError
+            ? "We couldn’t load your account details. Try again, or contact support if the problem continues."
+            : "Please try again shortly. Contact support if you need help with an existing booking."}</p>
+          <div className={styles.actions}>
+            <Link href={retryPath} className={styles.primary}>Try again</Link>
+            <Link href="/support" className={styles.secondary}>Contact support</Link>
+          </div>
+        </section>
+      </main>;
+    }
+  }
   const paymentsReason = query.reason === "stripe-payments";
   const reviewsReason = query.reason === "booking-reviews";
   const resolutionReason = query.reason === "resolution-center";

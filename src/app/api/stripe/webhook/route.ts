@@ -6,6 +6,7 @@ import {
   isStripeWebhookConfigured,
 } from "@/lib/stripe/config";
 import { getStripe } from "@/lib/stripe/server";
+import { notifyRecordedBookingRefund } from "@/lib/cases/refund-notifications";
 
 export const runtime = "nodejs";
 
@@ -159,7 +160,8 @@ export async function POST(request: Request) {
       );
       if (!matches) return Response.json({ received: true });
 
-      const result = await admin.rpc("record_booking_refund_state", {
+      const previousAttributes = event.data.previous_attributes as { status?: unknown } | undefined;
+      const result = await admin.rpc("record_booking_refund_event_state", {
         internal_refund_id: internalRefundId(refund),
         stripe_refund_id: refund.id,
         payment_intent_id: refundPaymentIntentId,
@@ -171,8 +173,17 @@ export async function POST(request: Request) {
         stripe_created: refund.created,
         stripe_event_id: event.id,
         stripe_event_type: event.type,
+        stripe_event_created: event.created,
+        stripe_previous_refund_status: typeof previousAttributes?.status === "string" ? previousAttributes.status : null,
       });
       error = result.error;
+      if (!error && result.data === true) {
+        try {
+          await notifyRecordedBookingRefund({ stripeRefundId: refund.id });
+        } catch {
+          console.error("Refund notification could not be prepared after reconciliation.");
+        }
+      }
     } else if (disputeEvents.has(event.type)) {
       const dispute = event.data.object as Stripe.Dispute;
       const disputePaymentIntentId = objectId(dispute.payment_intent);

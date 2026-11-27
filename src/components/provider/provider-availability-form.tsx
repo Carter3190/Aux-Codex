@@ -12,7 +12,7 @@ import styles from "./provider-forms.module.css";
 export function ProviderAvailabilityForm({ availability }: { availability: ProviderAvailability[] }) {
   const [state, action, pending] = useActionState(saveProviderAvailability, initialProviderActionState);
 
-  return <form action={action} className={styles.panel}>
+  return <form action={action} className={styles.panel} data-unsaved-form>
     <div>{availability.map((day) => <div key={day.weekday} className={styles.day}>
       <label className={styles.dayToggle}>
         <input type="checkbox" name={`available_${day.weekday}`} defaultChecked={day.isAvailable} />

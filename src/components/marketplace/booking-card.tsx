@@ -20,6 +20,7 @@ import { customerCalendarDay, customerPaymentDue, customerPaymentLabel, formatCu
 import { providerPaymentLabel } from "@/lib/marketplace/provider-dashboard";
 import { formatPrice, labelFromSnakeCase } from "@/lib/providers/presentation";
 import { bookingConversationWritable } from "@/lib/marketplace/booking-messaging";
+import { providerBookingActionMessage } from "@/lib/marketplace/booking-action-capabilities";
 import styles from "./booking-detail.module.css";
 
 const activeCaseStatuses = new Set(["open", "provider_responded", "under_review"]);
@@ -33,7 +34,9 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
   const paid = paymentStatus === "paid" || paymentStatus === "partially_refunded";
   const terminalPayment = paid || paymentStatus === "refunded";
   const paymentEditable = !paymentStatus || paymentStatus === "failed" || paymentStatus === "expired";
-  const canSetPrice = ["accepted", "completed"].includes(booking.status) && paymentEditable;
+  const priceStage = ["accepted", "completed"].includes(booking.status) && paymentEditable;
+  const canSetPrice = priceStage && booking.providerActions?.canSetPrice === true;
+  const closed = booking.status === "cancelled" || booking.status === "declined";
   const canComplete = booking.status === "accepted" && booking.agreedPriceCents !== null &&
     booking.requestedDate <= customerCalendarDay() && (paymentEditable || paid);
   const paymentDue = customerPaymentDue(booking);
@@ -80,8 +83,8 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
       {perspective === "provider" && booking.status === "declined" ? <ActionFeedback tone="declined" state={{ status: "success", message: "Request declined." }} /> : <p className={styles.statusText}>{perspective === "provider" ? statusText : customerStatusText}</p>}
       {completedUnpaid && <p>{paymentStatus === "processing" ? "Payment is processing. Stripe will confirm the payment status here." : booking.agreedPriceCents === null ? "The final price still needs to be confirmed." : perspective === "provider" ? "Customer payment is still outstanding. You can review its status in Payment." : "Open Payment to review the agreed price and pay for your visit."}</p>}
       <Link href={`/dashboard/messages/${booking.id}`} className={styles.secondary}><CustomerIcon name="messages" />{canMessage ? `Message ${perspective === "customer" ? "provider" : "customer"}` : "View conversation"}</Link>
-      {perspective === "provider" && booking.status === "pending" && <BookingResponseForm bookingId={booking.id} />}
-      {perspective === "provider" && booking.status === "accepted" && !canComplete && <p className={styles.note}>{booking.agreedPriceCents === null ? "Set the agreed price in Payment before marking this visit complete." : booking.requestedDate > customerCalendarDay() ? "Mark the service complete after the work is finished, on or after the scheduled visit date." : paymentStatus === "checkout_pending" || paymentStatus === "processing" ? "An earlier payment attempt must finish or expire before this visit can be marked complete." : "Contact support if this booking’s payment status needs review."}</p>}
+      {perspective === "provider" && booking.status === "pending" && <BookingResponseForm bookingId={booking.id} canAccept={booking.providerActions?.canAccept === true} acceptUnavailableMessage={providerBookingActionMessage(booking.providerActions?.acceptUnavailableReason ?? "unavailable")} />}
+      {perspective === "provider" && booking.status === "accepted" && !canComplete && <p className={styles.note}>{booking.agreedPriceCents === null ? canSetPrice ? "Set the agreed price in Payment before marking this visit complete." : providerBookingActionMessage(booking.providerActions?.priceUnavailableReason ?? "unavailable") : booking.requestedDate > customerCalendarDay() ? "Mark the service complete after the work is finished, on or after the scheduled visit date." : paymentStatus === "checkout_pending" || paymentStatus === "processing" ? "An earlier payment attempt must finish or expire before this visit can be marked complete." : "Contact support if this booking’s payment status needs review."}</p>}
     </section>
     {perspective === "provider" && canComplete && <section className={`${styles.panel} ${styles.fullWidth}`} aria-label="Service progress"><h3>Service progress</h3><BookingCompletionForm bookingId={booking.id} providerId={booking.providerId} paymentReceived={paid} /></section>}
     {booking.status === "completed" && <BookingCompletionGallery photos={completionPhotos} error={completionPhotosError} perspective={perspective} />}
@@ -89,13 +92,15 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
 
   const payment = <section className={styles.panel}>
     <div className={styles.paymentHeading}><div><h3>Payment details</h3><span className={styles.paymentAmount}>{booking.agreedPriceCents === null ? "Price not set" : formatCustomerMoney(booking.agreedPriceCents)}</span></div><span className={`${styles.badge} ${paymentTone}`}>{displayedPaymentLabel}</span></div>
-    {booking.agreedPriceCents === null ? <p>{perspective === "provider" ? "Save the full price agreed with your customer." : "Waiting for the provider to confirm the final price."}</p> :
+    {closed ? <p>{booking.payment ? "This booking is closed. Any payment or refund already recorded remains available below." : "This booking is closed. No payment is due."}</p> :
+      booking.agreedPriceCents === null ? <p>{perspective === "provider" ? canSetPrice ? "Save the full price agreed with your customer." : priceStage ? providerBookingActionMessage(booking.providerActions?.priceUnavailableReason ?? "unavailable") : "A booking price can be confirmed after the request is accepted." : "Waiting for the provider to confirm the final price."}</p> :
       booking.status === "accepted" && !terminalPayment ? <p>The agreed price is ready. Payment becomes due once the work is finished and the visit is marked complete.</p> :
       completedUnpaid ? <p>{paymentStatus === "processing" ? "Stripe is confirming this payment. No additional payment is needed while it processes." : perspective === "provider" ? "The work is complete and payment is due from the customer." : "The work is complete. Review the agreed price before paying."}</p> : null}
     {perspective === "provider" && <ProviderEarningsSummary booking={booking} earnings={providerEarnings} />}
     {perspective === "customer" && booking.payment && booking.payment.refundedAmountCents > 0 && <p>Refunded: {formatCustomerMoney(booking.payment.refundedAmountCents)} of {formatCustomerMoney(booking.payment.amountCents)}</p>}
     {perspective === "customer" && paymentDue && <BookingCheckoutForm bookingId={booking.id} paymentStatus={paymentStatus ?? null} />}
     {perspective === "provider" && canSetPrice && <BookingPriceForm bookingId={booking.id} defaultAmountCents={booking.agreedPriceCents ?? booking.priceCents} hasAgreedPrice={booking.agreedPriceCents !== null} />}
+    {perspective === "provider" && priceStage && !canSetPrice && booking.agreedPriceCents !== null && <p className={styles.note}>{providerBookingActionMessage(booking.providerActions?.priceUnavailableReason ?? "unavailable")}</p>}
     {perspective === "provider" && <p className={styles.note}>Auxillium’s platform commission is 5%. Stripe confirms its processing fee after payment. Available earnings are deposited according to your Stripe payout schedule.</p>}
   </section>;
 
@@ -116,7 +121,7 @@ export function BookingCard({ booking, perspective, providerEarnings, completion
   const review = <section className={styles.panel}>
     {booking.review ? <><h3>{perspective === "customer" ? "Your verified review" : "Verified customer review"}</h3><p className={styles.reviewRating} aria-label={`${booking.review.rating} out of 5 stars`}>{"★".repeat(booking.review.rating)}{"☆".repeat(5 - booking.review.rating)}</p><p className={styles.preserve}>{booking.review.body}</p><div className={styles.reviewDate}>{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(booking.review.createdAt))}</div></> :
       perspective === "customer" && booking.status === "completed" && paid ? <BookingReviewForm bookingId={booking.id} /> :
-      <><h3>No review yet</h3><p>{perspective === "customer" ? "You can leave a verified review after the visit is complete and payment is confirmed." : "Your customer can leave a verified review after the visit is complete and payment is confirmed."}</p></>}
+      <><h3>{closed ? "Reviews unavailable" : "No review yet"}</h3><p>{closed ? "Reviews are available only for completed, paid visits. This booking is closed." : perspective === "customer" ? "You can leave a verified review after the visit is complete and payment is confirmed." : "Your customer can leave a verified review after the visit is complete and payment is confirmed."}</p></>}
   </section>;
 
   return <article className={styles.detail}>

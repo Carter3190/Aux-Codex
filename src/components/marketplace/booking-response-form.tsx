@@ -6,7 +6,11 @@ import { initialMarketplaceActionState } from "@/lib/marketplace/types";
 import { ActionFeedback } from "./action-feedback";
 import styles from "./booking-forms.module.css";
 
-export function BookingResponseForm({ bookingId }: { bookingId: string }) {
+export function BookingResponseForm({ bookingId, canAccept, acceptUnavailableMessage }: {
+  bookingId: string;
+  canAccept: boolean;
+  acceptUnavailableMessage?: string;
+}) {
   const [state, action, pending] = useActionState(
     respondToBooking,
     initialMarketplaceActionState,
@@ -17,6 +21,7 @@ export function BookingResponseForm({ bookingId }: { bookingId: string }) {
     <form action={action} className={`${styles.form} ${styles.section}`}>
       <input type="hidden" name="bookingId" value={bookingId} />
       <h3 className={styles.heading}>Your response</h3>
+      {!canAccept && <p className={styles.hint}>{acceptUnavailableMessage}</p>}
       <label className={styles.field}>
         Response note <span className={styles.optional}>(optional)</span>
         <textarea
@@ -36,7 +41,7 @@ export function BookingResponseForm({ bookingId }: { bookingId: string }) {
           type="submit"
           name="decision"
           value="accepted"
-          disabled={pending}
+          disabled={pending || !canAccept}
           onClick={() => setDecision("accepted")}
           className={styles.primary}
         >

@@ -13,3 +13,19 @@ export function safeDashboardReturnPath(value: unknown): string | null {
     return null;
   }
 }
+
+const providerIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** Booking intent is a public provider ID, never an arbitrary redirect URL. */
+export function providerBookingReturnPath(providerId: unknown): string | null {
+  return typeof providerId === "string" && providerIdPattern.test(providerId)
+    ? `/dashboard/customer/request/${providerId.toLowerCase()}`
+    : null;
+}
+
+export function bookingProviderIdFromReturnPath(value: unknown): string | null {
+  const match = typeof value === "string"
+    ? /^\/dashboard\/customer\/request\/([^/?#]+)$/.exec(value)
+    : null;
+  return match && providerBookingReturnPath(match[1]) ? match[1].toLowerCase() : null;
+}

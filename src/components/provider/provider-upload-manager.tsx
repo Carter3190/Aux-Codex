@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DateField, SelectField } from "@/components/ui/fields";
 import styles from "./provider-forms.module.css";
+import { ProviderCredentialMetadataEditor } from "./provider-credential-metadata-editor";
+import { ProviderFormSaveMarker } from "./unsaved-changes-guard";
 import { useState, type FormEvent } from "react";
 import {
   registerProviderCredential,
@@ -25,6 +27,7 @@ type CredentialSummary = Pick<
   | "credentialType"
   | "title"
   | "issuer"
+  | "credentialNumber"
   | "expiresOn"
   | "reviewStatus"
   | "reviewNotes"
@@ -40,8 +43,7 @@ const extensions: Record<string, string> = {
 };
 
 function UploadMessage({ state }: { state: ProviderActionState }) {
-  if (!state.message) return null;
-  return <p role={state.status === "error" ? "alert" : "status"} className={`${styles.feedback} ${state.status === "error" ? styles.feedbackError : ""}`}>{state.message}</p>;
+  return <><ProviderFormSaveMarker state={state} />{state.message && <p role={state.status === "error" ? "alert" : "status"} className={`${styles.feedback} ${state.status === "error" ? styles.feedbackError : ""}`}>{state.message}</p>}</>;
 }
 
 export function ProviderUploadManager({
@@ -152,7 +154,6 @@ export function ProviderUploadManager({
           .remove([uploaded.path]);
       } else {
         form.reset();
-        setCredentialType("insurance");
         router.refresh();
       }
     } catch (error) {
@@ -171,6 +172,7 @@ export function ProviderUploadManager({
       {section !== "credentials" && <div className={styles.columns}>
         <section className={styles.panel} aria-label="Your photo gallery">
           <h2>Your photos</h2>
+          <p className={styles.description}>Photo changes pause new bookings until Auxillium approves your updated profile.</p>
           {photos.length > 0 ? <div className={styles.gallery}>
             {photos.map((photo) => <article key={photo.id} className={styles.photo}>
               <div className={styles.photoImage} style={{ backgroundImage: `url(${photo.publicUrl})` }} role="img" aria-label={photo.caption || "Provider photo"} />
@@ -184,7 +186,7 @@ export function ProviderUploadManager({
             </article>)}
           </div> : <p className={styles.empty}>Your profile photos and examples of completed work will appear here.</p>}
         </section>
-        <form onSubmit={handlePhoto} className={styles.panel}>
+        <form onSubmit={handlePhoto} className={styles.panel} data-unsaved-form>
           <h2>Add a photo</h2>
           <p className={styles.description}>JPG, PNG, or WebP · up to 5 MB per photo. You can add more than one photo.</p>
           <label className={styles.field}>Photo
@@ -216,9 +218,10 @@ export function ProviderUploadManager({
                 <button type="submit" className={styles.remove}>Remove</button>
               </form>
             </div>
+            <ProviderCredentialMetadataEditor credential={credential} />
           </article>)}
         </section>}
-        <form onSubmit={handleCredential} className={styles.panel}>
+        <form onSubmit={handleCredential} onReset={() => setCredentialType("insurance")} className={styles.panel} data-unsaved-form>
           <h2>Add a credential</h2>
           <div className={styles.columns}>
             <label className={styles.field}>Credential type
@@ -231,10 +234,10 @@ export function ProviderUploadManager({
             </label>
           </div>
           <div className={styles.columns}>
-            <label className={styles.field}>Issuer or carrier {credentialType !== "insurance" && <span>(optional)</span>}
-              <input name="issuer" required={credentialType === "insurance"} maxLength={120} className={styles.input} placeholder="Organization that issued the document" />
+            <label className={styles.field}>Issuer or carrier {!["license", "insurance"].includes(credentialType) && <span>(optional)</span>}
+              <input name="issuer" required={credentialType === "license" || credentialType === "insurance"} maxLength={120} className={styles.input} placeholder="Organization that issued the document" />
               {credentialState.fieldErrors?.issuer?.[0] && <span className={styles.error}>{credentialState.fieldErrors.issuer[0]}</span>}
-              {credentialType === "insurance" && <span className={styles.hint}>Required for insurance.</span>}
+              {["license", "insurance"].includes(credentialType) && <span className={styles.hint}>Required for licenses and insurance.</span>}
             </label>
             <label className={styles.field}>Credential number <span>(optional)</span>
               <input name="credentialNumber" maxLength={120} className={styles.input} placeholder="Enter the credential number" />
